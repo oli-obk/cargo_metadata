@@ -3,8 +3,9 @@
 //! Usually used from within a `cargo-*` executable
 //!
 //! ```rust
+//! # extern crate cargo_metadata;
 //! let manifest_path_arg = std::env::args().skip(2).find(|val| val.starts_with("--manifest-path="));
-//! let mut metadata = cargo::metadata(manifest_path_arg.as_ref().map(AsRef::as_ref)).unwrap();
+//! let metadata = cargo_metadata::metadata(manifest_path_arg.as_ref().map(AsRef::as_ref)).unwrap();
 //! ```
 
 extern crate serde;
