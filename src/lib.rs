@@ -17,7 +17,7 @@ use std::process::Command;
 use std::str::{from_utf8, Utf8Error};
 use std::io;
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
 pub struct Metadata {
     /// A list of all crates referenced by this crate (and the crate itself)
@@ -26,7 +26,7 @@ pub struct Metadata {
     version: usize,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 /// A crate
 pub struct Package {
     /// Name as given in the `Cargo.toml`
@@ -44,7 +44,7 @@ pub struct Package {
     pub manifest_path: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 /// A dependency of the main crate
 pub struct Dependency {
     /// Name as given in the `Cargo.toml`
@@ -59,7 +59,7 @@ pub struct Dependency {
     target: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 /// A single target (lib, bin, example, ...) provided by a crate
 pub struct Target {
     /// Name as given in the `Cargo.toml` or generated from the file name
