@@ -66,7 +66,8 @@ pub struct Target {
     pub name: String,
     /// Kind of target ("bin", "example", "test", "bench", "lib")
     pub kind: Vec<String>,
-    src_path: String,
+    /// Path to the main source file of the target
+    pub src_path: String,
 }
 
 #[derive(Debug)]
