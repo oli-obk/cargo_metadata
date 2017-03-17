@@ -66,6 +66,9 @@ pub struct Target {
     pub name: String,
     /// Kind of target ("bin", "example", "test", "bench", "lib")
     pub kind: Vec<String>,
+    /// Almost the same as `kind`, except when an example is a library instad of an executable.
+    /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
+    pub crate_types: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: String,
 }
