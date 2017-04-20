@@ -13,6 +13,7 @@ extern crate serde_json;
 #[macro_use] extern crate serde_derive;
 
 use std::collections::HashMap;
+use std::env;
 use std::process::Command;
 use std::str::{from_utf8, Utf8Error};
 use std::io;
@@ -102,7 +103,8 @@ impl From<serde_json::Error> for Error {
 
 /// The main entry point to obtaining metadata
 pub fn metadata(manifest_path_arg: Option<&str>) -> Result<Metadata, Error> {
-    let mut cmd = Command::new("cargo");
+    let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
+    let mut cmd = Command::new(cargo);
     cmd.arg("metadata").arg("--no-deps");
     cmd.arg("--format-version").arg("1");
     if let Some(mani) = manifest_path_arg {
