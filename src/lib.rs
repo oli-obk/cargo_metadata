@@ -110,6 +110,6 @@ pub fn metadata(manifest_path_arg: Option<&str>) -> Result<Metadata, Error> {
     }
     let output = cmd.output()?;
     let stdout = from_utf8(&output.stdout)?;
-    let meta: Metadata = serde_json::from_str(&stdout)?;
+    let meta: Metadata = serde_json::from_str(stdout)?;
     Ok(meta)
 }
