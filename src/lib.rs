@@ -23,8 +23,25 @@ use std::io;
 pub struct Metadata {
     /// A list of all crates referenced by this crate (and the crate itself)
     pub packages: Vec<Package>,
-    resolve: Option<()>,
+    /// Dependencies graph
+    pub resolve: Option<Resolve>,
     version: usize,
+}
+
+#[derive(Clone, Deserialize, Debug)]
+/// A dependency graph
+pub struct Resolve {
+    /// Nodes in a dependencies graph
+    pub nodes: Vec<Node>,
+}
+
+#[derive(Clone, Deserialize, Debug)]
+/// A node in a dependencies graph
+pub struct Node {
+    /// An opaque identifier for a package
+    pub id: String,
+    /// List of opaque identifiers for this node's dependencies
+    pub dependencies: Vec<String>,
 }
 
 #[derive(Clone, Deserialize, Debug)]
@@ -34,14 +51,15 @@ pub struct Package {
     pub name: String,
     /// Version given in the `Cargo.toml`
     pub version: String,
-    id: String,
+    /// An opaque identifier for a package
+    pub id: String,
     source: Option<String>,
     /// List of dependencies of this particular package
     pub dependencies: Vec<Dependency>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     features: HashMap<String, Vec<String>>,
-    /// path containing the `Cargo.toml`
+    /// Path containing the `Cargo.toml`
     pub manifest_path: String,
 }
 
@@ -102,11 +120,30 @@ impl From<serde_json::Error> for Error {
     }
 }
 
-/// The main entry point to obtaining metadata
+/// Obtain metadata only about the root package and don't fetch dependencies
+///
+/// # Parameters
+///
+/// - `manifest_path_arg`: Path to the manifest.
 pub fn metadata(manifest_path_arg: Option<&str>) -> Result<Metadata, Error> {
+    metadata_deps(manifest_path_arg, false)
+}
+
+/// The main entry point to obtaining metadata
+///
+/// # Parameters
+///
+/// - `manifest_path_arg`: Path to the manifest.
+/// - `deps`: Whether to include dependencies.
+pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Metadata, Error> {
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
-    cmd.arg("metadata").arg("--no-deps");
+    cmd.arg("metadata");
+
+    if !deps {
+        cmd.arg("--no-deps");
+    }
+
     cmd.arg("--format-version").arg("1");
     if let Some(mani) = manifest_path_arg {
         cmd.arg(mani);
