@@ -23,6 +23,8 @@ use std::io;
 pub struct Metadata {
     /// A list of all crates referenced by this crate (and the crate itself)
     pub packages: Vec<Package>,
+    /// A list of all workspace members
+    pub workspace_members: Vec<String>,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     version: usize,
