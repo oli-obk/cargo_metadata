@@ -128,9 +128,9 @@ pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Meta
         cmd.arg("--no-deps");
     }
 
-    cmd.arg("--format-version").arg("1");
-    if let Some(mani) = manifest_path_arg {
-        cmd.arg(mani);
+    cmd.args(&["--format-version", "1"]);
+    if let Some(manifest_path) = manifest_path_arg {
+        cmd.args(&["--manifest-path", manifest_path]);
     }
     let output = cmd.output().chain_err(|| "Failed to execute `cargo metadata`")?;
     let stdout = from_utf8(&output.stdout).chain_err(|| "`cargo metadata` output not valid UTF8")?;
