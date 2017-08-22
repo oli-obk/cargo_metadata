@@ -4,19 +4,31 @@
 //!
 //! ```rust
 //! # extern crate cargo_metadata;
-//! let manifest_path_arg = std::env::args().skip(2).find(|val| val.starts_with("--manifest-path="));
+//! let manifest_path_arg = std::env::args()
+//!     .skip(2)
+//!     .find(|val| val.starts_with("--manifest-path="));
 //! let metadata = cargo_metadata::metadata(manifest_path_arg.as_ref().map(AsRef::as_ref)).unwrap();
 //! ```
 
+#[macro_use]
+extern crate error_chain;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
-#[macro_use] extern crate serde_derive;
 
 use std::collections::HashMap;
 use std::env;
 use std::process::Command;
-use std::str::{from_utf8, Utf8Error};
-use std::io;
+use std::str::from_utf8;
+
+use errors::*;
+pub use errors::{Error, Result};
+
+mod errors {
+    // Create the Error, ErrorKind, ResultExt, and Result types
+    error_chain!{}
+}
 
 #[derive(Clone, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
@@ -66,15 +78,37 @@ pub struct Package {
     pub manifest_path: String,
 }
 
+#[derive(PartialEq, Clone, Debug, Copy, Deserialize)]
+/// Dependencies can come in three kinds
+pub enum DependencyKind {
+    #[serde(rename = "normal")]
+    /// The 'normal' kind
+    Normal,
+    #[serde(rename = "dev")]
+    /// Those used in tests only
+    Development,
+    #[serde(rename = "build")]
+    /// Those used in build scripts only
+    Build,
+}
+
+impl Default for DependencyKind {
+    fn default() -> DependencyKind {
+        DependencyKind::Normal
+    }
+}
+
 #[derive(Clone, Deserialize, Debug)]
 /// A dependency of the main crate
 pub struct Dependency {
     /// Name as given in the `Cargo.toml`
     pub name: String,
     source: Option<String>,
-    /// Whether this is required or optional
+    /// The required version
     pub req: String,
-    kind: Option<String>,
+    #[serde(default)]
+    pub kind: Option<DependencyKind>,
+    /// Whether this is required or optional
     optional: bool,
     uses_default_features: bool,
     features: Vec<String>,
@@ -88,7 +122,7 @@ pub struct Target {
     pub name: String,
     /// Kind of target ("bin", "example", "test", "bench", "lib")
     pub kind: Vec<String>,
-    /// Almost the same as `kind`, except when an example is a library instad of an executable.
+    /// Almost the same as `kind`, except when an example is a library instead of an executable.
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
     #[serde(default)]
     pub crate_types: Vec<String>,
@@ -96,39 +130,12 @@ pub struct Target {
     pub src_path: String,
 }
 
-#[derive(Debug)]
-/// Possible errors that can occur during metadata parsing.
-pub enum Error {
-    /// Error during execution of `cargo metadata`
-    Io(io::Error),
-    /// Output of `cargo metadata` was not valid utf8
-    Utf8(Utf8Error),
-    /// Deserialization error (structure of json did not match expected structure)
-    Json(serde_json::Error),
-}
-
-impl From<io::Error> for Error {
-    fn from(err: io::Error) -> Self {
-        Error::Io(err)
-    }
-}
-impl From<Utf8Error> for Error {
-    fn from(err: Utf8Error) -> Self {
-        Error::Utf8(err)
-    }
-}
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Self {
-        Error::Json(err)
-    }
-}
-
 /// Obtain metadata only about the root package and don't fetch dependencies
 ///
 /// # Parameters
 ///
 /// - `manifest_path_arg`: Path to the manifest.
-pub fn metadata(manifest_path_arg: Option<&str>) -> Result<Metadata, Error> {
+pub fn metadata(manifest_path_arg: Option<&str>) -> Result<Metadata> {
     metadata_deps(manifest_path_arg, false)
 }
 
@@ -138,7 +145,7 @@ pub fn metadata(manifest_path_arg: Option<&str>) -> Result<Metadata, Error> {
 ///
 /// - `manifest_path_arg`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
-pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Metadata, Error> {
+pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Metadata> {
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
     cmd.arg("metadata");
@@ -147,12 +154,13 @@ pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Meta
         cmd.arg("--no-deps");
     }
 
-    cmd.arg("--format-version").arg("1");
-    if let Some(mani) = manifest_path_arg {
-        cmd.arg(mani);
+    cmd.args(&["--format-version", "1"]);
+    if let Some(manifest_path) = manifest_path_arg {
+        cmd.args(&["--manifest-path", manifest_path]);
     }
-    let output = cmd.output()?;
-    let stdout = from_utf8(&output.stdout)?;
-    let meta: Metadata = serde_json::from_str(stdout)?;
+    let output = cmd.output()
+        .chain_err(|| "Failed to execute `cargo metadata`")?;
+    let stdout = from_utf8(&output.stdout).chain_err(|| "`cargo metadata` output not valid UTF8")?;
+    let meta = serde_json::from_str(stdout).chain_err(|| "`cargo metadata` output not valid JSON")?;
     Ok(meta)
 }
