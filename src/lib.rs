@@ -78,15 +78,37 @@ pub struct Package {
     pub manifest_path: String,
 }
 
+#[derive(PartialEq, Clone, Debug, Copy, Deserialize)]
+/// Dependencies can come in three kinds
+pub enum DependencyKind {
+    #[serde(rename = "normal")]
+    /// The 'normal' kind
+    Normal,
+    #[serde(rename = "dev")]
+    /// Those used in tests only
+    Development,
+    #[serde(rename = "build")]
+    /// Those used in build scripts only
+    Build,
+}
+
+impl Default for DependencyKind {
+    fn default() -> DependencyKind {
+        DependencyKind::Normal
+    }
+}
+
 #[derive(Clone, Deserialize, Debug)]
 /// A dependency of the main crate
 pub struct Dependency {
     /// Name as given in the `Cargo.toml`
     pub name: String,
     source: Option<String>,
-    /// Whether this is required or optional
+    /// The required version
     pub req: String,
-    kind: Option<String>,
+    #[serde(default)]
+    pub kind: Option<DependencyKind>,
+    /// Whether this is required or optional
     optional: bool,
     uses_default_features: bool,
     features: Vec<String>,
@@ -100,7 +122,7 @@ pub struct Target {
     pub name: String,
     /// Kind of target ("bin", "example", "test", "bench", "lib")
     pub kind: Vec<String>,
-    /// Almost the same as `kind`, except when an example is a library instad of an executable.
+    /// Almost the same as `kind`, except when an example is a library instead of an executable.
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
     #[serde(default)]
     pub crate_types: Vec<String>,
