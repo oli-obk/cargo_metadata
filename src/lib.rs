@@ -4,14 +4,18 @@
 //!
 //! ```rust
 //! # extern crate cargo_metadata;
-//! let manifest_path_arg = std::env::args().skip(2).find(|val| val.starts_with("--manifest-path="));
+//! let manifest_path_arg = std::env::args()
+//!     .skip(2)
+//!     .find(|val| val.starts_with("--manifest-path="));
 //! let metadata = cargo_metadata::metadata(manifest_path_arg.as_ref().map(AsRef::as_ref)).unwrap();
 //! ```
 
-#[macro_use] extern crate error_chain;
+#[macro_use]
+extern crate error_chain;
 extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde_json;
-#[macro_use] extern crate serde_derive;
 
 use std::collections::HashMap;
 use std::env;
@@ -19,7 +23,7 @@ use std::process::Command;
 use std::str::from_utf8;
 
 use errors::*;
-pub use errors::{Result, Error};
+pub use errors::{Error, Result};
 
 mod errors {
     // Create the Error, ErrorKind, ResultExt, and Result types
@@ -132,7 +136,8 @@ pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Meta
     if let Some(manifest_path) = manifest_path_arg {
         cmd.args(&["--manifest-path", manifest_path]);
     }
-    let output = cmd.output().chain_err(|| "Failed to execute `cargo metadata`")?;
+    let output = cmd.output()
+        .chain_err(|| "Failed to execute `cargo metadata`")?;
     let stdout = from_utf8(&output.stdout).chain_err(|| "`cargo metadata` output not valid UTF8")?;
     let meta = serde_json::from_str(stdout).chain_err(|| "`cargo metadata` output not valid JSON")?;
     Ok(meta)
