@@ -22,13 +22,7 @@ use std::env;
 use std::process::Command;
 use std::str::from_utf8;
 
-use errors::*;
 pub use errors::{Error, Result};
-
-mod errors {
-    // Create the Error, ErrorKind, ResultExt, and Result types
-    error_chain!{}
-}
 
 #[derive(Clone, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
@@ -108,6 +102,20 @@ pub struct Target {
     pub src_path: String,
 }
 
+mod errors {
+    //! Create the `Error`, `ErrorKind`, `ResultExt`, and `Result` types
+    error_chain!{
+        foreign_links {
+            // Error during execution of `cargo metadata`
+            Io(::std::io::Error);
+            // Output of `cargo metadata` was not valid utf8
+            Utf8(::std::str::Utf8Error);
+            // Deserialization error (structure of json did not match expected structure)
+            Json(::serde_json::Error);
+        }
+    }
+}
+
 /// Obtain metadata only about the root package and don't fetch dependencies
 ///
 /// # Parameters
@@ -136,9 +144,8 @@ pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Meta
     if let Some(manifest_path) = manifest_path_arg {
         cmd.args(&["--manifest-path", manifest_path]);
     }
-    let output = cmd.output()
-        .chain_err(|| "Failed to execute `cargo metadata`")?;
-    let stdout = from_utf8(&output.stdout).chain_err(|| "`cargo metadata` output not valid UTF8")?;
-    let meta = serde_json::from_str(stdout).chain_err(|| "`cargo metadata` output not valid JSON")?;
+    let output = cmd.output()?;
+    let stdout = from_utf8(&output.stdout)?;
+    let meta = serde_json::from_str(stdout)?;
     Ok(meta)
 }
