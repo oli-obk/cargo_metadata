@@ -23,6 +23,9 @@ use std::process::Command;
 use std::str::from_utf8;
 
 pub use errors::{Error, Result};
+pub use dependency::{Dependency, DependencyKind};
+
+mod dependency;
 
 #[derive(Clone, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
@@ -70,21 +73,6 @@ pub struct Package {
     features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
-}
-
-#[derive(Clone, Deserialize, Debug)]
-/// A dependency of the main crate
-pub struct Dependency {
-    /// Name as given in the `Cargo.toml`
-    pub name: String,
-    source: Option<String>,
-    /// Whether this is required or optional
-    pub req: String,
-    kind: Option<String>,
-    optional: bool,
-    uses_default_features: bool,
-    features: Vec<String>,
-    target: Option<String>,
 }
 
 #[derive(Clone, Deserialize, Debug)]
