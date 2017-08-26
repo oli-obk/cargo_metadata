@@ -1,5 +1,7 @@
 extern crate cargo_metadata;
 
+use std::path::Path;
+
 #[test]
 fn metadata() {
     let metadata = cargo_metadata::metadata(None).unwrap();
@@ -18,7 +20,7 @@ fn metadata() {
 
 #[test]
 fn metadata_deps() {
-    let metadata = cargo_metadata::metadata_deps(Some("Cargo.toml"), true).unwrap();
+    let metadata = cargo_metadata::metadata_deps(Some(Path::new("Cargo.toml")), true).unwrap();
     let this = metadata
         .packages
         .iter()
