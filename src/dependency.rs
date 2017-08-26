@@ -39,7 +39,8 @@ pub struct Dependency {
     /// The required version
     pub req: String,
     /// The kind of dependency this is
-    #[serde(deserialize_with = "parse_dependency_kind")] pub kind: DependencyKind,
+    #[serde(deserialize_with = "parse_dependency_kind")]
+    pub kind: DependencyKind,
     /// Whether this is required or optional
     optional: bool,
     uses_default_features: bool,

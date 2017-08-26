@@ -19,6 +19,7 @@ extern crate serde_json;
 
 use std::collections::HashMap;
 use std::env;
+use std::path::Path;
 use std::process::Command;
 use std::str::from_utf8;
 
@@ -108,18 +109,18 @@ mod errors {
 ///
 /// # Parameters
 ///
-/// - `manifest_path_arg`: Path to the manifest.
-pub fn metadata(manifest_path_arg: Option<&str>) -> Result<Metadata> {
-    metadata_deps(manifest_path_arg, false)
+/// - `manifest_path`: Path to the manifest.
+pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
+    metadata_deps(manifest_path, false)
 }
 
 /// The main entry point to obtaining metadata
 ///
 /// # Parameters
 ///
-/// - `manifest_path_arg`: Path to the manifest.
+/// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
-pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Metadata> {
+pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadata> {
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
     cmd.arg("metadata");
@@ -129,8 +130,8 @@ pub fn metadata_deps(manifest_path_arg: Option<&str>, deps: bool) -> Result<Meta
     }
 
     cmd.args(&["--format-version", "1"]);
-    if let Some(manifest_path) = manifest_path_arg {
-        cmd.args(&["--manifest-path", manifest_path]);
+    if let Some(manifest_path) = manifest_path {
+        cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
     }
     let output = cmd.output()?;
     let stdout = from_utf8(&output.stdout)?;
