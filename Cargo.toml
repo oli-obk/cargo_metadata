@@ -5,6 +5,7 @@ authors = ["Oliver Schneider <git-spam-no-reply9815368754983@oli-obk.de>"]
 repository = "https://github.com/oli-obk/cargo_metadata"
 description = "structured access to the output of `cargo metadata`"
 license = "MIT"
+readme = "README.md"
 
 [dependencies]
 error-chain = "0.10.0"
