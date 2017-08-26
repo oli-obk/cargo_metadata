@@ -2,12 +2,75 @@
 //! Structured access to the output of `cargo metadata`
 //! Usually used from within a `cargo-*` executable
 //!
+//! ## Examples
+//!
+//! With [`std::env::args()`](https://doc.rust-lang.org/std/env/fn.args.html):
+//!
 //! ```rust
+//! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
-//! let manifest_path_arg = std::env::args()
-//!     .skip(2)
-//!     .find(|val| val.starts_with("--manifest-path="));
-//! let metadata = cargo_metadata::metadata(manifest_path_arg.as_ref().map(AsRef::as_ref)).unwrap();
+//! # use std::path::Path;
+//! let mut args = std::env::args().skip_while(|val| !val.starts_with("--manifest-path"));
+//!
+//! let manifest_path = match args.next() {
+//!     Some(ref p) if p == "--manifest-path" => args.next(),
+//!     Some(p) => Some(p.trim_left_matches("--manifest-path=").to_string()),
+//!     None => None,
+//! };
+//!
+//! let _metadata = cargo_metadata::metadata(manifest_path.as_ref().map(Path::new)).unwrap();
+//! ```
+//!
+//! With [`docopt`](https://docs.rs/docopt):
+//!
+//! ```rust
+//! # // This should be kept in sync with the equivalent example in the readme.
+//! # extern crate cargo_metadata;
+//! # extern crate docopt;
+//! # #[macro_use] extern crate serde_derive;
+//! # use std::path::Path;
+//! # use docopt::Docopt;
+//! # fn main() {
+//! const USAGE: &str = "
+//!     Cargo metadata test function
+//!
+//!     Usage:
+//!       cargo_metadata [--manifest-path PATH]
+//! ";
+//!
+//! #[derive(Debug, Deserialize)]
+//! struct Args {
+//!     arg_manifest_path: Option<String>,
+//! }
+//!
+//! let args: Args = Docopt::new(USAGE)
+//!     .and_then(|d| d.deserialize())
+//!     .unwrap_or_else(|e| e.exit());
+//!
+//! let _metadata =
+//!     cargo_metadata::metadata(args.arg_manifest_path.as_ref().map(Path::new)).unwrap();
+//! # }
+//! ```
+//!
+//! With [`clap`](https://docs.rs/clap):
+//!
+//! ```rust
+//! # // This should be kept in sync with the equivalent example in the readme.
+//! # extern crate cargo_metadata;
+//! # extern crate clap;
+//! # use std::path::Path;
+//!
+//! let matches = clap::App::new("myapp")
+//!     .arg(
+//!         clap::Arg::with_name("manifest-path")
+//!             .long("manifest-path")
+//!             .value_name("PATH")
+//!             .takes_value(true),
+//!     )
+//!     .get_matches();
+//!
+//! let _metadata =
+//!     cargo_metadata::metadata(matches.value_of("manifest-path").map(Path::new)).unwrap();
 //! ```
 
 #[macro_use]
