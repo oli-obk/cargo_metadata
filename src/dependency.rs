@@ -1,6 +1,7 @@
 //! This module contains `Dependency` and the types/functions it uses for deserialization.
 
 use serde::{Deserialize, Deserializer};
+use semver::VersionReq;
 
 #[derive(PartialEq, Clone, Debug, Copy, Deserialize)]
 /// Dependencies can come in three kinds
@@ -37,7 +38,7 @@ pub struct Dependency {
     pub name: String,
     source: Option<String>,
     /// The required version
-    pub req: String,
+    pub req: VersionReq,
     /// The kind of dependency this is
     #[serde(deserialize_with = "parse_dependency_kind")]
     pub kind: DependencyKind,

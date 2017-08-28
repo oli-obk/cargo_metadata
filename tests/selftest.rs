@@ -37,4 +37,13 @@ fn metadata_deps() {
     assert_eq!(this.targets[1].name, "selftest");
     assert_eq!(this.targets[1].kind[0], "test");
     assert_eq!(this.targets[1].crate_types[0], "bin");
+
+    let dependencies = &this.dependencies;
+
+    let serde = dependencies
+        .iter()
+        .find(|dep| dep.name == "serde")
+        .expect("Did not find serde dependency");
+
+    assert_eq!(serde.kind, cargo_metadata::DependencyKind::Normal);
 }
