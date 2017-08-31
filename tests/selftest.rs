@@ -1,6 +1,9 @@
 extern crate cargo_metadata;
+extern crate semver;
 
 use std::path::Path;
+
+use semver::Version;
 
 #[test]
 fn metadata() {
@@ -46,4 +49,7 @@ fn metadata_deps() {
         .expect("Did not find serde dependency");
 
     assert_eq!(serde.kind, cargo_metadata::DependencyKind::Normal);
+    assert!(!serde.req.matches(&Version::parse("1.0.0").unwrap()));
+    assert!(serde.req.matches(&Version::parse("1.99.99").unwrap()));
+    assert!(!serde.req.matches(&Version::parse("2.0.0").unwrap()));
 }
