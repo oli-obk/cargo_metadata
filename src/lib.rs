@@ -87,7 +87,7 @@ use std::path::Path;
 use std::process::Command;
 use std::str::from_utf8;
 
-pub use errors::{Error, Result};
+pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
 
 mod dependency;
