@@ -136,9 +136,12 @@ pub struct Package {
     pub dependencies: Vec<Dependency>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
-    features: HashMap<String, Vec<String>>,
+    /// Features provided by the crate, mapped to the features required by that feature.
+    pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
+    #[serde(skip)]
+    _non_exhaustive: (),
 }
 
 #[derive(Clone, Deserialize, Debug)]
