@@ -36,7 +36,8 @@ where
 pub struct Dependency {
     /// Name as given in the `Cargo.toml`
     pub name: String,
-    source: Option<String>,
+    /// The source of dependency
+    pub source: Option<String>,
     /// The required version
     pub req: VersionReq,
     /// The kind of dependency this is
