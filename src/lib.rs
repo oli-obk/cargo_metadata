@@ -89,6 +89,7 @@ use std::str::from_utf8;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
+use serde::de;
 
 mod errors;
 mod dependency;
@@ -99,8 +100,7 @@ pub struct Metadata {
     /// A list of all crates referenced by this crate (and the crate itself)
     pub packages: Vec<Package>,
     /// A list of all workspace members
-    #[serde(default)]
-    pub workspace_members: Vec<String>,
+    pub workspace_members: Vec<WorkspaceMember>,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     version: usize,
@@ -157,6 +157,38 @@ pub struct Target {
     pub crate_types: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: String,
+}
+
+#[derive(Clone, Debug)]
+/// A workspace member. This is basically identical to `cargo::core::package_id::PackageId`, expect
+/// that this does not use `Arc` internally.
+pub struct WorkspaceMember {
+    /// A name of workspace member.
+    pub name: String,
+    /// A version of workspace member.
+    pub version: semver::Version,
+    /// A source id of workspace member.
+    pub url: String,
+}
+
+impl<'de> de::Deserialize<'de> for WorkspaceMember {
+    fn deserialize<D>(d: D) -> std::result::Result<WorkspaceMember, D::Error>
+    where
+        D: de::Deserializer<'de>,
+    {
+        let string = String::deserialize(d)?;
+        let mut s = string.splitn(3, ' ');
+        let name = s.next().unwrap();
+        let version = s.next().unwrap();
+        let version = semver::Version::parse(&version).map_err(de::Error::custom)?;
+        let url = &s.next().unwrap();
+        let url = &url[1..url.len() - 1];
+        Ok(WorkspaceMember {
+            name: name.to_owned(),
+            version: version,
+            url: url.to_owned(),
+        })
+    }
 }
 
 /// Obtain metadata only about the root package and don't fetch dependencies
