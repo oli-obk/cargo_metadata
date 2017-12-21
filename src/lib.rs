@@ -104,6 +104,9 @@ pub struct Metadata {
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     version: usize,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 #[derive(Clone, Deserialize, Debug)]
@@ -111,6 +114,9 @@ pub struct Metadata {
 pub struct Resolve {
     /// Nodes in a dependencies graph
     pub nodes: Vec<Node>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 #[derive(Clone, Deserialize, Debug)]
@@ -120,6 +126,9 @@ pub struct Node {
     pub id: String,
     /// List of opaque identifiers for this node's dependencies
     pub dependencies: Vec<String>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 #[derive(Clone, Deserialize, Debug)]
@@ -140,8 +149,9 @@ pub struct Package {
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
+    #[doc(hidden)]
     #[serde(skip)]
-    _non_exhaustive: (),
+    __do_not_match_exhaustively: (),
 }
 
 #[derive(Clone, Deserialize, Debug)]
@@ -157,6 +167,9 @@ pub struct Target {
     pub crate_types: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: String,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 #[derive(Clone, Debug)]
@@ -169,6 +182,8 @@ pub struct WorkspaceMember {
     pub version: semver::Version,
     /// A source id of workspace member.
     pub url: String,
+    #[doc(hidden)]
+    __do_not_match_exhaustively: (),
 }
 
 impl<'de> de::Deserialize<'de> for WorkspaceMember {
@@ -187,6 +202,7 @@ impl<'de> de::Deserialize<'de> for WorkspaceMember {
             name: name.to_owned(),
             version: version,
             url: url.to_owned(),
+            __do_not_match_exhaustively: (),
         })
     }
 }

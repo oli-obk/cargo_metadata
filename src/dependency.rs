@@ -15,6 +15,8 @@ pub enum DependencyKind {
     #[serde(rename = "build")]
     /// Those used in build scripts only
     Build,
+    #[doc(hidden)]
+    DoNotMatchExhaustively,
 }
 
 impl Default for DependencyKind {
@@ -43,9 +45,12 @@ pub struct Dependency {
     /// The kind of dependency this is
     #[serde(deserialize_with = "parse_dependency_kind")]
     pub kind: DependencyKind,
-    /// Whether this is required or optional
-    optional: bool,
+    /// Whether this dependency is required or optional
+    pub optional: bool,
     uses_default_features: bool,
     features: Vec<String>,
     target: Option<String>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
