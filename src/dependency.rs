@@ -3,7 +3,7 @@
 use serde::{Deserialize, Deserializer};
 use semver::VersionReq;
 
-#[derive(PartialEq, Clone, Debug, Copy, Deserialize)]
+#[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
 /// Dependencies can come in three kinds
 pub enum DependencyKind {
     #[serde(rename = "normal")]
@@ -33,7 +33,7 @@ where
     Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 /// A dependency of the main crate
 pub struct Dependency {
     /// Name as given in the `Cargo.toml`

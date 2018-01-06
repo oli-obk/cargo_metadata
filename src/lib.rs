@@ -86,15 +86,16 @@ use std::env;
 use std::path::Path;
 use std::process::Command;
 use std::str::from_utf8;
+use std::fmt::Write;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
-use serde::de;
+use serde::{ser, de, Serializer};
 
 mod errors;
 mod dependency;
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
 pub struct Metadata {
     /// A list of all crates referenced by this crate (and the crate itself)
@@ -109,7 +110,7 @@ pub struct Metadata {
     __do_not_match_exhaustively: (),
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 /// A dependency graph
 pub struct Resolve {
     /// Nodes in a dependencies graph
@@ -119,7 +120,7 @@ pub struct Resolve {
     __do_not_match_exhaustively: (),
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 /// A node in a dependencies graph
 pub struct Node {
     /// An opaque identifier for a package
@@ -131,7 +132,7 @@ pub struct Node {
     __do_not_match_exhaustively: (),
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 /// A crate
 pub struct Package {
     /// Name as given in the `Cargo.toml`
@@ -154,7 +155,7 @@ pub struct Package {
     __do_not_match_exhaustively: (),
 }
 
-#[derive(Clone, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 /// A single target (lib, bin, example, ...) provided by a crate
 pub struct Target {
     /// Name as given in the `Cargo.toml` or generated from the file name
@@ -204,6 +205,17 @@ impl<'de> de::Deserialize<'de> for WorkspaceMember {
             url: url.to_owned(),
             __do_not_match_exhaustively: (),
         })
+    }
+}
+
+impl ser::Serialize for WorkspaceMember {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer
+    {
+        let mut output = String::new();
+        write!(output, "{} {} ({})", self.name, self.version, self.url).unwrap();
+        serializer.serialize_str(&output)
     }
 }
 
