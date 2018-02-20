@@ -6,6 +6,8 @@ use std::path::Path;
 
 use semver::Version;
 
+use cargo_metadata::{Error, ErrorKind};
+
 #[test]
 fn metadata() {
     let metadata = cargo_metadata::metadata(None).unwrap();
@@ -20,6 +22,22 @@ fn metadata() {
     assert_eq!(metadata.packages[0].targets[1].name, "selftest");
     assert_eq!(metadata.packages[0].targets[1].kind[0], "test");
     assert_eq!(metadata.packages[0].targets[1].crate_types[0], "bin");
+}
+
+#[test]
+fn error1() {
+    match cargo_metadata::metadata_deps(Some(Path::new("foo")), true) {
+        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(s.trim(), "error: the manifest-path must be a path to a Cargo.toml file"),
+        _ => unreachable!(),
+    }
+}
+
+#[test]
+fn error2() {
+    match cargo_metadata::metadata_deps(Some(Path::new("foo/Cargo.toml")), true) {
+        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(s.trim(), "error: manifest path `foo/Cargo.toml` does not exist"),
+        _ => unreachable!(),
+    }
 }
 
 #[test]

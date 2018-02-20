@@ -248,6 +248,9 @@ pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadat
         cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
     }
     let output = cmd.output()?;
+    if !output.status.success() {
+        return Err(ErrorKind::CargoMetadata(String::from_utf8(output.stderr)?).into());
+    }
     let stdout = from_utf8(&output.stdout)?;
     let meta = serde_json::from_str(stdout)?;
     Ok(meta)
