@@ -196,12 +196,12 @@ impl<'de> de::Deserialize<'de> for WorkspaceMember {
         let mut s = string.splitn(3, ' ');
         let name = s.next().unwrap();
         let version = s.next().unwrap();
-        let version = semver::Version::parse(&version).map_err(de::Error::custom)?;
+        let version = semver::Version::parse(version).map_err(de::Error::custom)?;
         let url = &s.next().unwrap();
         let url = &url[1..url.len() - 1];
         Ok(WorkspaceMember {
             name: name.to_owned(),
-            version: version,
+            version,
             url: url.to_owned(),
             __do_not_match_exhaustively: (),
         })
