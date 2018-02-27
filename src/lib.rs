@@ -104,6 +104,8 @@ pub struct Metadata {
     pub workspace_members: Vec<WorkspaceMember>,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
+    /// Workspace root
+    pub workspace_root: String,
     version: usize,
     #[doc(hidden)]
     #[serde(skip)]
