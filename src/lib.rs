@@ -106,6 +106,8 @@ pub struct Metadata {
     pub resolve: Option<Resolve>,
     /// Workspace root
     pub workspace_root: String,
+    /// Build directory
+    pub target_directory: String,
     version: usize,
     #[doc(hidden)]
     #[serde(skip)]
