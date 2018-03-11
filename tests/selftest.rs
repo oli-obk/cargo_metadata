@@ -2,6 +2,7 @@ extern crate cargo_metadata;
 extern crate semver;
 extern crate serde_json;
 
+use std::env::current_dir;
 use std::path::Path;
 
 use semver::Version;
@@ -11,6 +12,11 @@ use cargo_metadata::{Error, ErrorKind};
 #[test]
 fn metadata() {
     let metadata = cargo_metadata::metadata(None).unwrap();
+
+    assert_eq!(
+        current_dir().unwrap().join("target"),
+        Path::new(&metadata.target_directory)
+    );
 
     assert_eq!(metadata.packages[0].name, "cargo_metadata");
     assert_eq!(metadata.packages[0].targets.len(), 2);
