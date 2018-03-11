@@ -90,7 +90,7 @@ use std::fmt::Write;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
-use serde::{ser, de, Serializer};
+use serde::{de, ser, Serializer};
 
 mod errors;
 mod dependency;
@@ -187,8 +187,7 @@ pub struct WorkspaceMember {
     pub version: semver::Version,
     /// A source id of workspace member.
     pub url: String,
-    #[doc(hidden)]
-    __do_not_match_exhaustively: (),
+    #[doc(hidden)] __do_not_match_exhaustively: (),
 }
 
 impl<'de> de::Deserialize<'de> for WorkspaceMember {
@@ -215,7 +214,7 @@ impl<'de> de::Deserialize<'de> for WorkspaceMember {
 impl ser::Serialize for WorkspaceMember {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
         let mut output = String::new();
         write!(output, "{} {} ({})", self.name, self.version, self.url).unwrap();

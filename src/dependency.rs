@@ -15,8 +15,7 @@ pub enum DependencyKind {
     #[serde(rename = "build")]
     /// Those used in build scripts only
     Build,
-    #[doc(hidden)]
-    DoNotMatchExhaustively,
+    #[doc(hidden)] DoNotMatchExhaustively,
 }
 
 impl Default for DependencyKind {
