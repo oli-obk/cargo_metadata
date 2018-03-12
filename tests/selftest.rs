@@ -33,7 +33,10 @@ fn metadata() {
 #[test]
 fn error1() {
     match cargo_metadata::metadata_deps(Some(Path::new("foo")), true) {
-        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(s.trim(), "error: the manifest-path must be a path to a Cargo.toml file"),
+        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(
+            s.trim(),
+            "error: the manifest-path must be a path to a Cargo.toml file"
+        ),
         _ => unreachable!(),
     }
 }
@@ -41,7 +44,10 @@ fn error1() {
 #[test]
 fn error2() {
     match cargo_metadata::metadata_deps(Some(Path::new("foo/Cargo.toml")), true) {
-        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(s.trim(), "error: manifest path `foo/Cargo.toml` does not exist"),
+        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(
+            s.trim(),
+            "error: manifest path `foo/Cargo.toml` does not exist"
+        ),
         _ => unreachable!(),
     }
 }
@@ -81,11 +87,15 @@ fn metadata_deps() {
 
 #[test]
 fn workspace_member_serialization_deserialization() {
-    let original = "\"security-framework 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)\"";
+    let original =
+        "\"security-framework 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)\"";
     let member: cargo_metadata::WorkspaceMember = serde_json::from_str(original).unwrap();
     assert_eq!(member.name, "security-framework");
     assert_eq!(member.version, Version::new(0, 1, 16));
-    assert_eq!(member.url, "registry+https://github.com/rust-lang/crates.io-index");
+    assert_eq!(
+        member.url,
+        "registry+https://github.com/rust-lang/crates.io-index"
+    );
 
     let serialized = serde_json::to_string(&member).unwrap();
     assert_eq!(serialized, original);
