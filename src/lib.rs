@@ -105,6 +105,7 @@ pub struct Metadata {
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     /// Workspace root
+    #[serde(default)]
     pub workspace_root: String,
     /// Build directory
     pub target_directory: String,
