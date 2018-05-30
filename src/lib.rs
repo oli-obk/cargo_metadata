@@ -72,6 +72,21 @@
 //! let _metadata =
 //!     cargo_metadata::metadata(matches.value_of("manifest-path").map(Path::new)).unwrap();
 //! ```
+//!
+//! Pass features flags
+//!
+//! ```rust
+//! # // This should be kept in sync with the equivalent example in the readme.
+//! # extern crate cargo_metadata;
+//! # use std::path::Path;
+//!
+//! let manifest_path = Path::new("./Cargo.toml");
+//! let features = cargo_metadata::CargoOpt::AllFeatures;
+
+//! let _metadata =
+//! cargo_metadata::metadata_run(Some(manifest_path), false, Some(features)).unwrap();
+//!
+//! ```
 
 #[macro_use]
 extern crate error_chain;
@@ -223,13 +238,33 @@ impl ser::Serialize for WorkspaceMember {
     }
 }
 
+/// Cargo features flags
+pub enum CargoOpt {
+    /// Run cargo with `--features-all`
+    AllFeatures,
+    /// Run cargo with `--no-default-features`
+    NoDefaultFeatures,
+    /// Run cargo with `--features <FEATURES>`
+    SomeFeatures(Vec<String>),
+}
+
 /// Obtain metadata only about the root package and don't fetch dependencies
 ///
 /// # Parameters
 ///
 /// - `manifest_path`: Path to the manifest.
 pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
-    metadata_deps(manifest_path, false)
+    metadata_run(manifest_path, false, None)
+}
+
+/// Obtain metadata only about the root package and dependencies
+///
+/// # Parameters
+///
+/// - `manifest_path`: Path to the manifest.
+/// - `deps`: Whether to include dependencies.
+pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadata> {
+    metadata_run(manifest_path, deps, None)
 }
 
 /// The main entry point to obtaining metadata
@@ -238,13 +273,22 @@ pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
 ///
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
-pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadata> {
+/// - `feat`: Witch features to include, `None` for defaults
+pub fn metadata_run(manifest_path: Option<&Path>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
     cmd.arg("metadata");
 
     if !deps {
         cmd.arg("--no-deps");
+    }
+
+    if let Some(features) = features {
+        match features {
+            CargoOpt::AllFeatures => cmd.arg("--all-features"),
+            CargoOpt::NoDefaultFeatures => cmd.arg("--no-default-features"),
+            CargoOpt::SomeFeatures(ftrs) => cmd.arg(format!("--fatures {:?}", ftrs)),
+        };
     }
 
     cmd.args(&["--format-version", "1"]);
