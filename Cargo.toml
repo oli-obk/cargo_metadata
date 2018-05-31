@@ -20,3 +20,7 @@ version = "0.9"
 [dev-dependencies]
 clap = "2.26.0"
 docopt = "0.8.1"
+
+[package.metadata.cargo_metadata_test]
+some_field = true
+other_field = "foo"
