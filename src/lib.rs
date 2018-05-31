@@ -155,6 +155,33 @@ pub struct Package {
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
+    /// Contents of the free form package.metadata section
+    ///
+    /// This contents can be serialized to a struct using serde:
+    ///
+    /// ```rust
+    /// #[macro_use]
+    /// extern crate serde_json;
+    /// #[macro_use]
+    /// extern crate serde_derive;
+    ///
+    /// #[derive(Debug, Deserialize)]
+    /// struct SomePackageMetadata {
+    ///     some_value: i32,
+    /// }
+    ///
+    /// fn main() {
+    ///     let value = json!({
+    ///         "some_value": 42,
+    ///     });
+    ///
+    ///     let package_metadata: SomePackageMetadata = serde_json::from_value(value).unwrap();
+    ///     assert_eq!(package_metadata.some_value, 42);
+    /// }
+    ///
+    /// ```
+    #[serde(default)]
+    pub metadata: serde_json::Value,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
