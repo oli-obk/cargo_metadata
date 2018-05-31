@@ -156,6 +156,7 @@ pub struct Package {
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
     /// Contents of the free form package.metadata section
+    #[serde(default)]
     pub metadata: serde_json::Value,
     #[doc(hidden)]
     #[serde(skip)]
