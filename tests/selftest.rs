@@ -2,6 +2,9 @@ extern crate cargo_metadata;
 extern crate semver;
 extern crate serde_json;
 
+#[macro_use]
+extern crate serde_derive;
+
 use std::env::current_dir;
 use std::path::Path;
 use std::env;
@@ -9,6 +12,12 @@ use std::env;
 use semver::Version;
 
 use cargo_metadata::{Error, ErrorKind};
+
+#[derive(Debug, PartialEq, Eq, Deserialize)]
+struct TestPackageMetadata {
+    some_field: bool,
+    other_field: String,
+}
 
 #[test]
 fn metadata() {
@@ -33,15 +42,17 @@ fn metadata() {
     // Hack until the package metadata field reaches the stable channel (in version 1.27).
     if env::var("TRAVIS_RUST_VERSION") != Ok("stable".into()) {
         let package_metadata = &metadata.packages[0].metadata.as_object()
-            .expect("package.metadata must be a table");
+            .expect("package.metadata must be a table. \
+            NOTE: This test currently only works on the beta and nightly channel.");
         assert_eq!(package_metadata.len(), 1);
-        let test_package_metadata = match package_metadata.get("cargo_metadata_test").unwrap() {
-            serde_json::Value::Object(metadata) => metadata,
-            _ => panic!(),
-        };
-        assert_eq!(test_package_metadata.len(), 2);
-        assert_eq!(test_package_metadata.get("some_field"), Some(&serde_json::Value::Bool(true)));
-        assert_eq!(test_package_metadata.get("other_field"), Some(&serde_json::Value::String("foo".into())));
+
+        let value = package_metadata.get("cargo_metadata_test").unwrap();
+        let test_package_metadata: TestPackageMetadata = serde_json::from_value(value.clone())
+            .unwrap();
+        assert_eq!(test_package_metadata, TestPackageMetadata {
+            some_field: true,
+            other_field: "foo".into(),
+        });
     }
 }
 
