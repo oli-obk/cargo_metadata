@@ -159,6 +159,9 @@ pub struct Package {
     pub name: String,
     /// Version given in the `Cargo.toml`
     pub version: String,
+    /// Authors given in the `Cargo.toml`
+    #[serde(default)]
+    pub authors: Vec<String>,
     /// An opaque identifier for a package
     pub id: String,
     source: Option<String>,
