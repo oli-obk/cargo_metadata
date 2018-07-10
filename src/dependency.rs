@@ -51,7 +51,7 @@ pub struct Dependency {
     /// The list of features enabled for this dependency.
     pub features: Vec<String>,
     /// The target this dependency is specific to.
-    pub target: Option<String>,
+    target: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
