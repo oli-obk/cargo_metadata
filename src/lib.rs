@@ -98,7 +98,7 @@ extern crate serde_json;
 
 use std::collections::HashMap;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::from_utf8;
 
@@ -169,6 +169,9 @@ pub struct Package {
     pub dependencies: Vec<Dependency>,
     /// License as given in the `Cargo.toml`
     pub license: Option<String>,
+    /// If the package is using a nonstandard license, this key may be specified instead of
+    /// `license`, and must point to a file relative to the manifest.
+    pub license_file: Option<PathBuf>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
