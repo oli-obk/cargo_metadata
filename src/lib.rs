@@ -303,7 +303,7 @@ pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadat
 ///
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
-/// - `feat`: Witch features to include, `None` for defaults
+/// - `feat`: Which features to include, `None` for defaults.
 pub fn metadata_run(manifest_path: Option<&Path>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
