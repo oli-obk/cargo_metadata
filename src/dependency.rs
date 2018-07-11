@@ -46,8 +46,11 @@ pub struct Dependency {
     pub kind: DependencyKind,
     /// Whether this dependency is required or optional
     pub optional: bool,
-    uses_default_features: bool,
-    features: Vec<String>,
+    /// Whether the default features in this dependency are used.
+    pub uses_default_features: bool,
+    /// The list of features enabled for this dependency.
+    pub features: Vec<String>,
+    /// The target this dependency is specific to.
     target: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
