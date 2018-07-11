@@ -101,11 +101,9 @@ use std::env;
 use std::path::Path;
 use std::process::Command;
 use std::str::from_utf8;
-use std::fmt::Write;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
-use serde::{de, ser, Serializer};
 
 mod errors;
 mod dependency;
@@ -223,48 +221,31 @@ pub struct Target {
     __do_not_match_exhaustively: (),
 }
 
-#[derive(Clone, Debug)]
-/// A workspace member. This is basically identical to `cargo::core::package_id::PackageId`, expect
+#[derive(Clone, Debug, Serialize, Deserialize)]
+/// A workspace member. This is basically identical to `cargo::core::package_id::PackageId`, except
 /// that this does not use `Arc` internally.
+#[serde(transparent)]
 pub struct WorkspaceMember {
-    /// A name of workspace member.
-    pub name: String,
-    /// A version of workspace member.
-    pub version: semver::Version,
-    /// A source id of workspace member.
-    pub url: String,
-    #[doc(hidden)] __do_not_match_exhaustively: (),
+    /// The raw package id as given by cargo
+    pub raw: String,
 }
 
-impl<'de> de::Deserialize<'de> for WorkspaceMember {
-    fn deserialize<D>(d: D) -> std::result::Result<WorkspaceMember, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        let string = String::deserialize(d)?;
-        let mut s = string.splitn(3, ' ');
-        let name = s.next().unwrap();
-        let version = s.next().unwrap();
-        let version = semver::Version::parse(version).map_err(de::Error::custom)?;
-        let url = &s.next().unwrap();
-        let url = &url[1..url.len() - 1];
-        Ok(WorkspaceMember {
-            name: name.to_owned(),
-            version,
-            url: url.to_owned(),
-            __do_not_match_exhaustively: (),
-        })
+impl WorkspaceMember {
+    fn part(&self, n: usize) -> &str {
+        self.raw.splitn(3, ' ').nth(n).unwrap()
     }
-}
-
-impl ser::Serialize for WorkspaceMember {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut output = String::new();
-        write!(output, "{} {} ({})", self.name, self.version, self.url).unwrap();
-        serializer.serialize_str(&output)
+    /// The name of the crate
+    pub fn name(&self) -> &str {
+        self.part(0)
+    }
+    /// The version of the crate
+    pub fn version(&self) -> semver::Version {
+        semver::Version::parse(self.part(1)).expect("bad version in cargo metadata")
+    }
+    /// The path to the crate in url format
+    pub fn url(&self) -> &str {
+        let url = self.part(2);
+        &url[1..url.len() - 1]
     }
 }
 

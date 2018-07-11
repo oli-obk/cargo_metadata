@@ -116,10 +116,10 @@ fn workspace_member_serialization_deserialization() {
     let original =
         "\"security-framework 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)\"";
     let member: cargo_metadata::WorkspaceMember = serde_json::from_str(original).unwrap();
-    assert_eq!(member.name, "security-framework");
-    assert_eq!(member.version, Version::new(0, 1, 16));
+    assert_eq!(member.name(), "security-framework");
+    assert_eq!(member.version(), Version::new(0, 1, 16));
     assert_eq!(
-        member.url,
+        member.url(),
         "registry+https://github.com/rust-lang/crates.io-index"
     );
 
