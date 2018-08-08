@@ -264,7 +264,7 @@ pub enum CargoOpt {
 /// # Parameters
 ///
 /// - `manifest_path`: Path to the manifest.
-pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
+pub fn metadata<P: AsRef<Path>>(manifest_path: Option<P>) -> Result<Metadata> {
     metadata_run(manifest_path, false, None)
 }
 
@@ -274,7 +274,7 @@ pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
 ///
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
-pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadata> {
+pub fn metadata_deps<P: AsRef<Path>>(manifest_path: Option<P>, deps: bool) -> Result<Metadata> {
     metadata_run(manifest_path, deps, None)
 }
 
@@ -285,7 +285,8 @@ pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadat
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
 /// - `feat`: Which features to include, `None` for defaults.
-pub fn metadata_run(manifest_path: Option<&Path>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
+pub fn metadata_run<P: AsRef<Path>>(manifest_path: Option<P>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
+    let manifest_path = manifest_path.as_ref().map(|p| p.as_ref());
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
     cmd.arg("metadata");

@@ -6,7 +6,7 @@ extern crate serde_json;
 extern crate serde_derive;
 
 use std::env::current_dir;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::env;
 
 use semver::Version;
@@ -21,7 +21,7 @@ struct TestPackageMetadata {
 
 #[test]
 fn metadata() {
-    let metadata = cargo_metadata::metadata(None).unwrap();
+    let metadata = cargo_metadata::metadata(None::<&Path>).unwrap();
 
     assert_eq!(
         current_dir().unwrap().join("target"),
@@ -54,6 +54,21 @@ fn metadata() {
             other_field: "foo".into(),
         });
     }
+}
+
+#[test]
+fn accepts_more_than_paths() {
+    let _ = cargo_metadata::metadata(Some("Cargo.toml")).unwrap();
+    let _ = cargo_metadata::metadata(Some(String::from("Cargo.toml"))).unwrap();
+    let _ = cargo_metadata::metadata(Some(PathBuf::from("Cargo.toml"))).unwrap();
+
+    let _ = cargo_metadata::metadata_deps(Some("Cargo.toml"), true).unwrap();
+    let _ = cargo_metadata::metadata_deps(Some(String::from("Cargo.toml")), true).unwrap();
+    let _ = cargo_metadata::metadata_deps(Some(PathBuf::from("Cargo.toml")), true).unwrap();
+
+    let _ = cargo_metadata::metadata_run(Some("Cargo.toml"), true, None).unwrap();
+    let _ = cargo_metadata::metadata_run(Some(String::from("Cargo.toml")), true, None).unwrap();
+    let _ = cargo_metadata::metadata_run(Some(PathBuf::from("Cargo.toml")), true, None).unwrap();
 }
 
 #[test]
