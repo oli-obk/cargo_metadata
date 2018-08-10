@@ -58,7 +58,6 @@
 //! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # extern crate clap;
-//! # use std::path::Path;
 //!
 //! let matches = clap::App::new("myapp")
 //!     .arg(
@@ -70,7 +69,28 @@
 //!     .get_matches();
 //!
 //! let _metadata =
-//!     cargo_metadata::metadata(matches.value_of("manifest-path").map(Path::new)).unwrap();
+//!     cargo_metadata::metadata(matches.value_of("manifest-path")).unwrap();
+//! ```
+//! With [`structopt`](https://docs.rs/structopt):
+//!
+//! ```rust
+//! # // This should be kept in sync with the equivalent example in the readme.
+//! # extern crate cargo_metadata;
+//! # #[macro_use] extern crate structopt;
+//! # use std::path::PathBuf;
+//! # use structopt::StructOpt;
+//! # fn main() {
+//! #[derive(Debug, StructOpt)]
+//! struct Opt {
+//!     #[structopt(name = "PATH", long="manifest-path", parse(from_os_str))]
+//!     manifest_path: Option<PathBuf>,
+//! }
+//!
+//! let opt = Opt::from_args();
+//!
+//! let _metadata =
+//!     cargo_metadata::metadata(opt.manifest_path).unwrap();
+//! # }
 //! ```
 //!
 //! Pass features flags
