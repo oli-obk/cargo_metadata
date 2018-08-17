@@ -171,6 +171,12 @@ pub struct Package {
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
+    /// Default Rust edition for the package
+    ///
+    /// Beware that individual targets may specify their own edition in
+    /// [`Target::edition`](struct.Target.html#structfield.edition).
+    #[serde(default = "edition_default")]
+    pub edition: String,
     /// Contents of the free form package.metadata section
     ///
     /// This contents can be serialized to a struct using serde:
@@ -216,6 +222,9 @@ pub struct Target {
     pub crate_types: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: String,
+    /// Rust edition for this target
+    #[serde(default = "edition_default")]
+    pub edition: String,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -247,6 +256,10 @@ impl WorkspaceMember {
         let url = self.part(2);
         &url[1..url.len() - 1]
     }
+}
+
+fn edition_default() -> String {
+    "2015".to_string()
 }
 
 /// Cargo features flags
