@@ -84,7 +84,7 @@
 //! let features = cargo_metadata::CargoOpt::AllFeatures;
 
 //! let _metadata =
-//! cargo_metadata::metadata_run(Some(manifest_path), false, Some(features)).unwrap();
+//! cargo_metadata::metadata_run(None, Some(manifest_path), false, Some(features)).unwrap();
 //!
 //! ```
 
@@ -278,7 +278,7 @@ pub enum CargoOpt {
 ///
 /// - `manifest_path`: Path to the manifest.
 pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
-    metadata_run(manifest_path, false, None)
+    metadata_run(None, manifest_path, false, None)
 }
 
 /// Obtain metadata only about the root package and dependencies
@@ -288,19 +288,28 @@ pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
 pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadata> {
-    metadata_run(manifest_path, deps, None)
+    metadata_run(None, manifest_path, deps, None)
 }
 
 /// The main entry point to obtaining metadata
 ///
 /// # Parameters
 ///
+/// - `current_dir`: Working directory to use when running Cargo.
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
 /// - `feat`: Which features to include, `None` for defaults.
-pub fn metadata_run(manifest_path: Option<&Path>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
+pub fn metadata_run(
+    current_dir: Option<&Path>,
+    manifest_path: Option<&Path>,
+    deps: bool,
+    features: Option<CargoOpt>,
+) -> Result<Metadata> {
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
+    if let Some(current_dir) = current_dir {
+        cmd.current_dir(current_dir);
+    }
     cmd.arg("metadata");
 
     if !deps {
