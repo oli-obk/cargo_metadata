@@ -1,5 +1,5 @@
 #![deny(missing_docs)]
-//! Structured access to the output of `cargo metadata`
+//! Structured access to the output of `cargo metadata` and `cargo --message-format=json`.
 //! Usually used from within a `cargo-*` executable
 //!
 //! ## Examples
@@ -87,6 +87,24 @@
 //! cargo_metadata::metadata_run(Some(manifest_path), false, Some(features)).unwrap();
 //!
 //! ```
+//!
+//! Parse message-format output:
+//!
+//! ```
+//! # extern crate cargo_metadata;
+//! let command = Command::new("cargo")
+//!     .args(&["build", "--message-format=json"])
+//!     .stdout(Stdio::Piped)
+//!     .spawn();
+//! for message in cargo_metadata:parse_message_stream(command.stdout.unwrap()) {
+//!     match message {
+//!         Message::CompilerMessage(msg) => {
+//!
+//!         },
+//!         Message::
+//!     }
+//! }
+//! ```
 
 #[macro_use]
 extern crate error_chain;
@@ -101,12 +119,14 @@ use std::env;
 use std::path::Path;
 use std::process::Command;
 use std::str::from_utf8;
+use std::io::Read;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
 
 mod errors;
 mod dependency;
+mod diagnostic;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
@@ -272,6 +292,60 @@ pub enum CargoOpt {
     SomeFeatures(Vec<String>),
 }
 
+/// Profile settings used to determine which compiler flags to use for a
+/// target.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ArtifactProfile {
+    pub opt_level: String,
+    pub debuginfo: Option<u32>,
+    pub debug_assertions: bool,
+    pub overflow_checks: bool,
+    pub test: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Artifact {
+    pub package_id: WorkspaceMember,
+    pub target: Target,
+    pub profile: ArtifactProfile,
+    pub features: Vec<String>,
+    pub filenames: Vec<String>,
+    pub fresh: bool
+}
+
+/// Message left by the compiler
+// TODO: structify message
+// TODO: Better name. This one comes from machine_message.rs
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FromCompiler {
+    pub package_id: WorkspaceMember,
+    pub target: Target,
+    pub message: diagnostic::Diagnostic,
+}
+
+/// Output of a Build Script execution.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BuildScript {
+    pub package_id: WorkspaceMember,
+    pub linked_libs: Vec<String>,
+    pub linked_paths: Vec<String>,
+    pub cfgs: Vec<String>,
+    pub env: Vec<(String, String)>
+}
+
+/// A cargo message
+// TODO: Handle unknown messages!
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "reason", rename_all = "kebab-case")]
+pub enum Message {
+    /// The compiler generated an artifact
+    CompilerArtifact(Artifact),
+    /// The compiler wants to display a message
+    CompilerMessage(FromCompiler),
+    /// A build script successfully executed.
+    BuildScriptExecuted(BuildScript),
+}
+
 /// Obtain metadata only about the root package and don't fetch dependencies
 ///
 /// # Parameters
@@ -326,4 +400,12 @@ pub fn metadata_run(manifest_path: Option<&Path>, deps: bool, features: Option<C
     let stdout = from_utf8(&output.stdout)?;
     let meta = serde_json::from_str(stdout)?;
     Ok(meta)
+}
+
+/// An iterator of Message.
+type MessageIterator<R> = serde_json::StreamDeserializer<'static, serde_json::de::IoRead<R>, Message>;
+
+// TODO: Should I use de::Read instead, to support deserializing from a slice?
+pub fn parse_message_stream<R: Read>(input: R) -> MessageIterator<R> {
+    serde_json::Deserializer::from_reader(input).into_iter::<Message>()
 }
