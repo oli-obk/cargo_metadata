@@ -308,6 +308,9 @@ pub struct ArtifactProfile {
     pub overflow_checks: bool,
     /// Whether this profile is a test
     pub test: bool,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 /// A compiler-generated file.
@@ -324,7 +327,10 @@ pub struct Artifact {
     /// The full paths to the generated artifacts
     pub filenames: Vec<String>,
     /// If true, then the files were already generated
-    pub fresh: bool
+    pub fresh: bool,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 /// Message left by the compiler
@@ -338,6 +344,9 @@ pub struct FromCompiler {
     pub target: Target,
     /// The message the compiler sent.
     pub message: diagnostic::Diagnostic,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 /// Output of a Build Script execution.
@@ -352,11 +361,13 @@ pub struct BuildScript {
     /// The paths to search when resolving libs
     pub cfgs: Vec<String>,
     /// The environment variables to add to the compilation
-    pub env: Vec<(String, String)>
+    pub env: Vec<(String, String)>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
 }
 
 /// A cargo message
-// TODO: Handle unknown messages!
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "reason", rename_all = "kebab-case")]
 pub enum Message {
@@ -366,6 +377,9 @@ pub enum Message {
     CompilerMessage(FromCompiler),
     /// A build script successfully executed.
     BuildScriptExecuted(BuildScript),
+    #[doc(hidden)]
+    #[serde(other)]
+    Unknown
 }
 
 /// Obtain metadata only about the root package and don't fetch dependencies
