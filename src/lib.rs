@@ -123,6 +123,7 @@ use std::io::Read;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
+pub use diagnostic::*;
 
 mod errors;
 mod dependency;
@@ -296,20 +297,33 @@ pub enum CargoOpt {
 /// target.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ArtifactProfile {
+    /// Optimization level. Possible values are 0-3, s or z.
     pub opt_level: String,
+    /// The amount of debug info. 0 for none, 1 for limited, 2 for full
     pub debuginfo: Option<u32>,
+    /// State of the `cfg(debug_assertions)` directive, enabling macros like
+    /// `debug_assert!`
     pub debug_assertions: bool,
+    /// State of the overflow checks.
     pub overflow_checks: bool,
+    /// Whether this profile is a test
     pub test: bool,
 }
 
+/// A compiler-generated file.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Artifact {
+    /// The workspace member this artifact belongs to
     pub package_id: WorkspaceMember,
+    /// The target this artifact was compiled for
     pub target: Target,
+    /// The profile this artifact was compiled with
     pub profile: ArtifactProfile,
+    /// The enabled features for this artifact
     pub features: Vec<String>,
+    /// The full paths to the generated artifacts
     pub filenames: Vec<String>,
+    /// If true, then the files were already generated
     pub fresh: bool
 }
 
@@ -318,18 +332,26 @@ pub struct Artifact {
 // TODO: Better name. This one comes from machine_message.rs
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FromCompiler {
+    /// The workspace member this message belongs to
     pub package_id: WorkspaceMember,
+    /// The target this message is aimed at
     pub target: Target,
+    /// The message the compiler sent.
     pub message: diagnostic::Diagnostic,
 }
 
 /// Output of a Build Script execution.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BuildScript {
+    /// The workspace member this build script execution belongs to
     pub package_id: WorkspaceMember,
+    /// The libs to link
     pub linked_libs: Vec<String>,
+    /// The paths to search when resolving libs
     pub linked_paths: Vec<String>,
+    /// The paths to search when resolving libs
     pub cfgs: Vec<String>,
+    /// The environment variables to add to the compilation
     pub env: Vec<(String, String)>
 }
 
@@ -406,6 +428,8 @@ pub fn metadata_run(manifest_path: Option<&Path>, deps: bool, features: Option<C
 type MessageIterator<R> = serde_json::StreamDeserializer<'static, serde_json::de::IoRead<R>, Message>;
 
 // TODO: Should I use de::Read instead, to support deserializing from a slice?
+/// Creates an iterator of Message from a Read outputting a stream of JSON
+/// messages. For usuage information, look at the top-level documentation.
 pub fn parse_message_stream<R: Read>(input: R) -> MessageIterator<R> {
     serde_json::Deserializer::from_reader(input).into_iter::<Message>()
 }
