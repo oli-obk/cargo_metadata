@@ -92,16 +92,25 @@
 //!
 //! ```
 //! # extern crate cargo_metadata;
+//! use std::process::{Stdio, Command};
+//! use cargo_metadata::Message;
 //! let command = Command::new("cargo")
 //!     .args(&["build", "--message-format=json"])
-//!     .stdout(Stdio::Piped)
-//!     .spawn();
-//! for message in cargo_metadata:parse_message_stream(command.stdout.unwrap()) {
-//!     match message {
-//!         Message::CompilerMessage(msg) => {
+//!     .stdout(Stdio::piped())
+//!     .spawn().unwrap();
 //!
+//! for message in cargo_metadata::parse_message_stream(command.stdout.unwrap()) {
+//!     match message.unwrap() {
+//!         Message::CompilerMessage(msg) => {
+//!             println!("{:?}", msg);
 //!         },
-//!         Message::
+//!         Message::CompilerArtifact(artifact) => {
+//!             println!("{:?}", artifact);
+//!         },
+//!         Message::BuildScriptExecuted(script) => {
+//!             println!("{:?}", script);
+//!         },
+//!         _ => () // Unknown message
 //!     }
 //! }
 //! ```
