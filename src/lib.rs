@@ -163,14 +163,26 @@ pub struct Package {
     /// An opaque identifier for a package
     pub id: String,
     source: Option<String>,
+    /// Description as given in the `Cargo.toml`
+    pub description: Option<String>,
     /// List of dependencies of this particular package
     pub dependencies: Vec<Dependency>,
+    /// License as given in the `Cargo.toml`
+    pub license: Option<String>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
+    /// Categories as given in the `Cargo.toml`
+    pub categories: Vec<String>,
+    /// Keywords as given in the `Cargo.toml`
+    pub keywords: Vec<String>,
+    /// Readme as given in the `Cargo.toml`
+    pub readme: Option<String>,
+    /// Repository as given in the `Cargo.toml`
+    pub repository: Option<String>,
     /// Default Rust edition for the package
     ///
     /// Beware that individual targets may specify their own edition in
