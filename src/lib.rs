@@ -176,8 +176,10 @@ pub struct Package {
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
     /// Categories as given in the `Cargo.toml`
+    #[serde(default)]
     pub categories: Vec<String>,
     /// Keywords as given in the `Cargo.toml`
+    #[serde(default)]
     pub keywords: Vec<String>,
     /// Readme as given in the `Cargo.toml`
     pub readme: Option<String>,
