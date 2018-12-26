@@ -23,7 +23,7 @@ backtrace = ["error-chain/backtrace"]
 
 [dev-dependencies]
 clap = "2.26.0"
-docopt = "0.8.1"
+docopt = "1.0.2"
 
 [package.metadata.cargo_metadata_test]
 some_field = true
