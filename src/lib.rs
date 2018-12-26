@@ -133,6 +133,9 @@ pub struct Metadata {
 pub struct Resolve {
     /// Nodes in a dependencies graph
     pub nodes: Vec<Node>,
+
+    /// The crate for which the metadata was read
+    pub root: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -143,8 +146,31 @@ pub struct Resolve {
 pub struct Node {
     /// An opaque identifier for a package
     pub id: String,
-    /// List of opaque identifiers for this node's dependencies
+    /// Dependencies in a structured format.
+    ///
+    /// `deps` handles renamed dependencies whereas `dependencies` does not.
+    #[serde(default)]
+    pub deps: Vec<NodeDep>,
+
+    /// List of opaque identifiers for this node's dependencies.
+    /// It doesn't support renamed dependencies. See `deps`.
     pub dependencies: Vec<String>,
+
+    /// Features enabled on the crate
+    #[serde(default)]
+    pub features: Vec<String>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+/// A dependency in a node
+pub struct NodeDep {
+    /// Crate name. If the crate was renamed, it's the new name.
+    pub name: String,
+    /// Package ID (opaque unique identifier)
+    pub pkg: String,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -237,6 +263,12 @@ pub struct Target {
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
     #[serde(default)]
     pub crate_types: Vec<String>,
+
+    #[serde(default)]
+    #[serde(rename = "required-features")]
+    /// This target is built only if these features are enabled.
+    /// It doesn't apply to `lib` targets.
+    pub required_features: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: String,
     /// Rust edition for this target
