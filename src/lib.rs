@@ -58,7 +58,6 @@
 //! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # extern crate clap;
-//! # use std::path::Path;
 //!
 //! let matches = clap::App::new("myapp")
 //!     .arg(
@@ -70,7 +69,28 @@
 //!     .get_matches();
 //!
 //! let _metadata =
-//!     cargo_metadata::metadata(matches.value_of("manifest-path").map(Path::new)).unwrap();
+//!     cargo_metadata::metadata(matches.value_of("manifest-path")).unwrap();
+//! ```
+//! With [`structopt`](https://docs.rs/structopt):
+//!
+//! ```rust
+//! # // This should be kept in sync with the equivalent example in the readme.
+//! # extern crate cargo_metadata;
+//! # #[macro_use] extern crate structopt;
+//! # use std::path::PathBuf;
+//! # use structopt::StructOpt;
+//! # fn main() {
+//! #[derive(Debug, StructOpt)]
+//! struct Opt {
+//!     #[structopt(name = "PATH", long="manifest-path", parse(from_os_str))]
+//!     manifest_path: Option<PathBuf>,
+//! }
+//!
+//! let opt = Opt::from_args();
+//!
+//! let _metadata =
+//!     cargo_metadata::metadata(opt.manifest_path).unwrap();
+//! # }
 //! ```
 //!
 //! Pass features flags
@@ -98,7 +118,7 @@ extern crate serde_json;
 
 use std::collections::HashMap;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::from_utf8;
 
@@ -133,6 +153,9 @@ pub struct Metadata {
 pub struct Resolve {
     /// Nodes in a dependencies graph
     pub nodes: Vec<Node>,
+
+    /// The crate for which the metadata was read
+    pub root: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -143,8 +166,31 @@ pub struct Resolve {
 pub struct Node {
     /// An opaque identifier for a package
     pub id: String,
-    /// List of opaque identifiers for this node's dependencies
+    /// Dependencies in a structured format.
+    ///
+    /// `deps` handles renamed dependencies whereas `dependencies` does not.
+    #[serde(default)]
+    pub deps: Vec<NodeDep>,
+
+    /// List of opaque identifiers for this node's dependencies.
+    /// It doesn't support renamed dependencies. See `deps`.
     pub dependencies: Vec<String>,
+
+    /// Features enabled on the crate
+    #[serde(default)]
+    pub features: Vec<String>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+/// A dependency in a node
+pub struct NodeDep {
+    /// Crate name. If the crate was renamed, it's the new name.
+    pub name: String,
+    /// Package ID (opaque unique identifier)
+    pub pkg: String,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -163,14 +209,31 @@ pub struct Package {
     /// An opaque identifier for a package
     pub id: String,
     source: Option<String>,
+    /// Description as given in the `Cargo.toml`
+    pub description: Option<String>,
     /// List of dependencies of this particular package
     pub dependencies: Vec<Dependency>,
+    /// License as given in the `Cargo.toml`
+    pub license: Option<String>,
+    /// If the package is using a nonstandard license, this key may be specified instead of
+    /// `license`, and must point to a file relative to the manifest.
+    pub license_file: Option<PathBuf>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
+    /// Categories as given in the `Cargo.toml`
+    #[serde(default)]
+    pub categories: Vec<String>,
+    /// Keywords as given in the `Cargo.toml`
+    #[serde(default)]
+    pub keywords: Vec<String>,
+    /// Readme as given in the `Cargo.toml`
+    pub readme: Option<String>,
+    /// Repository as given in the `Cargo.toml`
+    pub repository: Option<String>,
     /// Default Rust edition for the package
     ///
     /// Beware that individual targets may specify their own edition in
@@ -220,6 +283,12 @@ pub struct Target {
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
     #[serde(default)]
     pub crate_types: Vec<String>,
+
+    #[serde(default)]
+    #[serde(rename = "required-features")]
+    /// This target is built only if these features are enabled.
+    /// It doesn't apply to `lib` targets.
+    pub required_features: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: String,
     /// Rust edition for this target
@@ -277,7 +346,7 @@ pub enum CargoOpt {
 /// # Parameters
 ///
 /// - `manifest_path`: Path to the manifest.
-pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
+pub fn metadata(manifest_path: Option<impl AsRef<Path>>) -> Result<Metadata> {
     metadata_run(None, manifest_path, false, None)
 }
 
@@ -287,7 +356,7 @@ pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
 ///
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
-pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadata> {
+pub fn metadata_deps(manifest_path: Option<impl AsRef<Path>>, deps: bool) -> Result<Metadata> {
     metadata_run(None, manifest_path, deps, None)
 }
 
@@ -300,11 +369,13 @@ pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadat
 /// - `deps`: Whether to include dependencies.
 /// - `feat`: Which features to include, `None` for defaults.
 pub fn metadata_run(
-    current_dir: Option<&Path>,
-    manifest_path: Option<&Path>,
+    current_dir: Option<impl AsRef<Path>>,
+    manifest_path: Option<impl AsRef<Path>>,
     deps: bool,
     features: Option<CargoOpt>,
 ) -> Result<Metadata> {
+    let manifest_path = manifest_path.as_ref().map(|p| p.as_ref());
+    let current_dir = current_dir.as_ref().map(|p| p.as_ref());
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
     if let Some(current_dir) = current_dir {
