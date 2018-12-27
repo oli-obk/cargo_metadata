@@ -1,3 +1,5 @@
+#![allow(deprecated)] // .cause has been changed to .source
+
 //! Create the `Error`, `ErrorKind`, `ResultExt`, and `Result` types
 
 error_chain!{

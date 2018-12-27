@@ -118,7 +118,7 @@ extern crate serde_json;
 
 use std::collections::HashMap;
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::from_utf8;
 
@@ -153,6 +153,9 @@ pub struct Metadata {
 pub struct Resolve {
     /// Nodes in a dependencies graph
     pub nodes: Vec<Node>,
+
+    /// The crate for which the metadata was read
+    pub root: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -163,8 +166,31 @@ pub struct Resolve {
 pub struct Node {
     /// An opaque identifier for a package
     pub id: String,
-    /// List of opaque identifiers for this node's dependencies
+    /// Dependencies in a structured format.
+    ///
+    /// `deps` handles renamed dependencies whereas `dependencies` does not.
+    #[serde(default)]
+    pub deps: Vec<NodeDep>,
+
+    /// List of opaque identifiers for this node's dependencies.
+    /// It doesn't support renamed dependencies. See `deps`.
     pub dependencies: Vec<String>,
+
+    /// Features enabled on the crate
+    #[serde(default)]
+    pub features: Vec<String>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+/// A dependency in a node
+pub struct NodeDep {
+    /// Crate name. If the crate was renamed, it's the new name.
+    pub name: String,
+    /// Package ID (opaque unique identifier)
+    pub pkg: String,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -183,14 +209,37 @@ pub struct Package {
     /// An opaque identifier for a package
     pub id: String,
     source: Option<String>,
+    /// Description as given in the `Cargo.toml`
+    pub description: Option<String>,
     /// List of dependencies of this particular package
     pub dependencies: Vec<Dependency>,
+    /// License as given in the `Cargo.toml`
+    pub license: Option<String>,
+    /// If the package is using a nonstandard license, this key may be specified instead of
+    /// `license`, and must point to a file relative to the manifest.
+    pub license_file: Option<PathBuf>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: String,
+    /// Categories as given in the `Cargo.toml`
+    #[serde(default)]
+    pub categories: Vec<String>,
+    /// Keywords as given in the `Cargo.toml`
+    #[serde(default)]
+    pub keywords: Vec<String>,
+    /// Readme as given in the `Cargo.toml`
+    pub readme: Option<String>,
+    /// Repository as given in the `Cargo.toml`
+    pub repository: Option<String>,
+    /// Default Rust edition for the package
+    ///
+    /// Beware that individual targets may specify their own edition in
+    /// [`Target::edition`](struct.Target.html#structfield.edition).
+    #[serde(default = "edition_default")]
+    pub edition: String,
     /// Contents of the free form package.metadata section
     ///
     /// This contents can be serialized to a struct using serde:
@@ -234,8 +283,17 @@ pub struct Target {
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
     #[serde(default)]
     pub crate_types: Vec<String>,
+
+    #[serde(default)]
+    #[serde(rename = "required-features")]
+    /// This target is built only if these features are enabled.
+    /// It doesn't apply to `lib` targets.
+    pub required_features: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: String,
+    /// Rust edition for this target
+    #[serde(default = "edition_default")]
+    pub edition: String,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -267,6 +325,10 @@ impl WorkspaceMember {
         let url = self.part(2);
         &url[1..url.len() - 1]
     }
+}
+
+fn edition_default() -> String {
+    "2015".to_string()
 }
 
 /// Cargo features flags
