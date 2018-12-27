@@ -58,7 +58,6 @@
 //! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # extern crate clap;
-//! # use std::path::Path;
 //!
 //! let matches = clap::App::new("myapp")
 //!     .arg(
@@ -70,7 +69,28 @@
 //!     .get_matches();
 //!
 //! let _metadata =
-//!     cargo_metadata::metadata(matches.value_of("manifest-path").map(Path::new)).unwrap();
+//!     cargo_metadata::metadata(matches.value_of("manifest-path")).unwrap();
+//! ```
+//! With [`structopt`](https://docs.rs/structopt):
+//!
+//! ```rust
+//! # // This should be kept in sync with the equivalent example in the readme.
+//! # extern crate cargo_metadata;
+//! # #[macro_use] extern crate structopt;
+//! # use std::path::PathBuf;
+//! # use structopt::StructOpt;
+//! # fn main() {
+//! #[derive(Debug, StructOpt)]
+//! struct Opt {
+//!     #[structopt(name = "PATH", long="manifest-path", parse(from_os_str))]
+//!     manifest_path: Option<PathBuf>,
+//! }
+//!
+//! let opt = Opt::from_args();
+//!
+//! let _metadata =
+//!     cargo_metadata::metadata(opt.manifest_path).unwrap();
+//! # }
 //! ```
 //!
 //! Pass features flags
@@ -326,7 +346,7 @@ pub enum CargoOpt {
 /// # Parameters
 ///
 /// - `manifest_path`: Path to the manifest.
-pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
+pub fn metadata(manifest_path: Option<impl AsRef<Path>>) -> Result<Metadata> {
     metadata_run(manifest_path, false, None)
 }
 
@@ -336,7 +356,7 @@ pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
 ///
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
-pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadata> {
+pub fn metadata_deps(manifest_path: Option<impl AsRef<Path>>, deps: bool) -> Result<Metadata> {
     metadata_run(manifest_path, deps, None)
 }
 
@@ -347,7 +367,8 @@ pub fn metadata_deps(manifest_path: Option<&Path>, deps: bool) -> Result<Metadat
 /// - `manifest_path`: Path to the manifest.
 /// - `deps`: Whether to include dependencies.
 /// - `feat`: Which features to include, `None` for defaults.
-pub fn metadata_run(manifest_path: Option<&Path>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
+pub fn metadata_run(manifest_path: Option<impl AsRef<Path>>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
+    let manifest_path = manifest_path.as_ref().map(|p| p.as_ref());
     let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let mut cmd = Command::new(cargo);
     cmd.arg("metadata");
