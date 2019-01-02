@@ -125,19 +125,3 @@ fn metadata_deps() {
     assert!(serde.req.matches(&Version::parse("1.99.99").unwrap()));
     assert!(!serde.req.matches(&Version::parse("2.0.0").unwrap()));
 }
-
-#[test]
-fn workspace_member_serialization_deserialization() {
-    let original =
-        "\"security-framework 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)\"";
-    let member: cargo_metadata::WorkspaceMember = serde_json::from_str(original).unwrap();
-    assert_eq!(member.name(), "security-framework");
-    assert_eq!(member.version(), Version::new(0, 1, 16));
-    assert_eq!(
-        member.url(),
-        "registry+https://github.com/rust-lang/crates.io-index"
-    );
-
-    let serialized = serde_json::to_string(&member).unwrap();
-    assert_eq!(serialized, original);
-}

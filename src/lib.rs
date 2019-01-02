@@ -121,6 +121,7 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::from_utf8;
+use std::fmt;
 
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
@@ -128,13 +129,28 @@ pub use dependency::{Dependency, DependencyKind};
 mod errors;
 mod dependency;
 
+/// An "opaque" identifier for a package.
+/// It is possible to inspect the `repr` field, if the need arises, but its
+/// precise format is an implementation detail and is subject to change.
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[serde(transparent)]
+pub struct PackageId {
+    /// The underlying string representation of id.
+    pub repr: String
+}
+
+impl std::fmt::Display for PackageId {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(&self.repr, f) }
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
 pub struct Metadata {
     /// A list of all crates referenced by this crate (and the crate itself)
     pub packages: Vec<Package>,
     /// A list of all workspace members
-    pub workspace_members: Vec<WorkspaceMember>,
+    pub workspace_members: Vec<PackageId>,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     /// Workspace root
@@ -153,8 +169,8 @@ pub struct Resolve {
     /// Nodes in a dependencies graph
     pub nodes: Vec<Node>,
 
-    /// The crate for which the metadata was read
-    pub root: Option<String>,
+    /// The crate for which the metadata was read.
+    pub root: Option<PackageId>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -164,7 +180,7 @@ pub struct Resolve {
 /// A node in a dependencies graph
 pub struct Node {
     /// An opaque identifier for a package
-    pub id: String,
+    pub id: PackageId,
     /// Dependencies in a structured format.
     ///
     /// `deps` handles renamed dependencies whereas `dependencies` does not.
@@ -173,7 +189,7 @@ pub struct Node {
 
     /// List of opaque identifiers for this node's dependencies.
     /// It doesn't support renamed dependencies. See `deps`.
-    pub dependencies: Vec<String>,
+    pub dependencies: Vec<PackageId>,
 
     /// Features enabled on the crate
     #[serde(default)]
@@ -189,7 +205,7 @@ pub struct NodeDep {
     /// Crate name. If the crate was renamed, it's the new name.
     pub name: String,
     /// Package ID (opaque unique identifier)
-    pub pkg: String,
+    pub pkg: PackageId,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -206,7 +222,7 @@ pub struct Package {
     #[serde(default)]
     pub authors: Vec<String>,
     /// An opaque identifier for a package
-    pub id: String,
+    pub id: PackageId,
     source: Option<String>,
     /// Description as given in the `Cargo.toml`
     pub description: Option<String>,
@@ -222,7 +238,7 @@ pub struct Package {
     /// Features provided by the crate, mapped to the features required by that feature.
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
-    pub manifest_path: String,
+    pub manifest_path: PathBuf,
     /// Categories as given in the `Cargo.toml`
     #[serde(default)]
     pub categories: Vec<String>,
@@ -289,41 +305,13 @@ pub struct Target {
     /// It doesn't apply to `lib` targets.
     pub required_features: Vec<String>,
     /// Path to the main source file of the target
-    pub src_path: String,
+    pub src_path: PathBuf,
     /// Rust edition for this target
     #[serde(default = "edition_default")]
     pub edition: String,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-/// A workspace member. This is basically identical to `cargo::core::package_id::PackageId`, except
-/// that this does not use `Arc` internally.
-#[serde(transparent)]
-pub struct WorkspaceMember {
-    /// The raw package id as given by cargo
-    pub raw: String,
-}
-
-impl WorkspaceMember {
-    fn part(&self, n: usize) -> &str {
-        self.raw.splitn(3, ' ').nth(n).unwrap()
-    }
-    /// The name of the crate
-    pub fn name(&self) -> &str {
-        self.part(0)
-    }
-    /// The version of the crate
-    pub fn version(&self) -> semver::Version {
-        semver::Version::parse(self.part(1)).expect("bad version in cargo metadata")
-    }
-    /// The path to the crate in url format
-    pub fn url(&self) -> &str {
-        let url = self.part(2);
-        &url[1..url.len() - 1]
-    }
 }
 
 fn edition_default() -> String {
