@@ -123,6 +123,8 @@ use std::process::Command;
 use std::str::from_utf8;
 use std::fmt;
 
+use semver::Version;
+
 pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
 
@@ -230,7 +232,7 @@ pub struct Package {
     /// Name as given in the `Cargo.toml`
     pub name: String,
     /// Version given in the `Cargo.toml`
-    pub version: String,
+    pub version: Version,
     /// Authors given in the `Cargo.toml`
     #[serde(default)]
     pub authors: Vec<String>,
