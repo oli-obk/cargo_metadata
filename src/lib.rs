@@ -138,10 +138,9 @@ pub struct Metadata {
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     /// Workspace root
-    #[serde(default)]
-    pub workspace_root: String,
+    pub workspace_root: PathBuf,
     /// Build directory
-    pub target_directory: String,
+    pub target_directory: PathBuf,
     version: usize,
     #[doc(hidden)]
     #[serde(skip)]
