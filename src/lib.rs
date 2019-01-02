@@ -132,6 +132,8 @@ mod dependency;
 /// An "opaque" identifier for a package.
 /// It is possible to inspect the `repr` field, if the need arises, but its
 /// precise format is an implementation detail and is subject to change.
+///
+/// `Metadata` can be indexed by `PackageId`.
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[serde(transparent)]
 pub struct PackageId {
@@ -161,6 +163,17 @@ pub struct Metadata {
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
+}
+
+impl std::ops::Index<&PackageId> for Metadata {
+    type Output = Package;
+
+    fn index(&self, idx: &PackageId) -> &Package {
+        self.packages.iter().find(|p| p.id == *idx)
+            .unwrap_or_else(|| {
+                panic!("no package with this id: {:?}", idx)
+            })
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
