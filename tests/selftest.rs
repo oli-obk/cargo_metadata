@@ -96,11 +96,10 @@ fn error2() {
 #[test]
 fn metadata_deps() {
     let metadata = cargo_metadata::metadata_deps(Some(Path::new("Cargo.toml")), true).unwrap();
-    let this = metadata
-        .packages
-        .iter()
-        .find(|package| package.name == "cargo_metadata")
+    let this_id = metadata.workspace_members
+        .first()
         .expect("Did not find ourselves");
+    let this = &metadata[this_id];
 
     assert_eq!(this.name, "cargo_metadata");
     assert_eq!(this.targets.len(), 2);
