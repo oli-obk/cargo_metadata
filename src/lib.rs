@@ -311,6 +311,8 @@ pub struct Package {
     /// ```
     #[serde(default)]
     pub metadata: serde_json::Value,
+    /// The name of a native library the package is linking to.
+    pub links: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
