@@ -12,13 +12,18 @@
 //! # use std::path::Path;
 //! let mut args = std::env::args().skip_while(|val| !val.starts_with("--manifest-path"));
 //!
+//! let mut cmd = cargo_metadata::MetadataCommand::new();
 //! let manifest_path = match args.next() {
-//!     Some(ref p) if p == "--manifest-path" => args.next(),
-//!     Some(p) => Some(p.trim_left_matches("--manifest-path=").to_string()),
-//!     None => None,
+//!     Some(ref p) if p == "--manifest-path" => {
+//!         cmd.manifest_path(args.next().unwrap());
+//!     }
+//!     Some(p) => {
+//!         cmd.manifest_path(p.trim_left_matches("--manifest-path="));
+//!     }
+//!     None => {}
 //! };
 //!
-//! let _metadata = cargo_metadata::metadata(manifest_path.as_ref().map(Path::new)).unwrap();
+//! let _metadata = cmd.exec().unwrap();
 //! ```
 //!
 //! With [`docopt`](https://docs.rs/docopt):
@@ -47,8 +52,11 @@
 //!     .and_then(|d| d.deserialize())
 //!     .unwrap_or_else(|e| e.exit());
 //!
-//! let _metadata =
-//!     cargo_metadata::metadata(args.arg_manifest_path.as_ref().map(Path::new)).unwrap();
+//! let mut cmd = cargo_metadata::MetadataCommand::new();
+//! if let Some(path) = args.arg_manifest_path {
+//!     cmd.manifest_path(path);
+//! }
+//! let _metadata = cmd.exec().unwrap();
 //! # }
 //! ```
 //!
@@ -68,8 +76,11 @@
 //!     )
 //!     .get_matches();
 //!
-//! let _metadata =
-//!     cargo_metadata::metadata(matches.value_of("manifest-path")).unwrap();
+//! let mut cmd = cargo_metadata::MetadataCommand::new();
+//! if let Some(path) = matches.value_of("manifest-path") {
+//!     cmd.manifest_path(path);
+//! }
+//! let _metadata = cmd.exec().unwrap();
 //! ```
 //! With [`structopt`](https://docs.rs/structopt):
 //!
@@ -87,9 +98,11 @@
 //! }
 //!
 //! let opt = Opt::from_args();
-//!
-//! let _metadata =
-//!     cargo_metadata::metadata(opt.manifest_path).unwrap();
+//! let mut cmd = cargo_metadata::MetadataCommand::new();
+//! if let Some(path) = opt.manifest_path {
+//!     cmd.manifest_path(path);
+//! }
+//! let _metadata = cmd.exec().unwrap();
 //! # }
 //! ```
 //!
@@ -99,15 +112,16 @@
 //! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # use std::path::Path;
+//! # fn main() {
+//! use cargo_metadata::{MetadataCommand, CargoOpt};
 //!
-//! let manifest_path = Path::new("./Cargo.toml");
-//! let features = cargo_metadata::CargoOpt::AllFeatures;
-
-//! let _metadata =
-//! cargo_metadata::metadata_run(Some(manifest_path), false, Some(features)).unwrap();
-//!
+//! let _metadata = MetadataCommand::new()
+//!     .manifest_path("./Cargo.toml")
+//!     .features(CargoOpt::AllFeatures)
+//!     .exec()
+//!     .unwrap();
+//! # }
 //! ```
-
 #[macro_use]
 extern crate error_chain;
 extern crate semver;
@@ -334,6 +348,7 @@ fn edition_default() -> String {
 }
 
 /// Cargo features flags
+#[derive(Debug, Clone)]
 pub enum CargoOpt {
     /// Run cargo with `--features-all`
     AllFeatures,
@@ -343,59 +358,68 @@ pub enum CargoOpt {
     SomeFeatures(Vec<String>),
 }
 
-/// Obtain metadata only about the root package and don't fetch dependencies
-///
-/// # Parameters
-///
-/// - `manifest_path`: Path to the manifest.
-pub fn metadata(manifest_path: Option<impl AsRef<Path>>) -> Result<Metadata> {
-    metadata_run(manifest_path, false, None)
+/// A builder for configurating `cargo metadata` invocation.
+#[derive(Debug, Clone, Default)]
+pub struct MetadataCommand {
+    manifest_path: Option<PathBuf>,
+    current_dir: Option<PathBuf>,
+    no_deps: bool,
+    features: Option<CargoOpt>,
 }
 
-/// Obtain metadata only about the root package and dependencies
-///
-/// # Parameters
-///
-/// - `manifest_path`: Path to the manifest.
-/// - `deps`: Whether to include dependencies.
-pub fn metadata_deps(manifest_path: Option<impl AsRef<Path>>, deps: bool) -> Result<Metadata> {
-    metadata_run(manifest_path, deps, None)
-}
-
-/// The main entry point to obtaining metadata
-///
-/// # Parameters
-///
-/// - `manifest_path`: Path to the manifest.
-/// - `deps`: Whether to include dependencies.
-/// - `feat`: Which features to include, `None` for defaults.
-pub fn metadata_run(manifest_path: Option<impl AsRef<Path>>, deps: bool, features: Option<CargoOpt>) -> Result<Metadata> {
-    let manifest_path = manifest_path.as_ref().map(|p| p.as_ref());
-    let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
-    let mut cmd = Command::new(cargo);
-    cmd.arg("metadata");
-
-    if !deps {
-        cmd.arg("--no-deps");
+impl MetadataCommand {
+    /// Creates a default `cargo metadata` command, which will look for
+    /// `Cargo.toml` in the ancestors of the current directory.
+    pub fn new() -> MetadataCommand {
+        MetadataCommand::default()
     }
+    /// Path to `Cargo.toml`
+    pub fn manifest_path(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
+        self.manifest_path = Some(path.as_ref().to_path_buf());
+        self
+    }
+    /// Current directory of the `cargo metadata` process.
+    pub fn current_dir(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
+        self.current_dir = Some(path.as_ref().to_path_buf());
+        self
+    }
+    /// Output information only about the root package and don't fetch dependencies.
+    pub fn no_deps(&mut self) -> &mut MetadataCommand {
+        self.no_deps = true;
+        self
+    }
+    /// Which features to include.
+    pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
+        self.features = Some(features);
+        self
+    }
+    /// Runs configured `cargo metadata` and returns parsed `Metadata`.
+    pub fn exec(&mut self) -> Result<Metadata> {
+        let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
+        let mut cmd = Command::new(cargo);
+        cmd.args(&["metadata", "--format-version", "1"]);
 
-    if let Some(features) = features {
-        match features {
-            CargoOpt::AllFeatures => cmd.arg("--all-features"),
-            CargoOpt::NoDefaultFeatures => cmd.arg("--no-default-features"),
-            CargoOpt::SomeFeatures(ftrs) => cmd.arg(format!("--fatures {:?}", ftrs)),
-        };
-    }
+        if self.no_deps {
+            cmd.arg("--no-deps");
+        }
 
-    cmd.args(&["--format-version", "1"]);
-    if let Some(manifest_path) = manifest_path {
-        cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
+        if let Some(features) = &self.features {
+            match features {
+                CargoOpt::AllFeatures => cmd.arg("--all-features"),
+                CargoOpt::NoDefaultFeatures => cmd.arg("--no-default-features"),
+                CargoOpt::SomeFeatures(ftrs) => cmd.arg(format!("--features {:?}", ftrs)),
+            };
+        }
+
+        if let Some(manifest_path) = &self.manifest_path {
+            cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
+        }
+        let output = cmd.output()?;
+        if !output.status.success() {
+            return Err(ErrorKind::CargoMetadata(String::from_utf8(output.stderr)?).into());
+        }
+        let stdout = from_utf8(&output.stdout)?;
+        let meta = serde_json::from_str(stdout)?;
+        Ok(meta)
     }
-    let output = cmd.output()?;
-    if !output.status.success() {
-        return Err(ErrorKind::CargoMetadata(String::from_utf8(output.stderr)?).into());
-    }
-    let stdout = from_utf8(&output.stdout)?;
-    let meta = serde_json::from_str(stdout)?;
-    Ok(meta)
 }
