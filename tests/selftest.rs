@@ -7,7 +7,6 @@ extern crate serde_derive;
 
 use std::env::current_dir;
 use std::path::{Path, PathBuf};
-use std::env;
 
 use semver::Version;
 
@@ -39,21 +38,17 @@ fn metadata() {
     assert_eq!(metadata.packages[0].targets[1].kind[0], "test");
     assert_eq!(metadata.packages[0].targets[1].crate_types[0], "bin");
 
-    // Hack until the package metadata field reaches the stable channel (in version 1.27).
-    if env::var("TRAVIS_RUST_VERSION") != Ok("stable".into()) {
-        let package_metadata = &metadata.packages[0].metadata.as_object()
-            .expect("package.metadata must be a table. \
-            NOTE: This test currently only works on the beta and nightly channel.");
-        assert_eq!(package_metadata.len(), 1);
+    let package_metadata = &metadata.packages[0].metadata.as_object()
+        .expect("package.metadata must be a table.");
+    assert_eq!(package_metadata.len(), 1);
 
-        let value = package_metadata.get("cargo_metadata_test").unwrap();
-        let test_package_metadata: TestPackageMetadata = serde_json::from_value(value.clone())
-            .unwrap();
-        assert_eq!(test_package_metadata, TestPackageMetadata {
-            some_field: true,
-            other_field: "foo".into(),
-        });
-    }
+    let value = package_metadata.get("cargo_metadata_test").unwrap();
+    let test_package_metadata: TestPackageMetadata = serde_json::from_value(value.clone())
+        .unwrap();
+    assert_eq!(test_package_metadata, TestPackageMetadata {
+        some_field: true,
+        other_field: "foo".into(),
+    });
 }
 
 #[test]
@@ -96,11 +91,10 @@ fn error2() {
 #[test]
 fn metadata_deps() {
     let metadata = cargo_metadata::metadata_deps(Some(Path::new("Cargo.toml")), true).unwrap();
-    let this = metadata
-        .packages
-        .iter()
-        .find(|package| package.name == "cargo_metadata")
+    let this_id = metadata.workspace_members
+        .first()
         .expect("Did not find ourselves");
+    let this = &metadata[this_id];
 
     assert_eq!(this.name, "cargo_metadata");
     assert_eq!(this.targets.len(), 2);
@@ -124,20 +118,4 @@ fn metadata_deps() {
     assert!(!serde.req.matches(&Version::parse("1.0.0").unwrap()));
     assert!(serde.req.matches(&Version::parse("1.99.99").unwrap()));
     assert!(!serde.req.matches(&Version::parse("2.0.0").unwrap()));
-}
-
-#[test]
-fn workspace_member_serialization_deserialization() {
-    let original =
-        "\"security-framework 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)\"";
-    let member: cargo_metadata::WorkspaceMember = serde_json::from_str(original).unwrap();
-    assert_eq!(member.name(), "security-framework");
-    assert_eq!(member.version(), Version::new(0, 1, 16));
-    assert_eq!(
-        member.url(),
-        "registry+https://github.com/rust-lang/crates.io-index"
-    );
-
-    let serialized = serde_json::to_string(&member).unwrap();
-    assert_eq!(serialized, original);
 }
