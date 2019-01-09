@@ -181,10 +181,10 @@ pub struct Metadata {
     __do_not_match_exhaustively: (),
 }
 
-impl std::ops::Index<&PackageId> for Metadata {
+impl<'a> std::ops::Index<&'a PackageId> for Metadata {
     type Output = Package;
 
-    fn index(&self, idx: &PackageId) -> &Package {
+    fn index(&self, idx: &'a PackageId) -> &Package {
         self.packages.iter().find(|p| p.id == *idx)
             .unwrap_or_else(|| {
                 panic!("no package with this id: {:?}", idx)
