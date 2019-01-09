@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use semver::Version;
 
-use cargo_metadata::{Error, ErrorKind};
+use cargo_metadata::{Error, ErrorKind, MetadataCommand, CargoOpt};
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
 struct TestPackageMetadata {
@@ -20,7 +20,7 @@ struct TestPackageMetadata {
 
 #[test]
 fn metadata() {
-    let metadata = cargo_metadata::metadata(None::<&Path>).unwrap();
+    let metadata = MetadataCommand::new().no_deps().exec().unwrap();
 
     assert_eq!(
         current_dir().unwrap().join("target"),
@@ -52,23 +52,39 @@ fn metadata() {
 }
 
 #[test]
-fn accepts_more_than_paths() {
-    let _ = cargo_metadata::metadata(Some("Cargo.toml")).unwrap();
-    let _ = cargo_metadata::metadata(Some(String::from("Cargo.toml"))).unwrap();
-    let _ = cargo_metadata::metadata(Some(PathBuf::from("Cargo.toml"))).unwrap();
-
-    let _ = cargo_metadata::metadata_deps(Some("Cargo.toml"), true).unwrap();
-    let _ = cargo_metadata::metadata_deps(Some(String::from("Cargo.toml")), true).unwrap();
-    let _ = cargo_metadata::metadata_deps(Some(PathBuf::from("Cargo.toml")), true).unwrap();
-
-    let _ = cargo_metadata::metadata_run(Some("Cargo.toml"), true, None).unwrap();
-    let _ = cargo_metadata::metadata_run(Some(String::from("Cargo.toml")), true, None).unwrap();
-    let _ = cargo_metadata::metadata_run(Some(PathBuf::from("Cargo.toml")), true, None).unwrap();
+fn builder_interface() {
+    let _ = MetadataCommand::new()
+        .manifest_path("Cargo.toml")
+        .exec()
+        .unwrap();
+    let _ = MetadataCommand::new()
+        .manifest_path(String::from("Cargo.toml"))
+        .exec()
+        .unwrap();
+    let _ = MetadataCommand::new()
+        .manifest_path(PathBuf::from("Cargo.toml"))
+        .exec()
+        .unwrap();
+    let _ = MetadataCommand::new()
+        .manifest_path("Cargo.toml")
+        .no_deps()
+        .exec()
+        .unwrap();
+    let _ = MetadataCommand::new()
+        .manifest_path("Cargo.toml")
+        .features(CargoOpt::AllFeatures)
+        .exec()
+        .unwrap();
+    let _ = MetadataCommand::new()
+        .manifest_path("Cargo.toml")
+        .current_dir(current_dir().unwrap())
+        .exec()
+        .unwrap();
 }
 
 #[test]
 fn error1() {
-    match cargo_metadata::metadata_deps(Some(Path::new("foo")), true) {
+    match MetadataCommand::new().manifest_path("foo").exec() {
         Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(
             s.trim(),
             "error: the manifest-path must be a path to a Cargo.toml file"
@@ -79,7 +95,7 @@ fn error1() {
 
 #[test]
 fn error2() {
-    match cargo_metadata::metadata_deps(Some(Path::new("foo/Cargo.toml")), true) {
+    match MetadataCommand::new().manifest_path("foo/Cargo.toml").exec() {
         Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(
             s.trim(),
             "error: manifest path `foo/Cargo.toml` does not exist"
@@ -90,7 +106,7 @@ fn error2() {
 
 #[test]
 fn metadata_deps() {
-    let metadata = cargo_metadata::metadata_deps(Some(Path::new("Cargo.toml")), true).unwrap();
+    let metadata = MetadataCommand::new().manifest_path("Cargo.toml").exec().unwrap();
     let this_id = metadata.workspace_members
         .first()
         .expect("Did not find ourselves");
