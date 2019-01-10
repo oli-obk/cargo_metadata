@@ -1,0 +1,49 @@
+[[package]]
+name = "all"
+version = "0.1.0"
+dependencies = [
+ "bdep 0.1.0",
+ "bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "devdep 0.1.0",
+ "featdep 0.1.0",
+ "namedep 0.1.0",
+ "oldname 0.1.0",
+ "path-dep 0.1.0",
+ "windep 0.1.0",
+]
+
+[[package]]
+name = "bdep"
+version = "0.1.0"
+
+[[package]]
+name = "bitflags"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "devdep"
+version = "0.1.0"
+
+[[package]]
+name = "featdep"
+version = "0.1.0"
+
+[[package]]
+name = "namedep"
+version = "0.1.0"
+
+[[package]]
+name = "oldname"
+version = "0.1.0"
+
+[[package]]
+name = "path-dep"
+version = "0.1.0"
+
+[[package]]
+name = "windep"
+version = "0.1.0"
+
+[metadata]
+"checksum bitflags 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "228047a76f468627ca71776ecdebd732a3423081fcf5125585bcd7c49886ce12"
