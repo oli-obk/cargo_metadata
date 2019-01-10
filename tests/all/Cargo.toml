@@ -1,0 +1,50 @@
+[package]
+name = "all"
+version = "0.1.0"
+authors = ["Jane Doe <user@example.com>"]
+edition = "2018"
+license = "MIT/Apache-2.0"
+license-file = "LICENSE"
+description = "Package description."
+categories = ["command-line-utilities"]
+keywords = ["cli"]
+readme = "README.md"
+repository = "https://github.com/oli-obk/cargo_metadata/"
+links = "foo"
+
+[package.metadata.docs.rs]
+all-features = true
+default-target = "x86_64-unknown-linux-gnu"
+rustc-args = [ "--example-rustc-arg" ]
+
+[dependencies]
+path-dep = { path = "path-dep" }
+namedep = { path = "namedep" }
+bitflags = { version = "1.0", optional = true }
+featdep = { path = "featdep", features = ["i128"], default-features = false }
+newname = { path = "oldname", package = "oldname" }
+
+[dev-dependencies]
+devdep = { path = "devdep" }
+
+[build-dependencies]
+bdep = { path = "bdep" }
+
+[target.'cfg(windows)'.dependencies]
+windep = { path = "windep" }
+
+[features]
+default = ["feat1", "bitflags"]
+feat1 = []
+feat2 = []
+
+[lib]
+crate-type = ["rlib", "cdylib", "dylib", "staticlib"]
+
+[[bin]]
+name = "otherbin"
+edition = '2015'
+
+[[bin]]
+name = "reqfeat"
+required-features = ["feat2"]
