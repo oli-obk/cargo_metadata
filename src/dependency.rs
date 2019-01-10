@@ -71,6 +71,7 @@ pub struct Dependency {
 
 /// A target platform.
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(transparent)]
 pub struct Platform(String);
 
 impl fmt::Display for Platform {
