@@ -231,7 +231,8 @@ pub struct Node {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 /// A dependency in a node
 pub struct NodeDep {
-    /// Crate name. If the crate was renamed, it's the new name.
+    /// The name of the dependency's library target.
+    /// If the crate was renamed, it is the new name.
     pub name: String,
     /// Package ID (opaque unique identifier)
     pub pkg: PackageId,
@@ -311,6 +312,8 @@ pub struct Package {
     /// ```
     #[serde(default)]
     pub metadata: serde_json::Value,
+    /// The name of a native library the package is linking to.
+    pub links: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
