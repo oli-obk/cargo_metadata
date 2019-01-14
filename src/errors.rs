@@ -2,7 +2,7 @@
 
 //! Create the `Error`, `ErrorKind`, `ResultExt`, and `Result` types
 
-error_chain!{
+error_chain! {
     errors {
         /// Error during execution of `cargo metadata`
         CargoMetadata(stderr: String) {

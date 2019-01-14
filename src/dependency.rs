@@ -1,7 +1,7 @@
 //! This module contains `Dependency` and the types/functions it uses for deserialization.
 
-use serde::{Deserialize, Deserializer};
 use semver::VersionReq;
+use serde::{Deserialize, Deserializer};
 use std::fmt;
 
 #[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
@@ -16,7 +16,8 @@ pub enum DependencyKind {
     #[serde(rename = "build")]
     /// Those used in build scripts only
     Build,
-    #[doc(hidden)] DoNotMatchExhaustively,
+    #[doc(hidden)]
+    DoNotMatchExhaustively,
 }
 
 impl Default for DependencyKind {

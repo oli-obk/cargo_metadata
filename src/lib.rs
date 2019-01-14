@@ -132,18 +132,18 @@ extern crate serde_json;
 
 use std::collections::HashMap;
 use std::env;
+use std::fmt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::from_utf8;
-use std::fmt;
 
 use semver::Version;
 
-pub use errors::{Error, ErrorKind, Result};
 pub use dependency::{Dependency, DependencyKind};
+pub use errors::{Error, ErrorKind, Result};
 
-mod errors;
 mod dependency;
+mod errors;
 
 /// An "opaque" identifier for a package.
 /// It is possible to inspect the `repr` field, if the need arises, but its
@@ -154,12 +154,13 @@ mod dependency;
 #[serde(transparent)]
 pub struct PackageId {
     /// The underlying string representation of id.
-    pub repr: String
+    pub repr: String,
 }
 
 impl std::fmt::Display for PackageId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&self.repr, f) }
+        fmt::Display::fmt(&self.repr, f)
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -185,10 +186,10 @@ impl<'a> std::ops::Index<&'a PackageId> for Metadata {
     type Output = Package;
 
     fn index(&self, idx: &'a PackageId) -> &Package {
-        self.packages.iter().find(|p| p.id == *idx)
-            .unwrap_or_else(|| {
-                panic!("no package with this id: {:?}", idx)
-            })
+        self.packages
+            .iter()
+            .find(|p| p.id == *idx)
+            .unwrap_or_else(|| panic!("no package with this id: {:?}", idx))
     }
 }
 
