@@ -66,7 +66,6 @@
 //! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # extern crate clap;
-//!
 //! let matches = clap::App::new("myapp")
 //!     .arg(
 //!         clap::Arg::with_name("manifest-path")
@@ -129,13 +128,14 @@
 //! # extern crate cargo_metadata;
 //! use std::process::{Stdio, Command};
 //! use cargo_metadata::Message;
-//! let command = Command::new("cargo")
+//!
+//! let mut command = Command::new("cargo")
 //!     .args(&["build", "--message-format=json"])
 //!     .stdout(Stdio::piped())
 //!     .spawn()
 //!     .unwrap();
 //!
-//! for message in cargo_metadata::parse_message_stream(command.stdout.unwrap()) {
+//! for message in cargo_metadata::parse_messages(command.stdout.take().unwrap()) {
 //!     match message.unwrap() {
 //!         Message::CompilerMessage(msg) => {
 //!             println!("{:?}", msg);
@@ -149,6 +149,8 @@
 //!         _ => () // Unknown message
 //!     }
 //! }
+//!
+//! let output = command.wait().expect("Couldn't get cargo's exit status");
 //! ```
 
 #[macro_use]
@@ -162,7 +164,6 @@ extern crate serde_json;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
-use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::from_utf8;
@@ -172,10 +173,12 @@ use semver::Version;
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, ErrorKind, Result};
+pub use messages::{parse_messages, Artifact, ArtifactProfile, BuildScript, FromCompiler, Message};
 
 mod dependency;
 mod diagnostic;
 mod errors;
+mod messages;
 
 /// An "opaque" identifier for a package.
 /// It is possible to inspect the `repr` field, if the need arises, but its
@@ -394,95 +397,6 @@ pub enum CargoOpt {
     SomeFeatures(Vec<String>),
 }
 
-/// Profile settings used to determine which compiler flags to use for a
-/// target.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ArtifactProfile {
-    /// Optimization level. Possible values are 0-3, s or z.
-    pub opt_level: String,
-    /// The amount of debug info. 0 for none, 1 for limited, 2 for full
-    pub debuginfo: Option<u32>,
-    /// State of the `cfg(debug_assertions)` directive, enabling macros like
-    /// `debug_assert!`
-    pub debug_assertions: bool,
-    /// State of the overflow checks.
-    pub overflow_checks: bool,
-    /// Whether this profile is a test
-    pub test: bool,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
-}
-
-/// A compiler-generated file.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Artifact {
-    /// The workspace member this artifact belongs to
-    pub package_id: PackageId,
-    /// The target this artifact was compiled for
-    pub target: Target,
-    /// The profile this artifact was compiled with
-    pub profile: ArtifactProfile,
-    /// The enabled features for this artifact
-    pub features: Vec<String>,
-    /// The full paths to the generated artifacts
-    pub filenames: Vec<String>,
-    /// If true, then the files were already generated
-    pub fresh: bool,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
-}
-
-/// Message left by the compiler
-// TODO: structify message
-// TODO: Better name. This one comes from machine_message.rs
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FromCompiler {
-    /// The workspace member this message belongs to
-    pub package_id: PackageId,
-    /// The target this message is aimed at
-    pub target: Target,
-    /// The message the compiler sent.
-    pub message: Diagnostic,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
-}
-
-/// Output of a build script execution.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BuildScript {
-    /// The workspace member this build script execution belongs to
-    pub package_id: PackageId,
-    /// The libs to link
-    pub linked_libs: Vec<String>,
-    /// The paths to search when resolving libs
-    pub linked_paths: Vec<String>,
-    /// The paths to search when resolving libs
-    pub cfgs: Vec<String>,
-    /// The environment variables to add to the compilation
-    pub env: Vec<(String, String)>,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
-}
-
-/// A cargo message
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "reason", rename_all = "kebab-case")]
-pub enum Message {
-    /// The compiler generated an artifact
-    CompilerArtifact(Artifact),
-    /// The compiler wants to display a message
-    CompilerMessage(FromCompiler),
-    /// A build script successfully executed.
-    BuildScriptExecuted(BuildScript),
-    #[doc(hidden)]
-    #[serde(other)]
-    Unknown,
-}
-
 /// A builder for configurating `cargo metadata` invocation.
 #[derive(Debug, Clone, Default)]
 pub struct MetadataCommand {
@@ -547,15 +461,4 @@ impl MetadataCommand {
         let meta = serde_json::from_str(stdout)?;
         Ok(meta)
     }
-}
-
-/// An iterator of Message.
-type MessageIterator<R> =
-    serde_json::StreamDeserializer<'static, serde_json::de::IoRead<R>, Message>;
-
-// TODO: Should I use de::Read instead, to support deserializing from a slice?
-/// Creates an iterator of Message from a Read outputting a stream of JSON
-/// messages. For usuage information, look at the top-level documentation.
-pub fn parse_message_stream<R: Read>(input: R) -> MessageIterator<R> {
-    serde_json::Deserializer::from_reader(input).into_iter::<Message>()
 }
