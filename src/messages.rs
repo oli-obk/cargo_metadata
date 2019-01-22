@@ -1,6 +1,7 @@
 use super::{Diagnostic, PackageId, Target};
 use std::io::Read;
 use std::path::PathBuf;
+use serde_json;
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.
