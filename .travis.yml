@@ -5,6 +5,7 @@ matrix:
     - rust: "nightly"
     - rust: "beta"
     - rust: "stable"
+    - rust: "1.27.0"
 
 script:
   - cargo build --verbose

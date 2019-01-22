@@ -1,6 +1,6 @@
 [package]
 name = "cargo_metadata"
-version = "0.6.2"
+version = "0.7.0"
 authors = ["Oliver Schneider <git-spam-no-reply9815368754983@oli-obk.de>"]
 repository = "https://github.com/oli-obk/cargo_metadata"
 description = "structured access to the output of `cargo metadata`"
@@ -23,7 +23,8 @@ backtrace = ["error-chain/backtrace"]
 
 [dev-dependencies]
 clap = "2.26.0"
-docopt = "0.8.1"
+docopt = "1.0.2"
+structopt = "0.2.10"
 
 [package.metadata.cargo_metadata_test]
 some_field = true

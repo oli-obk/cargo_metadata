@@ -1,7 +1,8 @@
 //! This module contains `Dependency` and the types/functions it uses for deserialization.
 
-use serde::{Deserialize, Deserializer};
 use semver::VersionReq;
+use serde::{Deserialize, Deserializer};
+use std::fmt;
 
 #[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
 /// Dependencies can come in three kinds
@@ -53,8 +54,30 @@ pub struct Dependency {
     /// The list of features enabled for this dependency.
     pub features: Vec<String>,
     /// The target this dependency is specific to.
-    target: Option<String>,
+    ///
+    /// Use the [`Display`] trait to access the contents.
+    ///
+    /// [`Display`]: https://doc.rust-lang.org/std/fmt/trait.Display.html
+    pub target: Option<Platform>,
+    /// If the dependency is renamed, this is the new name for the dependency
+    /// as a string.  None if it is not renamed.
+    pub rename: Option<String>,
+    /// The URL of the index of the registry where this dependency is from.
+    ///
+    /// If None, the dependency is from crates.io.
+    pub registry: Option<String>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
+}
+
+/// A target platform.
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(transparent)]
+pub struct Platform(String);
+
+impl fmt::Display for Platform {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
 }
