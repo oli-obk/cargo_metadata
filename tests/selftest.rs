@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use semver::Version;
 
-use cargo_metadata::{Error, ErrorKind, MetadataCommand, CargoOpt};
+use cargo_metadata::{CargoOpt, Error, ErrorKind, MetadataCommand};
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
 struct TestPackageMetadata {
@@ -31,7 +31,11 @@ fn metadata() {
     assert_eq!(this.name, "cargo_metadata");
     assert_eq!(this.targets.len(), 3);
 
-    let lib = this.targets.iter().find(|t| t.name == "cargo_metadata").unwrap();
+    let lib = this
+        .targets
+        .iter()
+        .find(|t| t.name == "cargo_metadata")
+        .unwrap();
     assert_eq!(lib.kind[0], "lib");
     assert_eq!(lib.crate_types[0], "lib");
 
@@ -40,17 +44,21 @@ fn metadata() {
     assert_eq!(selftest.kind[0], "test");
     assert_eq!(selftest.crate_types[0], "bin");
 
-    let package_metadata = &metadata.packages[0].metadata.as_object()
+    let package_metadata = &metadata.packages[0]
+        .metadata
+        .as_object()
         .expect("package.metadata must be a table.");
     assert_eq!(package_metadata.len(), 1);
 
     let value = package_metadata.get("cargo_metadata_test").unwrap();
-    let test_package_metadata: TestPackageMetadata = serde_json::from_value(value.clone())
-        .unwrap();
-    assert_eq!(test_package_metadata, TestPackageMetadata {
-        some_field: true,
-        other_field: "foo".into(),
-    });
+    let test_package_metadata: TestPackageMetadata = serde_json::from_value(value.clone()).unwrap();
+    assert_eq!(
+        test_package_metadata,
+        TestPackageMetadata {
+            some_field: true,
+            other_field: "foo".into(),
+        }
+    );
 }
 
 #[test]
@@ -97,7 +105,10 @@ fn error1() {
 
 #[test]
 fn error2() {
-    match MetadataCommand::new().manifest_path("foo/Cargo.toml").exec() {
+    match MetadataCommand::new()
+        .manifest_path("foo/Cargo.toml")
+        .exec()
+    {
         Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(
             s.trim(),
             "error: manifest path `foo/Cargo.toml` does not exist"
@@ -108,15 +119,23 @@ fn error2() {
 
 #[test]
 fn metadata_deps() {
-    let metadata = MetadataCommand::new().manifest_path("Cargo.toml").exec().unwrap();
-    let this_id = metadata.workspace_members
+    let metadata = MetadataCommand::new()
+        .manifest_path("Cargo.toml")
+        .exec()
+        .unwrap();
+    let this_id = metadata
+        .workspace_members
         .first()
         .expect("Did not find ourselves");
     let this = &metadata[this_id];
 
     assert_eq!(this.name, "cargo_metadata");
 
-    let lib = this.targets.iter().find(|t| t.name == "cargo_metadata").unwrap();
+    let lib = this
+        .targets
+        .iter()
+        .find(|t| t.name == "cargo_metadata")
+        .unwrap();
     assert_eq!(lib.kind[0], "lib");
     assert_eq!(lib.crate_types[0], "lib");
 

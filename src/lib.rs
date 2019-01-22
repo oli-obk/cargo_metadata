@@ -132,7 +132,8 @@
 //! let command = Command::new("cargo")
 //!     .args(&["build", "--message-format=json"])
 //!     .stdout(Stdio::piped())
-//!     .spawn().unwrap();
+//!     .spawn()
+//!     .unwrap();
 //!
 //! for message in cargo_metadata::parse_message_stream(command.stdout.unwrap()) {
 //!     match message.unwrap() {
@@ -161,19 +162,19 @@ extern crate serde_json;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::from_utf8;
-use std::io::Read;
 
 use semver::Version;
 
 pub use dependency::{Dependency, DependencyKind};
+use diagnostic::Diagnostic;
 pub use errors::{Error, ErrorKind, Result};
-pub use dependency::{Dependency, DependencyKind};
-pub use diagnostic::*;
 
 mod dependency;
+mod diagnostic;
 mod errors;
 
 /// An "opaque" identifier for a package.
@@ -417,7 +418,7 @@ pub struct ArtifactProfile {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Artifact {
     /// The workspace member this artifact belongs to
-    pub package_id: WorkspaceMember,
+    pub package_id: PackageId,
     /// The target this artifact was compiled for
     pub target: Target,
     /// The profile this artifact was compiled with
@@ -439,21 +440,21 @@ pub struct Artifact {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FromCompiler {
     /// The workspace member this message belongs to
-    pub package_id: WorkspaceMember,
+    pub package_id: PackageId,
     /// The target this message is aimed at
     pub target: Target,
     /// The message the compiler sent.
-    pub message: diagnostic::Diagnostic,
+    pub message: Diagnostic,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
 }
 
-/// Output of a Build Script execution.
+/// Output of a build script execution.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BuildScript {
     /// The workspace member this build script execution belongs to
-    pub package_id: WorkspaceMember,
+    pub package_id: PackageId,
     /// The libs to link
     pub linked_libs: Vec<String>,
     /// The paths to search when resolving libs
@@ -479,16 +480,9 @@ pub enum Message {
     BuildScriptExecuted(BuildScript),
     #[doc(hidden)]
     #[serde(other)]
-    Unknown
+    Unknown,
 }
 
-/// Obtain metadata only about the root package and don't fetch dependencies
-///
-/// # Parameters
-///
-/// - `manifest_path`: Path to the manifest.
-pub fn metadata(manifest_path: Option<&Path>) -> Result<Metadata> {
-    metadata_run(manifest_path, false, None)
 /// A builder for configurating `cargo metadata` invocation.
 #[derive(Debug, Clone, Default)]
 pub struct MetadataCommand {
@@ -556,7 +550,8 @@ impl MetadataCommand {
 }
 
 /// An iterator of Message.
-type MessageIterator<R> = serde_json::StreamDeserializer<'static, serde_json::de::IoRead<R>, Message>;
+type MessageIterator<R> =
+    serde_json::StreamDeserializer<'static, serde_json::de::IoRead<R>, Message>;
 
 // TODO: Should I use de::Read instead, to support deserializing from a slice?
 /// Creates an iterator of Message from a Read outputting a stream of JSON
