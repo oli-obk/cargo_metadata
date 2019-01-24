@@ -1,5 +1,7 @@
 //! This module contains `Diagnostic` and the types/functions it uses for deserialization.
 
+use std::fmt;
+
 /// The error code associated to this diagnostic.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiagnosticCode {
@@ -138,12 +140,13 @@ pub struct Diagnostic {
     __do_not_match_exhaustively: (),
 }
 
-impl ToString for Diagnostic {
-    fn to_string(&self) -> String {
+impl fmt::Display for Diagnostic {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(ref rendered) = self.rendered {
-            rendered.clone()
+            f.write_str(rendered)?;
         } else {
-            "cargo didn't render this message".to_string()
+            f.write_str("cargo didn't render this message")?;
         }
+        Ok(())
     }
 }

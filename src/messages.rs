@@ -2,6 +2,7 @@ use super::{Diagnostic, PackageId, Target};
 use std::io::Read;
 use std::path::PathBuf;
 use serde_json;
+use std::fmt;
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.
@@ -92,9 +93,9 @@ pub enum Message {
     Unknown,
 }
 
-impl ToString for FromCompiler {
-    fn to_string(&self) -> String {
-        self.message.to_string()
+impl fmt::Display for FromCompiler {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message)
     }
 }
 
