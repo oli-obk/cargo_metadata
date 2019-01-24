@@ -1,6 +1,9 @@
 #![deny(missing_docs)]
-//! Structured access to the output of `cargo metadata`
+//! Structured access to the output of `cargo metadata` and `cargo --message-format=json`.
 //! Usually used from within a `cargo-*` executable
+//!
+//! See the [cargo book](https://doc.rust-lang.org/cargo/index.html) for
+//! details on cargo itself.
 //!
 //! ## Examples
 //!
@@ -66,7 +69,6 @@
 //! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # extern crate clap;
-//!
 //! let matches = clap::App::new("myapp")
 //!     .arg(
 //!         clap::Arg::with_name("manifest-path")
@@ -122,6 +124,38 @@
 //!     .unwrap();
 //! # }
 //! ```
+//!
+//! Parse message-format output:
+//!
+//! ```
+//! # extern crate cargo_metadata;
+//! use std::process::{Stdio, Command};
+//! use cargo_metadata::Message;
+//!
+//! let mut command = Command::new("cargo")
+//!     .args(&["build", "--message-format=json"])
+//!     .stdout(Stdio::piped())
+//!     .spawn()
+//!     .unwrap();
+//!
+//! for message in cargo_metadata::parse_messages(command.stdout.take().unwrap()) {
+//!     match message.unwrap() {
+//!         Message::CompilerMessage(msg) => {
+//!             println!("{:?}", msg);
+//!         },
+//!         Message::CompilerArtifact(artifact) => {
+//!             println!("{:?}", artifact);
+//!         },
+//!         Message::BuildScriptExecuted(script) => {
+//!             println!("{:?}", script);
+//!         },
+//!         _ => () // Unknown message
+//!     }
+//! }
+//!
+//! let output = command.wait().expect("Couldn't get cargo's exit status");
+//! ```
+
 #[macro_use]
 extern crate error_chain;
 extern crate semver;
@@ -140,10 +174,16 @@ use std::str::from_utf8;
 use semver::Version;
 
 pub use dependency::{Dependency, DependencyKind};
+use diagnostic::Diagnostic;
 pub use errors::{Error, ErrorKind, Result};
+pub use messages::{
+    parse_messages, Artifact, ArtifactProfile, BuildScript, CompilerMessage, Message,
+};
 
 mod dependency;
+mod diagnostic;
 mod errors;
+mod messages;
 
 /// An "opaque" identifier for a package.
 /// It is possible to inspect the `repr` field, if the need arises, but its
