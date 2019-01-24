@@ -1,8 +1,8 @@
 use super::{Diagnostic, PackageId, Target};
-use std::io::Read;
-use std::path::PathBuf;
 use serde_json;
 use std::fmt;
+use std::io::Read;
+use std::path::PathBuf;
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.
@@ -27,7 +27,7 @@ pub struct ArtifactProfile {
 /// A compiler-generated file.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Artifact {
-    /// The workspace member this artifact belongs to
+    /// The package this artifact belongs to
     pub package_id: PackageId,
     /// The target this artifact was compiled for
     pub target: Target,
@@ -45,11 +45,10 @@ pub struct Artifact {
 }
 
 /// Message left by the compiler
-// TODO: structify message
 // TODO: Better name. This one comes from machine_message.rs
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FromCompiler {
-    /// The workspace member this message belongs to
+pub struct CompilerMessage {
+    /// The package this message belongs to
     pub package_id: PackageId,
     /// The target this message is aimed at
     pub target: Target,
@@ -63,13 +62,13 @@ pub struct FromCompiler {
 /// Output of a build script execution.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BuildScript {
-    /// The workspace member this build script execution belongs to
+    /// The package this build script execution belongs to
     pub package_id: PackageId,
     /// The libs to link
     pub linked_libs: Vec<PathBuf>,
     /// The paths to search when resolving libs
     pub linked_paths: Vec<PathBuf>,
-    /// The paths to search when resolving libs
+    /// Various `--cfg` flags to pass to the compiler
     pub cfgs: Vec<PathBuf>,
     /// The environment variables to add to the compilation
     pub env: Vec<(String, String)>,
@@ -85,7 +84,7 @@ pub enum Message {
     /// The compiler generated an artifact
     CompilerArtifact(Artifact),
     /// The compiler wants to display a message
-    CompilerMessage(FromCompiler),
+    CompilerMessage(CompilerMessage),
     /// A build script successfully executed.
     BuildScriptExecuted(BuildScript),
     #[doc(hidden)]
@@ -93,7 +92,7 @@ pub enum Message {
     Unknown,
 }
 
-impl fmt::Display for FromCompiler {
+impl fmt::Display for CompilerMessage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.message)
     }

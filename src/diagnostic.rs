@@ -49,7 +49,7 @@ pub struct DiagnosticSpanMacroExpansion {
 /// A section of the source code associated with a Diagnostic
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DiagnosticSpan {
-    /// The file name this diagnostic comes from.
+    /// The file name or the macro name this diagnostic comes from.
     pub file_name: String,
     /// The byte offset in the file where this diagnostic starts from.
     pub byte_start: u32,
@@ -65,6 +65,12 @@ pub struct DiagnosticSpan {
     pub column_end: usize,
     /// Is this a "primary" span -- meaning the point, or one of the points,
     /// where the error occurred?
+    ///
+    /// There are rare cases where multiple spans are marked as primary,
+    /// e.g. "immutable borrow occurs here" and "mutable borrow ends here" can
+    /// be two separate spans both "primary". Top (parent) messages should
+    /// always have at least one primary span, unless it has 0 spans. Child
+    /// messages may have 0 or more primary spans.
     pub is_primary: bool,
     /// Source text from the start of line_start to the end of line_end.
     pub text: Vec<DiagnosticSpanLine>,

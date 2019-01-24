@@ -2,6 +2,9 @@
 //! Structured access to the output of `cargo metadata` and `cargo --message-format=json`.
 //! Usually used from within a `cargo-*` executable
 //!
+//! See the [cargo book](https://doc.rust-lang.org/cargo/index.html) for
+//! details on cargo itself.
+//!
 //! ## Examples
 //!
 //! With [`std::env::args()`](https://doc.rust-lang.org/std/env/fn.args.html):
@@ -173,7 +176,9 @@ use semver::Version;
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, ErrorKind, Result};
-pub use messages::{parse_messages, Artifact, ArtifactProfile, BuildScript, FromCompiler, Message};
+pub use messages::{
+    parse_messages, Artifact, ArtifactProfile, BuildScript, CompilerMessage, Message,
+};
 
 mod dependency;
 mod diagnostic;
