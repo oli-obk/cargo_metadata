@@ -451,7 +451,7 @@ impl MetadataCommand {
             match features {
                 CargoOpt::AllFeatures => cmd.arg("--all-features"),
                 CargoOpt::NoDefaultFeatures => cmd.arg("--no-default-features"),
-                CargoOpt::SomeFeatures(ftrs) => cmd.arg(format!("--features {:?}", ftrs)),
+                CargoOpt::SomeFeatures(ftrs) => cmd.arg("--features").arg(ftrs.join(",")),
             };
         }
 
