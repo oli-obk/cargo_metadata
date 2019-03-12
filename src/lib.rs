@@ -419,8 +419,9 @@ impl MetadataCommand {
     pub fn new() -> MetadataCommand {
         MetadataCommand::default()
     }
-    /// Path to `cargo` executable.
-    /// You can also set the `$CARGO` environment variable.
+    /// Path to `cargo` executable.  If not set, this will use the
+    /// the `$CARGO` environment variable, and if that is not set, will
+    /// simply be `cargo`.
     pub fn cargo_path(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
         self.cargo_path = Some(path.as_ref().to_path_buf());
         self
@@ -453,10 +454,10 @@ impl MetadataCommand {
     }
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
     pub fn exec(&mut self) -> Result<Metadata> {
-        let cargo = env::var("CARGO")
-            .map(|s| PathBuf::from(s))
-            .ok()
-            .or_else(|| self.cargo_path.clone())
+        let cargo = self.cargo_path.clone()
+            .or_else(|| env::var("CARGO")
+                .map(|s| PathBuf::from(s))
+                .ok())
             .unwrap_or_else(|| PathBuf::from("cargo"));
         let mut cmd = Command::new(cargo);
         cmd.args(&["metadata", "--format-version", "1"]);
