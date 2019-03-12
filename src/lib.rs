@@ -405,10 +405,12 @@ pub enum CargoOpt {
 /// A builder for configurating `cargo metadata` invocation.
 #[derive(Debug, Clone, Default)]
 pub struct MetadataCommand {
+    cargo_path: Option<PathBuf>,
     manifest_path: Option<PathBuf>,
     current_dir: Option<PathBuf>,
     no_deps: bool,
     features: Option<CargoOpt>,
+    other_options: Vec<String>,
 }
 
 impl MetadataCommand {
@@ -416,6 +418,13 @@ impl MetadataCommand {
     /// `Cargo.toml` in the ancestors of the current directory.
     pub fn new() -> MetadataCommand {
         MetadataCommand::default()
+    }
+    /// Path to `cargo` executable.  If not set, this will use the
+    /// the `$CARGO` environment variable, and if that is not set, will
+    /// simply be `cargo`.
+    pub fn cargo_path(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
+        self.cargo_path = Some(path.as_ref().to_path_buf());
+        self
     }
     /// Path to `Cargo.toml`
     pub fn manifest_path(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
@@ -437,9 +446,19 @@ impl MetadataCommand {
         self.features = Some(features);
         self
     }
+    /// Arbitrary command line flags to pass to `cargo`.  These will be added 
+    /// to the end of the command line invocation.
+    pub fn other_options(&mut self, options: impl AsRef<[String]>) -> &mut MetadataCommand {
+        self.other_options = options.as_ref().to_vec();
+        self
+    }
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
     pub fn exec(&mut self) -> Result<Metadata> {
-        let cargo = env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
+        let cargo = self.cargo_path.clone()
+            .or_else(|| env::var("CARGO")
+                .map(|s| PathBuf::from(s))
+                .ok())
+            .unwrap_or_else(|| PathBuf::from("cargo"));
         let mut cmd = Command::new(cargo);
         cmd.args(&["metadata", "--format-version", "1"]);
 
@@ -458,6 +477,7 @@ impl MetadataCommand {
         if let Some(manifest_path) = &self.manifest_path {
             cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
         }
+        cmd.args(&self.other_options);
         let output = cmd.output()?;
         if !output.status.success() {
             return Err(ErrorKind::CargoMetadata(String::from_utf8(output.stderr)?).into());
