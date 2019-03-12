@@ -118,6 +118,20 @@ fn error2() {
 }
 
 #[test]
+fn cargo_path() {
+    match MetadataCommand::new()
+        .cargo_path("this does not exist")
+        .exec()
+    {
+        Err(Error(ErrorKind::Io(e), _)) => assert_eq!(
+            e.kind(), std::io::ErrorKind::NotFound
+        ),
+        _ => unreachable!(),
+    }
+}
+
+
+#[test]
 fn metadata_deps() {
     let metadata = MetadataCommand::new()
         .manifest_path("Cargo.toml")
