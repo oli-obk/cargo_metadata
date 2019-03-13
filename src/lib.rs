@@ -21,7 +21,7 @@
 //!         cmd.manifest_path(args.next().unwrap());
 //!     }
 //!     Some(p) => {
-//!         cmd.manifest_path(p.trim_left_matches("--manifest-path="));
+//!         cmd.manifest_path(p.trim_start_matches("--manifest-path="));
 //!     }
 //!     None => {}
 //! };
