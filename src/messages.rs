@@ -35,8 +35,11 @@ pub struct Artifact {
     pub profile: ArtifactProfile,
     /// The enabled features for this artifact
     pub features: Vec<String>,
-    /// The full paths to the generated artifacts
+    /// The full paths to the generated artifacts 
+    /// (e.g. binary file and separate debug info)
     pub filenames: Vec<PathBuf>,
+    /// Path to the executable file
+    pub executable: Option<PathBuf>,
     /// If true, then the files were already generated
     pub fresh: bool,
     #[doc(hidden)]
