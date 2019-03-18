@@ -294,7 +294,9 @@ pub struct Package {
     pub authors: Vec<String>,
     /// An opaque identifier for a package
     pub id: PackageId,
-    source: Option<String>,
+    /// The source of the package, e.g.
+    /// crates.io or `None` for local projects.
+    pub source: Option<Source>,
     /// Description as given in the `Cargo.toml`
     pub description: Option<String>,
     /// List of dependencies of this particular package
@@ -358,6 +360,24 @@ pub struct Package {
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
+}
+
+/// The source of a package such as crates.io.
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(transparent)]
+pub struct Source(String);
+
+impl Source {
+    /// Returns true if the source is crates.io.
+    pub fn is_crates_io(&self) -> bool {
+        self.0 == "registry+https://github.com/rust-lang/crates.io-index"
+    }
+}
+
+impl std::fmt::Display for Source {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(&self.0, f)
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
