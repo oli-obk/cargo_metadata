@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use semver::Version;
 
-use cargo_metadata::{CargoOpt, Error, ErrorKind, MetadataCommand};
+use cargo_metadata::{CargoOpt, Error, MetadataCommand};
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
 struct TestPackageMetadata {
@@ -95,8 +95,8 @@ fn builder_interface() {
 #[test]
 fn error1() {
     match MetadataCommand::new().manifest_path("foo").exec() {
-        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(
-            s.trim(),
+        Err(Error::CargoMetadata { stderr }) => assert_eq!(
+            stderr.trim(),
             "error: the manifest-path must be a path to a Cargo.toml file"
         ),
         _ => unreachable!(),
@@ -109,8 +109,8 @@ fn error2() {
         .manifest_path("foo/Cargo.toml")
         .exec()
     {
-        Err(Error(ErrorKind::CargoMetadata(s), _)) => assert_eq!(
-            s.trim(),
+        Err(Error::CargoMetadata { stderr }) => assert_eq!(
+            stderr.trim(),
             "error: manifest path `foo/Cargo.toml` does not exist"
         ),
         _ => unreachable!(),
@@ -123,7 +123,7 @@ fn cargo_path() {
         .cargo_path("this does not exist")
         .exec()
     {
-        Err(Error(ErrorKind::Io(e), _)) => assert_eq!(
+        Err(Error::Io(e)) => assert_eq!(
             e.kind(), std::io::ErrorKind::NotFound
         ),
         _ => unreachable!(),
