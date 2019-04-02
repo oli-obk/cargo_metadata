@@ -157,7 +157,7 @@
 //! ```
 
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 extern crate semver;
 extern crate serde;
 #[macro_use]
@@ -175,7 +175,7 @@ use semver::Version;
 
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
-pub use errors::{Error, ErrorKind, Result};
+pub use errors::{Error, Result};
 pub use messages::{
     parse_messages, Artifact, ArtifactProfile, BuildScript, CompilerMessage, Message,
 };
@@ -466,7 +466,7 @@ impl MetadataCommand {
         self.features = Some(features);
         self
     }
-    /// Arbitrary command line flags to pass to `cargo`.  These will be added 
+    /// Arbitrary command line flags to pass to `cargo`.  These will be added
     /// to the end of the command line invocation.
     pub fn other_options(&mut self, options: impl AsRef<[String]>) -> &mut MetadataCommand {
         self.other_options = options.as_ref().to_vec();
@@ -500,7 +500,7 @@ impl MetadataCommand {
         cmd.args(&self.other_options);
         let output = cmd.output()?;
         if !output.status.success() {
-            return Err(ErrorKind::CargoMetadata(String::from_utf8(output.stderr)?).into());
+            return Err(Error::CargoMetadata { stderr: String::from_utf8(output.stderr)? });
         }
         let stdout = from_utf8(&output.stdout)?;
         let meta = serde_json::from_str(stdout)?;
