@@ -486,6 +486,10 @@ impl MetadataCommand {
             cmd.arg("--no-deps");
         }
 
+        if let Some(path) = self.current_dir.as_ref() {
+            cmd.current_dir(path);
+        }
+
         if let Some(features) = &self.features {
             match features {
                 CargoOpt::AllFeatures => cmd.arg("--all-features"),
