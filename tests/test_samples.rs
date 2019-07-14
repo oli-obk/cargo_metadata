@@ -474,3 +474,14 @@ fn links() {
     let meta: Metadata = serde_json::from_str(json).unwrap();
     assert_eq!(meta.packages[0].links, Some("somelib".to_string()));
 }
+
+
+#[test]
+fn current_dir() {
+    let meta = MetadataCommand::new()
+        .current_dir("tests/all/namedep")
+        .exec()
+        .unwrap();
+    let namedep = meta.packages.iter().find(|p| p.name == "namedep").unwrap();
+    assert!(namedep.name.starts_with("namedep"));
+}
