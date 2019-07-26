@@ -156,8 +156,6 @@
 //! let output = command.wait().expect("Couldn't get cargo's exit status");
 //! ```
 
-#[macro_use]
-extern crate failure;
 extern crate semver;
 extern crate serde;
 #[macro_use]
