@@ -1,3 +1,4 @@
+use std::fmt;
 use std::io;
 use std::str::Utf8Error;
 use std::string::FromUtf8Error;
@@ -23,31 +24,25 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 ///    really want to. (Either through foreign_links or by making it a field
 ///    value of a `ErrorKind` variant).
 ///
-#[derive(Debug, Fail)]
+#[derive(Debug)]
 pub enum Error {
-
     /// Error during execution of `cargo metadata`
-    #[fail(display = "Error during execution of `cargo metadata`: {}", stderr)]
     CargoMetadata {
         /// stderr returned by the `cargo metadata` command
-        stderr: String
+        stderr: String,
     },
 
     /// IO Error during execution of `cargo metadata`
-    #[fail(display = "{}", 0)]
     Io(io::Error),
 
     /// Output of `cargo metadata` was not valid utf8
-    #[fail(display = "Cannot convert the stdout of `cargo metadata`: {}", 0)]
     Utf8(Utf8Error),
 
     /// Error output of `cargo metadata` was not valid utf8
-    #[fail(display = "Cannot convert the stderr of `cargo metadata`: {}", 0)]
     ErrUtf8(FromUtf8Error),
 
     /// Deserialization error (structure of json did not match expected structure)
-    #[fail(display = "Failed to interpret `cargo metadata`'s json: {}", 0)]
-    Json(::serde_json::Error)
+    Json(::serde_json::Error),
 }
 
 impl From<io::Error> for Error {
@@ -71,5 +66,33 @@ impl From<FromUtf8Error> for Error {
 impl From<::serde_json::Error> for Error {
     fn from(v: ::serde_json::Error) -> Self {
         Error::Json(v)
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::CargoMetadata { stderr } => {
+                write!(f, "Error during execution of `cargo metadata`: {}", stderr)
+            }
+            Error::Io(err) => write!(f, "{}", err),
+            Error::Utf8(err) => write!(f, "Cannot convert the stdout of `cargo metadata`: {}", err),
+            Error::ErrUtf8(err) => {
+                write!(f, "Cannot convert the stderr of `cargo metadata`: {}", err)
+            }
+            Error::Json(err) => write!(f, "Failed to interpret `cargo metadata`'s json: {}", err),
+        }
+    }
+}
+
+impl ::std::error::Error for Error {
+    fn source(&self) -> Option<&(::std::error::Error + 'static)> {
+        match self {
+            Error::CargoMetadata { .. } => None,
+            Error::Io(err) => Some(err),
+            Error::Utf8(err) => Some(err),
+            Error::ErrUtf8(err) => Some(err),
+            Error::Json(err) => Some(err),
+        }
     }
 }
