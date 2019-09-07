@@ -281,7 +281,7 @@ fn all_the_fields() {
     assert!(all.manifest_path.ends_with("all/Cargo.toml"));
     assert_eq!(all.categories, vec!["command-line-utilities"]);
     assert_eq!(all.keywords, vec!["cli"]);
-    assert_eq!(all.readme, Some("README.md".to_string()));
+    assert_eq!(all.readme, Some(PathBuf::from("README.md")));
     assert_eq!(
         all.repository,
         Some("https://github.com/oli-obk/cargo_metadata/".to_string())

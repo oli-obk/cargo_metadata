@@ -317,7 +317,7 @@ pub struct Package {
     #[serde(default)]
     pub keywords: Vec<String>,
     /// Readme as given in the `Cargo.toml`
-    pub readme: Option<String>,
+    pub readme: Option<PathBuf>,
     /// Repository as given in the `Cargo.toml`
     pub repository: Option<String>,
     /// Default Rust edition for the package
