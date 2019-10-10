@@ -355,6 +355,12 @@ pub struct Package {
     pub metadata: serde_json::Value,
     /// The name of a native library the package is linking to.
     pub links: Option<String>,
+    /// List of registries to which this package may be published.
+    ///
+    /// Publishing is unrestricted if `None`, and forbidden if the `Vec` is empty.
+    ///
+    /// This is always `None` if running with a version of Cargo older than 1.39.
+    pub publish: Option<Vec<String>>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
@@ -400,6 +406,11 @@ pub struct Target {
     /// Rust edition for this target
     #[serde(default = "edition_default")]
     pub edition: String,
+    /// Whether or not this target has doc tests enabled, and the target is
+    /// compatible with doc testing.
+    ///
+    /// This is `None` if running with a version of Cargo older than 1.37.
+    pub doctest: Option<bool>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),

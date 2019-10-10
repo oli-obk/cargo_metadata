@@ -11,6 +11,7 @@ keywords = ["cli"]
 readme = "README.md"
 repository = "https://github.com/oli-obk/cargo_metadata/"
 links = "foo"
+publish = false
 
 [package.metadata.docs.rs]
 all-features = true
