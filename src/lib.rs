@@ -179,7 +179,7 @@ pub use messages::{
 };
 
 mod dependency;
-mod diagnostic;
+pub mod diagnostic;
 mod errors;
 mod messages;
 
