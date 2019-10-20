@@ -93,6 +93,7 @@ fn old_minimal() {
     assert_eq!(target.required_features.len(), 0);
     assert_eq!(target.src_path, PathBuf::from("/foo/src/main.rs"));
     assert_eq!(target.edition, "2015");
+    assert_eq!(target.doctest, true);
     assert_eq!(pkg.features.len(), 0);
     assert_eq!(pkg.manifest_path, PathBuf::from("/foo/Cargo.toml"));
     assert_eq!(pkg.categories.len(), 0);
@@ -102,6 +103,7 @@ fn old_minimal() {
     assert_eq!(pkg.edition, "2015");
     assert_eq!(pkg.metadata, serde_json::Value::Null);
     assert_eq!(pkg.links, None);
+    assert_eq!(pkg.publish, None);
     assert_eq!(meta.workspace_members.len(), 1);
     assert_eq!(
         meta.workspace_members[0].to_string(),
@@ -255,12 +257,12 @@ fn all_the_fields() {
     );
     assert_eq!(lib.required_features.len(), 0);
     assert_eq!(lib.edition, "2018");
-    assert_eq!(lib.doctest, Some(true));
+    assert_eq!(lib.doctest, true);
 
     let main = get_file_name!("main.rs");
     assert_eq!(main.crate_types, vec!["bin"]);
     assert_eq!(main.kind, vec!["bin"]);
-    assert_eq!(main.doctest, Some(false));
+    assert_eq!(main.doctest, false);
 
     let otherbin = get_file_name!("otherbin.rs");
     assert_eq!(otherbin.edition, "2015");

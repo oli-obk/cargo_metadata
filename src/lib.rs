@@ -409,11 +409,16 @@ pub struct Target {
     /// Whether or not this target has doc tests enabled, and the target is
     /// compatible with doc testing.
     ///
-    /// This is `None` if running with a version of Cargo older than 1.37.
-    pub doctest: Option<bool>,
+    /// This is always `true` if running with a version of Cargo older than 1.37.
+    #[serde(default = "default_true")]
+    pub doctest: bool,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
+}
+
+fn default_true() -> bool {
+    true
 }
 
 fn edition_default() -> String {
