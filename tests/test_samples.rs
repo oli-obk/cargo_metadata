@@ -93,6 +93,7 @@ fn old_minimal() {
     assert_eq!(target.required_features.len(), 0);
     assert_eq!(target.src_path, PathBuf::from("/foo/src/main.rs"));
     assert_eq!(target.edition, "2015");
+    assert_eq!(target.doctest, true);
     assert_eq!(pkg.features.len(), 0);
     assert_eq!(pkg.manifest_path, PathBuf::from("/foo/Cargo.toml"));
     assert_eq!(pkg.categories.len(), 0);
@@ -102,6 +103,7 @@ fn old_minimal() {
     assert_eq!(pkg.edition, "2015");
     assert_eq!(pkg.metadata, serde_json::Value::Null);
     assert_eq!(pkg.links, None);
+    assert_eq!(pkg.publish, None);
     assert_eq!(meta.workspace_members.len(), 1);
     assert_eq!(
         meta.workspace_members[0].to_string(),
@@ -128,15 +130,19 @@ fn cargo_version() -> semver::Version {
     let out = std::str::from_utf8(&output.stdout).expect("invalid utf8").trim();
     let split: Vec<&str> = out.split_whitespace().collect();
     assert!(split.len() >= 2, "cargo -V output is unexpected: {}", out);
-    semver::Version::parse(split[1]).expect("cargo -V semver could not be parsed")
+    let mut ver = semver::Version::parse(split[1]).expect("cargo -V semver could not be parsed");
+    // Don't care about metadata, it is awkward to compare.
+    ver.pre = Vec::new();
+    ver.build = Vec::new();
+    ver
 }
 
 #[test]
 fn all_the_fields() {
-    // All the fields currently generated as of 1.31. This tries to exercise as
+    // All the fields currently generated as of 1.39. This tries to exercise as
     // much as possible.
     let ver = cargo_version();
-    let minimum = semver::Version::parse("1.31.0").unwrap();
+    let minimum = semver::Version::parse("1.39.0").unwrap();
     if ver < minimum {
         // edition added in 1.30
         // rename added in 1.31
@@ -166,6 +172,7 @@ fn all_the_fields() {
     assert_eq!(all.description, Some("Package description.".to_string()));
     assert_eq!(all.license, Some("MIT/Apache-2.0".to_string()));
     assert_eq!(all.license_file, Some(PathBuf::from("LICENSE")));
+    assert_eq!(all.publish, Some(vec![]));
 
     assert_eq!(all.dependencies.len(), 8);
     let bitflags = all
@@ -250,10 +257,12 @@ fn all_the_fields() {
     );
     assert_eq!(lib.required_features.len(), 0);
     assert_eq!(lib.edition, "2018");
+    assert_eq!(lib.doctest, true);
 
     let main = get_file_name!("main.rs");
     assert_eq!(main.crate_types, vec!["bin"]);
     assert_eq!(main.kind, vec!["bin"]);
+    assert_eq!(main.doctest, false);
 
     let otherbin = get_file_name!("otherbin.rs");
     assert_eq!(otherbin.edition, "2015");
