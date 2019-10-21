@@ -317,7 +317,7 @@ pub struct Package {
     #[serde(default)]
     pub keywords: Vec<String>,
     /// Readme as given in the `Cargo.toml`
-    pub readme: Option<String>,
+    pub readme: Option<PathBuf>,
     /// Repository as given in the `Cargo.toml`
     pub repository: Option<String>,
     /// Default Rust edition for the package
@@ -364,6 +364,22 @@ pub struct Package {
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
+}
+
+impl Package {
+    /// Full path to the license file if one is present in the manifest
+    pub fn license_file(&self) -> Option<PathBuf> {
+        self.license_file
+            .as_ref()
+            .map(|file| self.manifest_path.join(file))
+    }
+
+    /// Full path to the readme file if one is present in the manifest
+    pub fn readme(&self) -> Option<PathBuf> {
+        self.readme
+            .as_ref()
+            .map(|file| self.manifest_path.join(file))
+    }
 }
 
 /// The source of a package such as crates.io.
