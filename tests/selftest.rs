@@ -123,13 +123,10 @@ fn cargo_path() {
         .cargo_path("this does not exist")
         .exec()
     {
-        Err(Error::Io(e)) => assert_eq!(
-            e.kind(), std::io::ErrorKind::NotFound
-        ),
+        Err(Error::Io(e)) => assert_eq!(e.kind(), std::io::ErrorKind::NotFound),
         _ => unreachable!(),
     }
 }
-
 
 #[test]
 fn metadata_deps() {

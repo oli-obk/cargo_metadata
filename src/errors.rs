@@ -84,7 +84,10 @@ impl fmt::Display for Error {
                 write!(f, "Cannot convert the stderr of `cargo metadata`: {}", err)
             }
             Error::Json(err) => write!(f, "Failed to interpret `cargo metadata`'s json: {}", err),
-            Error::NoJson => write!(f, "Could not find any json in the output of `cargo metadata`"),
+            Error::NoJson => write!(
+                f,
+                "Could not find any json in the output of `cargo metadata`"
+            ),
         }
     }
 }

@@ -504,10 +504,10 @@ impl MetadataCommand {
     }
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
     pub fn exec(&mut self) -> Result<Metadata> {
-        let cargo = self.cargo_path.clone()
-            .or_else(|| env::var("CARGO")
-                .map(|s| PathBuf::from(s))
-                .ok())
+        let cargo = self
+            .cargo_path
+            .clone()
+            .or_else(|| env::var("CARGO").map(|s| PathBuf::from(s)).ok())
             .unwrap_or_else(|| PathBuf::from("cargo"));
         let mut cmd = Command::new(cargo);
         cmd.args(&["metadata", "--format-version", "1"]);
@@ -534,7 +534,9 @@ impl MetadataCommand {
         cmd.args(&self.other_options);
         let output = cmd.output()?;
         if !output.status.success() {
-            return Err(Error::CargoMetadata { stderr: String::from_utf8(output.stderr)? });
+            return Err(Error::CargoMetadata {
+                stderr: String::from_utf8(output.stderr)?,
+            });
         }
         let stdout = from_utf8(&output.stdout)?
             .lines()

@@ -127,7 +127,9 @@ fn cargo_version() -> semver::Version {
         .arg("-V")
         .output()
         .expect("Failed to exec cargo.");
-    let out = std::str::from_utf8(&output.stdout).expect("invalid utf8").trim();
+    let out = std::str::from_utf8(&output.stdout)
+        .expect("invalid utf8")
+        .trim();
     let split: Vec<&str> = out.split_whitespace().collect();
     assert!(split.len() >= 2, "cargo -V output is unexpected: {}", out);
     let mut ver = semver::Version::parse(split[1]).expect("cargo -V semver could not be parsed");
@@ -483,7 +485,6 @@ fn links() {
     let meta: Metadata = serde_json::from_str(json).unwrap();
     assert_eq!(meta.packages[0].links, Some("somelib".to_string()));
 }
-
 
 #[test]
 fn current_dir() {
