@@ -319,6 +319,7 @@ pub struct Package {
     /// Readme as given in the `Cargo.toml`
     pub readme: Option<PathBuf>,
     /// Repository as given in the `Cargo.toml`
+    // can't use `url::Url` because that requires a more recent stable compiler
     pub repository: Option<String>,
     /// Default Rust edition for the package
     ///
