@@ -133,6 +133,7 @@ fn cargo_path() {
 
 #[test]
 fn metadata_deps() {
+    std::env::set_var("CARGO_PROFILE", "3");
     let metadata = MetadataCommand::new()
         .manifest_path("Cargo.toml")
         .exec()

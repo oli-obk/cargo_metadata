@@ -43,6 +43,9 @@ pub enum Error {
 
     /// Deserialization error (structure of json did not match expected structure)
     Json(::serde_json::Error),
+
+    /// The output did not contain any json
+    NoJson,
 }
 
 impl From<io::Error> for Error {
@@ -81,6 +84,7 @@ impl fmt::Display for Error {
                 write!(f, "Cannot convert the stderr of `cargo metadata`: {}", err)
             }
             Error::Json(err) => write!(f, "Failed to interpret `cargo metadata`'s json: {}", err),
+            Error::NoJson => write!(f, "Could not find any json in the output of `cargo metadata`"),
         }
     }
 }
@@ -93,6 +97,7 @@ impl ::std::error::Error for Error {
             Error::Utf8(err) => Some(err),
             Error::ErrUtf8(err) => Some(err),
             Error::Json(err) => Some(err),
+            Error::NoJson => None,
         }
     }
 }
