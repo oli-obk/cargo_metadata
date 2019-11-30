@@ -3,7 +3,7 @@ extern crate semver;
 #[macro_use]
 extern crate serde_json;
 
-use cargo_metadata::{Metadata, MetadataCommand};
+use cargo_metadata::{DependencyKind, Metadata, MetadataCommand};
 use std::path::PathBuf;
 
 #[test]
@@ -78,7 +78,7 @@ fn old_minimal() {
     assert_eq!(dep.name, "somedep");
     assert_eq!(dep.source, None);
     assert_eq!(dep.req, semver::VersionReq::parse("^1.0").unwrap());
-    assert_eq!(dep.kind, cargo_metadata::DependencyKind::Normal);
+    assert_eq!(dep.kind, DependencyKind::Normal);
     assert_eq!(dep.optional, false);
     assert_eq!(dep.uses_default_features, true);
     assert_eq!(dep.features.len(), 0);
@@ -141,13 +141,17 @@ fn cargo_version() -> semver::Version {
 
 #[test]
 fn all_the_fields() {
-    // All the fields currently generated as of 1.39. This tries to exercise as
+    // All the fields currently generated as of 1.41. This tries to exercise as
     // much as possible.
     let ver = cargo_version();
-    let minimum = semver::Version::parse("1.39.0").unwrap();
+    let minimum = semver::Version::parse("1.41.0").unwrap();
     if ver < minimum {
         // edition added in 1.30
         // rename added in 1.31
+        // links added in 1.33
+        // doctest added in 1.37
+        // publish added in 1.39
+        // dep_kinds added in 1.41
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -195,7 +199,7 @@ fn all_the_fields() {
         .find(|d| d.name == "path-dep")
         .unwrap();
     assert_eq!(path_dep.source, None);
-    assert_eq!(path_dep.kind, cargo_metadata::DependencyKind::Normal);
+    assert_eq!(path_dep.kind, DependencyKind::Normal);
     assert_eq!(path_dep.req, semver::VersionReq::parse("*").unwrap());
 
     all.dependencies
@@ -223,10 +227,10 @@ fn all_the_fields() {
         .iter()
         .find(|d| d.name == "devdep")
         .unwrap();
-    assert_eq!(devdep.kind, cargo_metadata::DependencyKind::Development);
+    assert_eq!(devdep.kind, DependencyKind::Development);
 
     let bdep = all.dependencies.iter().find(|d| d.name == "bdep").unwrap();
-    assert_eq!(bdep.kind, cargo_metadata::DependencyKind::Build);
+    assert_eq!(bdep.kind, DependencyKind::Build);
 
     let windep = all
         .dependencies
@@ -355,6 +359,11 @@ fn all_the_fields() {
     // Note the underscore here.
     let path_dep = all.deps.iter().find(|d| d.name == "path_dep").unwrap();
     assert!(path_dep.pkg.to_string().starts_with("path-dep"));
+    assert_eq!(path_dep.dep_kinds.len(), 1);
+    let kind = &path_dep.dep_kinds[0];
+    assert_eq!(kind.kind, DependencyKind::Normal);
+    assert!(kind.target.is_none());
+
     let namedep = all
         .deps
         .iter()
@@ -362,6 +371,27 @@ fn all_the_fields() {
         .unwrap();
     assert!(namedep.pkg.to_string().starts_with("namedep"));
     assert_eq!(sorted!(all.features), vec!["bitflags", "default", "feat1"]);
+
+    let bdep = all.deps.iter().find(|d| d.name == "bdep").unwrap();
+    assert_eq!(bdep.dep_kinds.len(), 1);
+    let kind = &bdep.dep_kinds[0];
+    assert_eq!(kind.kind, DependencyKind::Build);
+    assert!(kind.target.is_none());
+
+    let devdep = all.deps.iter().find(|d| d.name == "devdep").unwrap();
+    assert_eq!(devdep.dep_kinds.len(), 1);
+    let kind = &devdep.dep_kinds[0];
+    assert_eq!(kind.kind, DependencyKind::Development);
+    assert!(kind.target.is_none());
+
+    let windep = all.deps.iter().find(|d| d.name == "windep").unwrap();
+    assert_eq!(windep.dep_kinds.len(), 1);
+    let kind = &windep.dep_kinds[0];
+    assert_eq!(kind.kind, DependencyKind::Normal);
+    assert_eq!(
+        kind.target.as_ref().map(|x| x.to_string()),
+        Some("cfg(windows)".to_string())
+    );
 }
 
 #[test]
