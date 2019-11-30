@@ -75,6 +75,11 @@ pub struct BuildScript {
     pub cfgs: Vec<PathBuf>,
     /// The environment variables to add to the compilation
     pub env: Vec<(String, String)>,
+    /// The `OUT_DIR` environment variable where this script places its output
+    ///
+    /// Added in Rust 1.41.
+    #[serde(default)]
+    pub out_dir: PathBuf,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
