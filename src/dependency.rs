@@ -28,7 +28,7 @@ impl Default for DependencyKind {
 }
 
 /// The `kind` can be `null`, which is interpreted as the default - `Normal`.
-fn parse_dependency_kind<'de, D>(d: D) -> Result<DependencyKind, D::Error>
+pub(super) fn parse_dependency_kind<'de, D>(d: D) -> Result<DependencyKind, D::Error>
 where
     D: Deserializer<'de>,
 {

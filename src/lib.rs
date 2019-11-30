@@ -275,6 +275,34 @@ pub struct NodeDep {
     pub name: String,
     /// Package ID (opaque unique identifier)
     pub pkg: PackageId,
+    /// The kinds of dependencies.
+    ///
+    /// This field was added in Rust 1.41.
+    #[serde(default)]
+    pub dep_kinds: Vec<DepKindInfo>,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+/// Information about a dependency kind.
+pub struct DepKindInfo {
+    /// The kind of dependency.
+    #[serde(deserialize_with = "dependency::parse_dependency_kind")]
+    pub kind: DependencyKind,
+    /// The target platform for the dependency.
+    ///
+    /// This is `None` if it is not a target dependency.
+    ///
+    /// Use the [`Display`] trait to access the contents.
+    ///
+    /// By default all platform dependencies are included in the resolve
+    /// graph. Use Cargo's `--filter-platform` flag if you only want to
+    /// include dependencies for a specific platform.
+    ///
+    /// [`Display`]: https://doc.rust-lang.org/std/fmt/trait.Display.html
+    pub target: Option<dependency::Platform>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
