@@ -175,6 +175,7 @@ fn all_the_fields() {
     assert_eq!(all.license, Some("MIT/Apache-2.0".to_string()));
     assert_eq!(all.license_file, Some(PathBuf::from("LICENSE")));
     assert_eq!(all.publish, Some(vec![]));
+    assert_eq!(all.links, Some("foo".to_string()));
 
     assert_eq!(all.dependencies.len(), 8);
     let bitflags = all
@@ -431,59 +432,6 @@ fn alt_registry() {
     assert_eq!(deps.len(), 1);
     let dep = &deps[0];
     assert_eq!(dep.registry, Some("https://example.com".to_string()));
-}
-
-#[test]
-fn links() {
-    // This should be moved to all_the_fields once it is available on stable (1.33).
-    let json = r#"
-{
-  "packages": [
-    {
-      "name": "foo",
-      "version": "0.1.0",
-      "id": "foo 0.1.0 (path+file:///foo)",
-      "license": null,
-      "license_file": null,
-      "description": null,
-      "source": null,
-      "dependencies": [],
-      "targets": [
-        {
-          "kind": [
-            "lib"
-          ],
-          "crate_types": [
-            "lib"
-          ],
-          "name": "foo",
-          "src_path": "/foo/src/lib.rs",
-          "edition": "2018"
-        }
-      ],
-      "features": {},
-      "manifest_path": "/foo/Cargo.toml",
-      "metadata": null,
-      "authors": [],
-      "categories": [],
-      "keywords": [],
-      "readme": null,
-      "repository": null,
-      "edition": "2018",
-      "links": "somelib"
-    }
-  ],
-  "workspace_members": [
-    "foo 0.1.0 (path+file:///foo)"
-  ],
-  "resolve": null,
-  "target_directory": "/foo/target",
-  "version": 1,
-  "workspace_root": "/foo"
-}
-"#;
-    let meta: Metadata = serde_json::from_str(json).unwrap();
-    assert_eq!(meta.packages[0].links, Some("somelib".to_string()));
 }
 
 #[test]
