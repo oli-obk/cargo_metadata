@@ -74,10 +74,13 @@ pub struct Dependency {
 /// A target platform.
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
-pub struct Platform(String);
+pub struct Platform {
+    /// The underlying string representation of a platform.
+    pub repr: String,
+}
 
 impl fmt::Display for Platform {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.0)
+        fmt::Display::fmt(&self.repr, f)
     }
 }
