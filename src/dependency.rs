@@ -74,7 +74,7 @@ pub struct Dependency {
 /// A target platform.
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
-pub struct Platform(String);
+pub struct Platform(pub String);
 
 impl fmt::Display for Platform {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
