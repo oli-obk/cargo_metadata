@@ -408,18 +408,21 @@ impl Package {
 /// The source of a package such as crates.io.
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
-pub struct Source(pub String);
+pub struct Source {
+    /// The underlying string representation of a source.
+    pub repr: String,
+}
 
 impl Source {
     /// Returns true if the source is crates.io.
     pub fn is_crates_io(&self) -> bool {
-        self.0 == "registry+https://github.com/rust-lang/crates.io-index"
+        self.repr == "registry+https://github.com/rust-lang/crates.io-index"
     }
 }
 
 impl std::fmt::Display for Source {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Display::fmt(&self.0, f)
+        fmt::Display::fmt(&self.repr, f)
     }
 }
 
