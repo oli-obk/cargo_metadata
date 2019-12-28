@@ -408,7 +408,7 @@ impl Package {
 /// The source of a package such as crates.io.
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(transparent)]
-pub struct Source(String);
+pub struct Source(pub String);
 
 impl Source {
     /// Returns true if the source is crates.io.
