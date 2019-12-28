@@ -38,6 +38,7 @@
 //! # #[macro_use] extern crate serde_derive;
 //! # use std::path::Path;
 //! # use docopt::Docopt;
+//! # fn main() {
 //! const USAGE: &str = "
 //!     Cargo metadata test function
 //!
@@ -59,6 +60,7 @@
 //!     cmd.manifest_path(path);
 //! }
 //! let _metadata = cmd.exec().unwrap();
+//! # }
 //! ```
 //!
 //! With [`clap`](https://docs.rs/clap):
@@ -90,6 +92,7 @@
 //! # #[macro_use] extern crate structopt;
 //! # use std::path::PathBuf;
 //! # use structopt::StructOpt;
+//! # fn main() {
 //! #[derive(Debug, StructOpt)]
 //! struct Opt {
 //!     #[structopt(name = "PATH", long="manifest-path", parse(from_os_str))]
@@ -102,6 +105,7 @@
 //!     cmd.manifest_path(path);
 //! }
 //! let _metadata = cmd.exec().unwrap();
+//! # }
 //! ```
 //!
 //! Pass features flags
@@ -110,6 +114,7 @@
 //! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # use std::path::Path;
+//! # fn main() {
 //! use cargo_metadata::{MetadataCommand, CargoOpt};
 //!
 //! let _metadata = MetadataCommand::new()
@@ -117,6 +122,7 @@
 //!     .features(CargoOpt::AllFeatures)
 //!     .exec()
 //!     .unwrap();
+//! # }
 //! ```
 //!
 //! Parse message-format output:
@@ -533,7 +539,7 @@ impl MetadataCommand {
         let cargo = self
             .cargo_path
             .clone()
-            .or_else(|| env::var("CARGO").map(PathBuf::from).ok())
+            .or_else(|| env::var("CARGO").map(|s| PathBuf::from(s)).ok())
             .unwrap_or_else(|| PathBuf::from("cargo"));
         let mut cmd = Command::new(cargo);
         cmd.args(&["metadata", "--format-version", "1"]);
