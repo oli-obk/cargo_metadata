@@ -178,6 +178,7 @@ fn all_the_fields() {
     assert_eq!(all.description, Some("Package description.".to_string()));
     assert_eq!(all.license, Some("MIT/Apache-2.0".to_string()));
     assert_eq!(all.license_file, Some(PathBuf::from("LICENSE")));
+    assert!(all.license_file().unwrap().ends_with("tests/all/LICENSE"));
     assert_eq!(all.publish, Some(vec![]));
     assert_eq!(all.links, Some("foo".to_string()));
 

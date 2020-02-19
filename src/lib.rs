@@ -400,7 +400,7 @@ impl Package {
     pub fn license_file(&self) -> Option<PathBuf> {
         self.license_file
             .as_ref()
-            .map(|file| self.manifest_path.join(file))
+            .map(|file| self.manifest_path.parent().unwrap_or(&self.manifest_path).join(file))
     }
 
     /// Full path to the readme file if one is present in the manifest
