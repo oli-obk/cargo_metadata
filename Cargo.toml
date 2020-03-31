@@ -19,11 +19,6 @@ version = "0.9"
 [features]
 default = []
 
-[dev-dependencies]
-clap = "2.26.0"
-docopt = "1.0.2"
-structopt = "0.2.10"
-
 [package.metadata.cargo_metadata_test]
 some_field = true
 other_field = "foo"
