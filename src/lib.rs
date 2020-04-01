@@ -7,10 +7,7 @@
 //!
 //! ## Examples
 //!
-//! With [`std::env::args()`](https://doc.rust-lang.org/std/env/fn.args.html):
-//!
 //! ```rust
-//! # // This should be kept in sync with the equivalent example in the readme.
 //! # extern crate cargo_metadata;
 //! # use std::path::Path;
 //! let mut args = std::env::args().skip_while(|val| !val.starts_with("--manifest-path"));
@@ -27,85 +24,6 @@
 //! };
 //!
 //! let _metadata = cmd.exec().unwrap();
-//! ```
-//!
-//! With [`docopt`](https://docs.rs/docopt):
-//!
-//! ```rust
-//! # // This should be kept in sync with the equivalent example in the readme.
-//! # extern crate cargo_metadata;
-//! # extern crate docopt;
-//! # #[macro_use] extern crate serde_derive;
-//! # use std::path::Path;
-//! # use docopt::Docopt;
-//! # fn main() {
-//! const USAGE: &str = "
-//!     Cargo metadata test function
-//!
-//!     Usage:
-//!       cargo_metadata [--manifest-path PATH]
-//! ";
-//!
-//! #[derive(Debug, Deserialize)]
-//! struct Args {
-//!     arg_manifest_path: Option<String>,
-//! }
-//!
-//! let args: Args = Docopt::new(USAGE)
-//!     .and_then(|d| d.deserialize())
-//!     .unwrap_or_else(|e| e.exit());
-//!
-//! let mut cmd = cargo_metadata::MetadataCommand::new();
-//! if let Some(path) = args.arg_manifest_path {
-//!     cmd.manifest_path(path);
-//! }
-//! let _metadata = cmd.exec().unwrap();
-//! # }
-//! ```
-//!
-//! With [`clap`](https://docs.rs/clap):
-//!
-//! ```rust
-//! # // This should be kept in sync with the equivalent example in the readme.
-//! # extern crate cargo_metadata;
-//! # extern crate clap;
-//! let matches = clap::App::new("myapp")
-//!     .arg(
-//!         clap::Arg::with_name("manifest-path")
-//!             .long("manifest-path")
-//!             .value_name("PATH")
-//!             .takes_value(true),
-//!     )
-//!     .get_matches();
-//!
-//! let mut cmd = cargo_metadata::MetadataCommand::new();
-//! if let Some(path) = matches.value_of("manifest-path") {
-//!     cmd.manifest_path(path);
-//! }
-//! let _metadata = cmd.exec().unwrap();
-//! ```
-//! With [`structopt`](https://docs.rs/structopt):
-//!
-//! ```rust
-//! # // This should be kept in sync with the equivalent example in the readme.
-//! # extern crate cargo_metadata;
-//! # #[macro_use] extern crate structopt;
-//! # use std::path::PathBuf;
-//! # use structopt::StructOpt;
-//! # fn main() {
-//! #[derive(Debug, StructOpt)]
-//! struct Opt {
-//!     #[structopt(name = "PATH", long="manifest-path", parse(from_os_str))]
-//!     manifest_path: Option<PathBuf>,
-//! }
-//!
-//! let opt = Opt::from_args();
-//! let mut cmd = cargo_metadata::MetadataCommand::new();
-//! if let Some(path) = opt.manifest_path {
-//!     cmd.manifest_path(path);
-//! }
-//! let _metadata = cmd.exec().unwrap();
-//! # }
 //! ```
 //!
 //! Pass features flags
