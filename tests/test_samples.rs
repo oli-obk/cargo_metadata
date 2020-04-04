@@ -474,3 +474,24 @@ fn current_dir() {
     let namedep = meta.packages.iter().find(|p| p.name == "namedep").unwrap();
     assert!(namedep.name.starts_with("namedep"));
 }
+
+#[test]
+fn parse_stream_is_robust() {
+    // Proc macros can print stuff to stdout, which naturally breaks JSON messages.
+    // Let's check that we don't die horribly in this case, and report an error.
+    let json_output = r##"{"reason":"compiler-artifact","package_id":"chatty 0.1.0 (path+file:///chatty-macro/chatty)","target":{"kind":["proc-macro"],"crate_types":["proc-macro"],"name":"chatty","src_path":"/chatty-macro/chatty/src/lib.rs","edition":"2018","doctest":true},"profile":{"opt_level":"0","debuginfo":2,"debug_assertions":true,"overflow_checks":true,"test":false},"features":[],"filenames":["/chatty-macro/target/debug/deps/libchatty-f2adcff24cdf3bb2.so"],"executable":null,"fresh":false}
+Evil proc macro was here!
+{"reason":"compiler-artifact","package_id":"chatty-macro 0.1.0 (path+file:///chatty-macro)","target":{"kind":["lib"],"crate_types":["lib"],"name":"chatty-macro","src_path":"/chatty-macro/src/lib.rs","edition":"2018","doctest":true},"profile":{"opt_level":"0","debuginfo":2,"debug_assertions":true,"overflow_checks":true,"test":false},"features":[],"filenames":["/chatty-macro/target/debug/libchatty_macro.rlib","/chatty-macro/target/debug/deps/libchatty_macro-cb5956ed52a11fb6.rmeta"],"executable":null,"fresh":false}
+"##;
+    let mut n_messages = 0;
+    let mut text = String::new();
+    for message in cargo_metadata::Message::parse_stream(json_output.as_bytes()) {
+        let message = message.unwrap();
+        match message {
+            cargo_metadata::Message::TextLine(line) => text = line,
+            _ => n_messages += 1,
+        }
+    }
+    assert_eq!(n_messages, 2);
+    assert_eq!(text, "Evil proc macro was here!");
+}
