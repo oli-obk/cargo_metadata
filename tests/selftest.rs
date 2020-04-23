@@ -20,10 +20,13 @@ struct TestPackageMetadata {
 
 #[test]
 fn metadata() {
-    let metadata = MetadataCommand::new().no_deps().exec().unwrap();
+    let manifest_dir = current_dir().unwrap();
+    let manifest_path = "Cargo.toml";
+    let metadata = MetadataCommand::new().no_deps()
+        .manifest_path(&manifest_path).exec().unwrap();
 
     assert_eq!(
-        current_dir().unwrap().join("target"),
+        manifest_dir.join("target"),
         Path::new(&metadata.target_directory)
     );
 
@@ -63,31 +66,33 @@ fn metadata() {
 
 #[test]
 fn builder_interface() {
+    let manifest_dir = current_dir().unwrap();
+    let manifest_path = "Cargo.toml";
     let _ = MetadataCommand::new()
-        .manifest_path("Cargo.toml")
+        .manifest_path(manifest_path)
         .exec()
         .unwrap();
     let _ = MetadataCommand::new()
-        .manifest_path(String::from("Cargo.toml"))
+        .manifest_path(String::from(manifest_path))
         .exec()
         .unwrap();
     let _ = MetadataCommand::new()
-        .manifest_path(PathBuf::from("Cargo.toml"))
+        .manifest_path(PathBuf::from(manifest_path))
         .exec()
         .unwrap();
     let _ = MetadataCommand::new()
-        .manifest_path("Cargo.toml")
+        .manifest_path(manifest_path)
         .no_deps()
         .exec()
         .unwrap();
     let _ = MetadataCommand::new()
-        .manifest_path("Cargo.toml")
+        .manifest_path(manifest_path)
         .features(CargoOpt::AllFeatures)
         .exec()
         .unwrap();
     let _ = MetadataCommand::new()
-        .manifest_path("Cargo.toml")
-        .current_dir(current_dir().unwrap())
+        .manifest_path(manifest_path)
+        .current_dir(manifest_dir)
         .exec()
         .unwrap();
 }
@@ -131,8 +136,9 @@ fn cargo_path() {
 #[test]
 fn metadata_deps() {
     std::env::set_var("CARGO_PROFILE", "3");
+    let manifest_path = "Cargo.toml";
     let metadata = MetadataCommand::new()
-        .manifest_path("Cargo.toml")
+        .manifest_path(&manifest_path)
         .exec()
         .unwrap();
     let this_id = metadata
