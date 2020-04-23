@@ -488,6 +488,13 @@ impl MetadataCommand {
         Ok(cmd)
     }
 
+    /// Parses `cargo metadata` output.  `data` must have been
+    /// produced by a command built with `cargo_command`.
+    pub fn parse<T : AsRef<str>>(data : T) -> Result<Metadata> {
+        let meta = serde_json::from_str(data.as_ref())?;
+        Ok(meta)
+    }
+
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
     pub fn exec(&mut self) -> Result<Metadata> {
         let mut cmd = self.cargo_command()?;
@@ -501,7 +508,6 @@ impl MetadataCommand {
             .lines()
             .find(|line| line.starts_with('{'))
             .ok_or_else(|| Error::NoJson)?;
-        let meta = serde_json::from_str(stdout)?;
-        Ok(meta)
+        Self::parse(stdout)
     }
 }
