@@ -452,8 +452,10 @@ impl MetadataCommand {
         self.other_options = options.as_ref().to_vec();
         self
     }
-    /// Runs configured `cargo metadata` and returns parsed `Metadata`.
-    pub fn exec(&mut self) -> Result<Metadata> {
+
+    /// Builds a command for `cargo metadata`.  This is the first
+    /// part of the work of `exec`.
+    pub fn cargo_command(&self) -> Result<Command> {
         let cargo = self
             .cargo_path
             .clone()
@@ -482,6 +484,13 @@ impl MetadataCommand {
             cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
         }
         cmd.args(&self.other_options);
+
+        Ok(cmd)
+    }
+
+    /// Runs configured `cargo metadata` and returns parsed `Metadata`.
+    pub fn exec(&mut self) -> Result<Metadata> {
+        let mut cmd = self.cargo_command()?;
         let output = cmd.output()?;
         if !output.status.success() {
             return Err(Error::CargoMetadata {
