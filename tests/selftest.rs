@@ -5,8 +5,8 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 
-use std::env::current_dir;
-use std::path::{Path, PathBuf};
+use std::env::{set_current_dir, self};
+use std::path::{Path, PathBuf, Component::CurDir};
 
 use semver::Version;
 
@@ -18,10 +18,37 @@ struct TestPackageMetadata {
     other_field: String,
 }
 
+fn chdir_find_manifest() -> (PathBuf, PathBuf) {
+    // 1. defuses any chdir that cargo has done
+    //    (see https://github.com/rust-lang/cargo/issues/8148)
+    //  2. returns the manifest path for passing to builder etc.
+
+    // This is idempotent (which is important, since cargo might
+    // call any subset of our test functions in whatever order)
+    // and also threadsafe.
+
+    let manifest_dir : PathBuf =
+        env::var_os("CARGO_MANIFEST_DIR")
+        .as_ref()
+        .map(|v| Path::new(v))
+        .unwrap_or(CurDir.as_ref())
+        .to_owned();
+
+    if let Some(cargo_home) = env::var_os("CARGO_HOME") {
+        set_current_dir(cargo_home)
+            .expect("chdir to undo cargo's chdir to manifest dir");
+        // Best we can until https://github.com/rust-lang/cargo/issues/8148
+    }
+
+    let mut manifest_path = manifest_dir.clone();
+    manifest_path.push("Cargo.toml");
+
+    (manifest_dir, manifest_path)
+}
+
 #[test]
 fn metadata() {
-    let manifest_dir = current_dir().unwrap();
-    let manifest_path = "Cargo.toml";
+    let (manifest_dir, manifest_path) = chdir_find_manifest();
     let metadata = MetadataCommand::new().no_deps()
         .manifest_path(&manifest_path).exec().unwrap();
 
@@ -66,8 +93,9 @@ fn metadata() {
 
 #[test]
 fn builder_interface() {
-    let manifest_dir = current_dir().unwrap();
-    let manifest_path = "Cargo.toml";
+    let (manifest_dir, manifest_path) = chdir_find_manifest();
+    let manifest_path : &str = manifest_path.to_str()
+        .expect("manifest path should be utf8");
     let _ = MetadataCommand::new()
         .manifest_path(manifest_path)
         .exec()
@@ -136,7 +164,7 @@ fn cargo_path() {
 #[test]
 fn metadata_deps() {
     std::env::set_var("CARGO_PROFILE", "3");
-    let manifest_path = "Cargo.toml";
+    let (_manifest_dir, manifest_path) = chdir_find_manifest();
     let metadata = MetadataCommand::new()
         .manifest_path(&manifest_path)
         .exec()
