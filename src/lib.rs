@@ -452,8 +452,10 @@ impl MetadataCommand {
         self.other_options = options.as_ref().to_vec();
         self
     }
-    /// Runs configured `cargo metadata` and returns parsed `Metadata`.
-    pub fn exec(&mut self) -> Result<Metadata> {
+
+    /// Builds a command for `cargo metadata`.  This is the first
+    /// part of the work of `exec`.
+    pub fn cargo_command(&self) -> Result<Command> {
         let cargo = self
             .cargo_path
             .clone()
@@ -482,6 +484,20 @@ impl MetadataCommand {
             cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
         }
         cmd.args(&self.other_options);
+
+        Ok(cmd)
+    }
+
+    /// Parses `cargo metadata` output.  `data` must have been
+    /// produced by a command built with `cargo_command`.
+    pub fn parse<T : AsRef<str>>(data : T) -> Result<Metadata> {
+        let meta = serde_json::from_str(data.as_ref())?;
+        Ok(meta)
+    }
+
+    /// Runs configured `cargo metadata` and returns parsed `Metadata`.
+    pub fn exec(&mut self) -> Result<Metadata> {
+        let mut cmd = self.cargo_command()?;
         let output = cmd.output()?;
         if !output.status.success() {
             return Err(Error::CargoMetadata {
@@ -492,7 +508,6 @@ impl MetadataCommand {
             .lines()
             .find(|line| line.starts_with('{'))
             .ok_or_else(|| Error::NoJson)?;
-        let meta = serde_json::from_str(stdout)?;
-        Ok(meta)
+        Self::parse(stdout)
     }
 }
