@@ -496,7 +496,7 @@ impl MetadataCommand {
     }
 
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
-    pub fn exec(&mut self) -> Result<Metadata> {
+    pub fn exec(&self) -> Result<Metadata> {
         let mut cmd = self.cargo_command()?;
         let output = cmd.output()?;
         if !output.status.success() {
