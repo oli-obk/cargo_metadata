@@ -83,7 +83,7 @@ extern crate serde_json;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
 
@@ -422,18 +422,18 @@ impl MetadataCommand {
     /// Path to `cargo` executable.  If not set, this will use the
     /// the `$CARGO` environment variable, and if that is not set, will
     /// simply be `cargo`.
-    pub fn cargo_path(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
-        self.cargo_path = Some(path.as_ref().to_path_buf());
+    pub fn cargo_path(&mut self, path: impl Into<PathBuf>) -> &mut MetadataCommand {
+        self.cargo_path = Some(path.into());
         self
     }
     /// Path to `Cargo.toml`
-    pub fn manifest_path(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
-        self.manifest_path = Some(path.as_ref().to_path_buf());
+    pub fn manifest_path(&mut self, path: impl Into<PathBuf>) -> &mut MetadataCommand {
+        self.manifest_path = Some(path.into());
         self
     }
     /// Current directory of the `cargo metadata` process.
-    pub fn current_dir(&mut self, path: impl AsRef<Path>) -> &mut MetadataCommand {
-        self.current_dir = Some(path.as_ref().to_path_buf());
+    pub fn current_dir(&mut self, path: impl Into<PathBuf>) -> &mut MetadataCommand {
+        self.current_dir = Some(path.into());
         self
     }
     /// Output information only about the root package and don't fetch dependencies.
@@ -448,8 +448,8 @@ impl MetadataCommand {
     }
     /// Arbitrary command line flags to pass to `cargo`.  These will be added
     /// to the end of the command line invocation.
-    pub fn other_options(&mut self, options: impl AsRef<[String]>) -> &mut MetadataCommand {
-        self.other_options = options.as_ref().to_vec();
+    pub fn other_options(&mut self, options: impl Into<Vec<String>>) -> &mut MetadataCommand {
+        self.other_options = options.into();
         self
     }
 
@@ -496,7 +496,7 @@ impl MetadataCommand {
     }
 
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
-    pub fn exec(&mut self) -> Result<Metadata> {
+    pub fn exec(&self) -> Result<Metadata> {
         let mut cmd = self.cargo_command()?;
         let output = cmd.output()?;
         if !output.status.success() {
