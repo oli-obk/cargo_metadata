@@ -72,7 +72,7 @@ pub struct BuildScript {
     /// The paths to search when resolving libs
     pub linked_paths: Vec<PathBuf>,
     /// Various `--cfg` flags to pass to the compiler
-    pub cfgs: Vec<PathBuf>,
+    pub cfgs: Vec<String>,
     /// The environment variables to add to the compilation
     pub env: Vec<(String, String)>,
     /// The `OUT_DIR` environment variable where this script places its output
