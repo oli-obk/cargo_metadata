@@ -85,6 +85,16 @@ pub struct BuildScript {
     __do_not_match_exhaustively: (),
 }
 
+/// Final result of a build.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BuildFinished {
+    /// Whether or not the build finished successfully.
+    pub success: bool,
+    #[doc(hidden)]
+    #[serde(skip)]
+    __do_not_match_exhaustively: (),
+}
+
 /// A cargo message
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "reason", rename_all = "kebab-case")]
@@ -95,6 +105,11 @@ pub enum Message {
     CompilerMessage(CompilerMessage),
     /// A build script successfully executed.
     BuildScriptExecuted(BuildScript),
+    /// The build has finished.
+    ///
+    /// This is emitted at the end of the build as the last message.
+    /// Added in Rust 1.44.
+    BuildFinished(BuildFinished),
     #[doc(hidden)]
     #[serde(other)]
     Unknown,
