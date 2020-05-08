@@ -67,6 +67,9 @@
 //!         Message::BuildScriptExecuted(script) => {
 //!             println!("{:?}", script);
 //!         },
+//!         Message::BuildFinished(finished) => {
+//!             println!("{:?}", finished);
+//!         },
 //!         _ => () // Unknown message
 //!     }
 //! }
@@ -93,7 +96,7 @@ pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, Result};
 pub use messages::{
-    parse_messages, Artifact, ArtifactProfile, BuildScript, CompilerMessage, Message,
+    parse_messages, Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message,
 };
 
 mod dependency;
