@@ -56,7 +56,8 @@
 //!     .spawn()
 //!     .unwrap();
 //!
-//! for message in cargo_metadata::parse_messages(command.stdout.take().unwrap()) {
+//! let reader = std::io::BufReader::new(command.stdout.take().unwrap());
+//! for message in cargo_metadata::Message::parse_stream(reader) {
 //!     match message.unwrap() {
 //!         Message::CompilerMessage(msg) => {
 //!             println!("{:?}", msg);
@@ -96,8 +97,10 @@ pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, Result};
 pub use messages::{
-    parse_messages, Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message,
+    Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message, MessageIter
 };
+#[allow(deprecated)]
+pub use messages::parse_messages;
 
 mod dependency;
 pub mod diagnostic;

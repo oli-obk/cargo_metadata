@@ -1,7 +1,7 @@
 use super::{Diagnostic, PackageId, Target};
 use serde_json;
 use std::fmt;
-use std::io::Read;
+use std::io::{self, BufRead, Lines, Read};
 use std::path::PathBuf;
 
 /// Profile settings used to determine which compiler flags to use for a
@@ -110,14 +110,42 @@ pub enum Message {
     /// This is emitted at the end of the build as the last message.
     /// Added in Rust 1.44.
     BuildFinished(BuildFinished),
+    /// A line of text which isn't a cargo or compiler message.
+    /// Line separator is not included
+    #[serde(skip)]
+    TextLine(String),
     #[doc(hidden)]
     #[serde(other)]
     Unknown,
 }
 
+impl Message {
+    /// Creates an iterator of Message from a Read outputting a stream of JSON
+    /// messages. For usage information, look at the top-level documentation.
+    pub fn parse_stream<R: BufRead>(input: R) -> MessageIter<R> {
+        MessageIter {
+            lines: input.lines(),
+        }
+    }
+}
+
 impl fmt::Display for CompilerMessage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.message)
+    }
+}
+
+/// An iterator of Messages.
+pub struct MessageIter<R> {
+    lines: Lines<R>,
+}
+
+impl<R: BufRead> Iterator for MessageIter<R> {
+    type Item = io::Result<Message>;
+    fn next(&mut self) -> Option<Self::Item> {
+        let line = self.lines.next()?;
+        let message = line.map(|it| serde_json::from_str(&it).unwrap_or(Message::TextLine(it)));
+        Some(message)
     }
 }
 
@@ -127,6 +155,7 @@ type MessageIterator<R> =
 
 /// Creates an iterator of Message from a Read outputting a stream of JSON
 /// messages. For usage information, look at the top-level documentation.
+#[deprecated(note = "Use Message::parse_stream instead")]
 pub fn parse_messages<R: Read>(input: R) -> MessageIterator<R> {
     serde_json::Deserializer::from_reader(input).into_iter::<Message>()
 }
