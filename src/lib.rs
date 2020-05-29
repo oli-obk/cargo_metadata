@@ -465,7 +465,7 @@ impl MetadataCommand {
         let cargo = self
             .cargo_path
             .clone()
-            .or_else(|| env::var("CARGO").map(|s| PathBuf::from(s)).ok())
+            .or_else(|| env::var("CARGO").map(PathBuf::from).ok())
             .unwrap_or_else(|| PathBuf::from("cargo"));
         let mut cmd = Command::new(cargo);
         cmd.args(&["metadata", "--format-version", "1"]);
