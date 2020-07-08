@@ -3,7 +3,7 @@ extern crate semver;
 #[macro_use]
 extern crate serde_json;
 
-use cargo_metadata::{DependencyKind, Metadata, MetadataCommand};
+use cargo_metadata::{CargoOpt, DependencyKind, Metadata, MetadataCommand};
 use std::path::PathBuf;
 
 #[test]
@@ -494,4 +494,65 @@ Evil proc macro was here!
     }
     assert_eq!(n_messages, 2);
     assert_eq!(text, "Evil proc macro was here!");
+}
+
+#[test]
+fn advanced_feature_configuration() {
+    fn build_features<F: FnOnce(&mut MetadataCommand) -> &mut MetadataCommand>(
+        func: F,
+    ) -> Vec<String> {
+        let mut meta = MetadataCommand::new();
+        let meta = meta.manifest_path("tests/all/Cargo.toml");
+
+        let meta = func(meta);
+        let meta = meta.exec().unwrap();
+
+        let resolve = meta.resolve.as_ref().unwrap();
+
+        let all = resolve
+            .nodes
+            .iter()
+            .find(|n| n.id.to_string().starts_with("all"))
+            .unwrap();
+
+        all.features.clone()
+    }
+
+    // Default behavior; tested above
+    let default_features = build_features(|meta| meta);
+    assert_eq!(
+        sorted!(default_features),
+        vec!["bitflags", "default", "feat1"]
+    );
+
+    // Manually specify the same default features
+    let manual_features = build_features(|meta| {
+        meta.features(CargoOpt::NoDefaultFeatures)
+            .features(CargoOpt::SomeFeatures(vec!["feat1".into(), "bitflags".into()]))
+    });
+    assert_eq!(
+        sorted!(manual_features),
+        vec!["bitflags", "feat1"]
+    );
+
+    // Multiple SomeFeatures is same as one longer SomeFeatures
+    let manual_features = build_features(|meta| {
+        meta.features(CargoOpt::NoDefaultFeatures)
+            .features(CargoOpt::SomeFeatures(vec!["feat1".into()]))
+            .features(CargoOpt::SomeFeatures(vec!["feat2".into()]))
+    });
+    assert_eq!(
+        sorted!(manual_features),
+        vec!["feat1", "feat2"]
+    );
+
+    // No features + All features == All features
+    let all_features = build_features(|meta| {
+        meta.features(CargoOpt::AllFeatures)
+            .features(CargoOpt::NoDefaultFeatures)
+    });
+    assert_eq!(
+        sorted!(all_features),
+        vec!["bitflags", "default", "feat1", "feat2"]
+    );
 }
