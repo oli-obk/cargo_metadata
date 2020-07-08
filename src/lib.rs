@@ -415,7 +415,7 @@ pub struct MetadataCommand {
     manifest_path: Option<PathBuf>,
     current_dir: Option<PathBuf>,
     no_deps: bool,
-    features: Option<CargoOpt>,
+    features: Vec<CargoOpt>,
     other_options: Vec<String>,
 }
 
@@ -448,8 +448,20 @@ impl MetadataCommand {
         self
     }
     /// Which features to include.
+    ///
+    /// Call this multiple times to specify advanced feature configurations:
+    ///
+    /// ```no_run
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .features(CargoOpt::NoDefaultFeatures)
+    ///     .features(CargoOpt::SomeFeatures(vec!["feat1".into(), "feat2".into()]))
+    ///     .features(CargoOpt::SomeFeatures(vec!["feat3".into()]))
+    ///     // ...
+    ///     # ;
+    /// ```
     pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
-        self.features = Some(features);
+        self.features.push(features);
         self
     }
     /// Arbitrary command line flags to pass to `cargo`.  These will be added
@@ -478,8 +490,8 @@ impl MetadataCommand {
             cmd.current_dir(path);
         }
 
-        if let Some(features) = &self.features {
-            match features {
+        for feature in &self.features {
+            match feature {
                 CargoOpt::AllFeatures => cmd.arg("--all-features"),
                 CargoOpt::NoDefaultFeatures => cmd.arg("--no-default-features"),
                 CargoOpt::SomeFeatures(ftrs) => cmd.arg("--features").arg(ftrs.join(",")),
