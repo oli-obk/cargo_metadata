@@ -415,7 +415,12 @@ pub struct MetadataCommand {
     manifest_path: Option<PathBuf>,
     current_dir: Option<PathBuf>,
     no_deps: bool,
-    features: Vec<CargoOpt>,
+    /// Collections of `CargoOpt::SomeFeatures(..)`
+    features: Vec<String>,
+    /// Latched `CargoOpt::AllFeatures`
+    all_features: bool,
+    /// Latched `CargoOpt::NoDefaultFeatures`
+    no_default_features: bool,
     other_options: Vec<String>,
 }
 
@@ -460,8 +465,15 @@ impl MetadataCommand {
     ///     // ...
     ///     # ;
     /// ```
+    ///
+    /// Unlike `cargo metadata`, which disallows multiple `--all-features` or `--no-default-features`
+    /// options, it's OK to specify those options multiple times using `features()`.
     pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
-        self.features.push(features);
+        match features {
+            CargoOpt::SomeFeatures(features) => self.features.extend(features),
+            CargoOpt::NoDefaultFeatures => self.no_default_features = true,
+            CargoOpt::AllFeatures => self.all_features = true,
+        }
         self
     }
     /// Arbitrary command line flags to pass to `cargo`.  These will be added
@@ -490,12 +502,14 @@ impl MetadataCommand {
             cmd.current_dir(path);
         }
 
-        for feature in &self.features {
-            match feature {
-                CargoOpt::AllFeatures => cmd.arg("--all-features"),
-                CargoOpt::NoDefaultFeatures => cmd.arg("--no-default-features"),
-                CargoOpt::SomeFeatures(ftrs) => cmd.arg("--features").arg(ftrs.join(",")),
-            };
+        if !self.features.is_empty() {
+            cmd.arg("--features").arg(self.features.join(","));
+        }
+        if self.all_features {
+            cmd.arg("--all-features");
+        }
+        if self.no_default_features {
+            cmd.arg("--no-default-features");
         }
 
         if let Some(manifest_path) = &self.manifest_path {
