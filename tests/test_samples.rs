@@ -556,24 +556,6 @@ fn advanced_feature_configuration() {
         vec!["bitflags", "default", "feat1", "feat2"]
     );
 
-    // `cargo metadata` disallows multiple `--all-features` flags. But, we'll allow
-    // it. Might be convenient for users.
-    let more_all_features = build_features(|meta| {
-        meta.features(CargoOpt::AllFeatures)
-            .features(CargoOpt::AllFeatures)
-    });
-    assert_eq!(
-        sorted!(more_all_features),
-        vec!["bitflags", "default", "feat1", "feat2"]
-    );
-
-    // Same goes for multiple `--no-default-features` flags...
-    let more_no_default_features = build_features(|meta| {
-        meta.features(CargoOpt::NoDefaultFeatures)
-            .features(CargoOpt::NoDefaultFeatures)
-    });
-    assert!(more_no_default_features.is_empty());
-
     // The '--all-features' flag supersedes other feature flags
     let all_flag_variants = build_features(|meta| {
         meta.features(CargoOpt::SomeFeatures(vec!["feat2".into()]))

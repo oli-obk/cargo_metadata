@@ -466,13 +466,47 @@ impl MetadataCommand {
     ///     # ;
     /// ```
     ///
-    /// Unlike `cargo metadata`, which disallows multiple `--all-features` or `--no-default-features`
-    /// options, it's OK to specify those options multiple times using `features()`.
+    /// # Panics
+    ///
+    /// `cargo metadata` rejects multiple `--no-default-features` flags. Similarly, the `features()`
+    /// method panics when specifiying multiple `CargoOpt::NoDefaultFeatures`:
+    ///
+    /// ```should_panic
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .features(CargoOpt::NoDefaultFeatures)
+    ///     .features(CargoOpt::NoDefaultFeatures) // <-- panic!
+    ///     // ...
+    ///     # ;
+    /// ```
+    ///
+    /// The method also panics for multiple `CargoOpt::AllFeatures` arguments:
+    ///
+    /// ```should_panic
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .features(CargoOpt::AllFeatures)
+    ///     .features(CargoOpt::AllFeatures) // <-- panic!
+    ///     // ...
+    ///     # ;
+    /// ```
     pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
         match features {
             CargoOpt::SomeFeatures(features) => self.features.extend(features),
-            CargoOpt::NoDefaultFeatures => self.no_default_features = true,
-            CargoOpt::AllFeatures => self.all_features = true,
+            CargoOpt::NoDefaultFeatures => {
+                assert!(
+                    !self.no_default_features,
+                    "Do not supply CargoOpt::NoDefaultFeatures more than once!"
+                );
+                self.no_default_features = true;
+            }
+            CargoOpt::AllFeatures => {
+                assert!(
+                    !self.all_features,
+                    "Do not supply CargoOpt::AllFeatures more than once!"
+                );
+                self.all_features = true;
+            }
         }
         self
     }
