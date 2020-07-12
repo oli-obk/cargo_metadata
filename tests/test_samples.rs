@@ -573,4 +573,15 @@ fn advanced_feature_configuration() {
             .features(CargoOpt::NoDefaultFeatures)
     });
     assert!(more_no_default_features.is_empty());
+
+    // The '--all-features' flag supersedes other feature flags
+    let all_flag_variants = build_features(|meta| {
+        meta.features(CargoOpt::SomeFeatures(vec!["feat2".into()]))
+            .features(CargoOpt::NoDefaultFeatures)
+            .features(CargoOpt::AllFeatures)
+    });
+    assert_eq!(
+        sorted!(all_flag_variants),
+        sorted!(all_features)
+    );
 }
