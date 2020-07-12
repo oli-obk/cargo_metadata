@@ -415,7 +415,12 @@ pub struct MetadataCommand {
     manifest_path: Option<PathBuf>,
     current_dir: Option<PathBuf>,
     no_deps: bool,
-    features: Option<CargoOpt>,
+    /// Collections of `CargoOpt::SomeFeatures(..)`
+    features: Vec<String>,
+    /// Latched `CargoOpt::AllFeatures`
+    all_features: bool,
+    /// Latched `CargoOpt::NoDefaultFeatures`
+    no_default_features: bool,
     other_options: Vec<String>,
 }
 
@@ -448,8 +453,61 @@ impl MetadataCommand {
         self
     }
     /// Which features to include.
+    ///
+    /// Call this multiple times to specify advanced feature configurations:
+    ///
+    /// ```no_run
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .features(CargoOpt::NoDefaultFeatures)
+    ///     .features(CargoOpt::SomeFeatures(vec!["feat1".into(), "feat2".into()]))
+    ///     .features(CargoOpt::SomeFeatures(vec!["feat3".into()]))
+    ///     // ...
+    ///     # ;
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// `cargo metadata` rejects multiple `--no-default-features` flags. Similarly, the `features()`
+    /// method panics when specifiying multiple `CargoOpt::NoDefaultFeatures`:
+    ///
+    /// ```should_panic
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .features(CargoOpt::NoDefaultFeatures)
+    ///     .features(CargoOpt::NoDefaultFeatures) // <-- panic!
+    ///     // ...
+    ///     # ;
+    /// ```
+    ///
+    /// The method also panics for multiple `CargoOpt::AllFeatures` arguments:
+    ///
+    /// ```should_panic
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .features(CargoOpt::AllFeatures)
+    ///     .features(CargoOpt::AllFeatures) // <-- panic!
+    ///     // ...
+    ///     # ;
+    /// ```
     pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
-        self.features = Some(features);
+        match features {
+            CargoOpt::SomeFeatures(features) => self.features.extend(features),
+            CargoOpt::NoDefaultFeatures => {
+                assert!(
+                    !self.no_default_features,
+                    "Do not supply CargoOpt::NoDefaultFeatures more than once!"
+                );
+                self.no_default_features = true;
+            }
+            CargoOpt::AllFeatures => {
+                assert!(
+                    !self.all_features,
+                    "Do not supply CargoOpt::AllFeatures more than once!"
+                );
+                self.all_features = true;
+            }
+        }
         self
     }
     /// Arbitrary command line flags to pass to `cargo`.  These will be added
@@ -478,12 +536,14 @@ impl MetadataCommand {
             cmd.current_dir(path);
         }
 
-        if let Some(features) = &self.features {
-            match features {
-                CargoOpt::AllFeatures => cmd.arg("--all-features"),
-                CargoOpt::NoDefaultFeatures => cmd.arg("--no-default-features"),
-                CargoOpt::SomeFeatures(ftrs) => cmd.arg("--features").arg(ftrs.join(",")),
-            };
+        if !self.features.is_empty() {
+            cmd.arg("--features").arg(self.features.join(","));
+        }
+        if self.all_features {
+            cmd.arg("--all-features");
+        }
+        if self.no_default_features {
+            cmd.arg("--no-default-features");
         }
 
         if let Some(manifest_path) = &self.manifest_path {
