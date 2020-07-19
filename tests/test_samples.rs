@@ -163,10 +163,6 @@ fn all_the_fields() {
         meta.workspace_root.file_name().unwrap(),
         PathBuf::from("all")
     );
-    assert_eq!(
-        meta.target_directory.file_name().unwrap(),
-        PathBuf::from("target")
-    );
     assert_eq!(meta.workspace_members.len(), 1);
     assert!(meta.workspace_members[0].to_string().starts_with("all"));
 
