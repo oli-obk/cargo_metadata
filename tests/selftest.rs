@@ -6,7 +6,7 @@ extern crate serde_json;
 extern crate serde_derive;
 
 use std::env::current_dir;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use semver::Version;
 
@@ -21,11 +21,6 @@ struct TestPackageMetadata {
 #[test]
 fn metadata() {
     let metadata = MetadataCommand::new().no_deps().exec().unwrap();
-
-    assert_eq!(
-        current_dir().unwrap().join("target"),
-        Path::new(&metadata.target_directory)
-    );
 
     let this = &metadata.packages[0];
     assert_eq!(this.name, "cargo_metadata");
