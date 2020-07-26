@@ -1,5 +1,6 @@
 //! This module contains `Diagnostic` and the types/functions it uses for deserialization.
 
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 
 /// The error code associated to this diagnostic.

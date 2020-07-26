@@ -2,6 +2,7 @@
 
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer};
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 
 #[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]

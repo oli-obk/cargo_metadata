@@ -524,12 +524,12 @@ fn advanced_feature_configuration() {
     // Manually specify the same default features
     let manual_features = build_features(|meta| {
         meta.features(CargoOpt::NoDefaultFeatures)
-            .features(CargoOpt::SomeFeatures(vec!["feat1".into(), "bitflags".into()]))
+            .features(CargoOpt::SomeFeatures(vec![
+                "feat1".into(),
+                "bitflags".into(),
+            ]))
     });
-    assert_eq!(
-        sorted!(manual_features),
-        vec!["bitflags", "feat1"]
-    );
+    assert_eq!(sorted!(manual_features), vec!["bitflags", "feat1"]);
 
     // Multiple SomeFeatures is same as one longer SomeFeatures
     let manual_features = build_features(|meta| {
@@ -537,10 +537,7 @@ fn advanced_feature_configuration() {
             .features(CargoOpt::SomeFeatures(vec!["feat1".into()]))
             .features(CargoOpt::SomeFeatures(vec!["feat2".into()]))
     });
-    assert_eq!(
-        sorted!(manual_features),
-        vec!["feat1", "feat2"]
-    );
+    assert_eq!(sorted!(manual_features), vec!["feat1", "feat2"]);
 
     // No features + All features == All features
     let all_features = build_features(|meta| {
@@ -558,8 +555,5 @@ fn advanced_feature_configuration() {
             .features(CargoOpt::NoDefaultFeatures)
             .features(CargoOpt::AllFeatures)
     });
-    assert_eq!(
-        sorted!(all_flag_variants),
-        sorted!(all_features)
-    );
+    assert_eq!(sorted!(all_flag_variants), sorted!(all_features));
 }

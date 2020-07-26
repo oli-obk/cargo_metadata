@@ -78,12 +78,6 @@
 //! let output = command.wait().expect("Couldn't get cargo's exit status");
 //! ```
 
-extern crate semver;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
@@ -91,16 +85,17 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
 
-use semver::Version;
+pub use semver::Version;
 
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, Result};
-pub use messages::{
-    Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message, MessageIter
-};
 #[allow(deprecated)]
 pub use messages::parse_messages;
+pub use messages::{
+    Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message, MessageIter,
+};
+use serde_derive::{Deserialize, Serialize};
 
 mod dependency;
 pub mod diagnostic;
@@ -322,9 +317,12 @@ pub struct Package {
 impl Package {
     /// Full path to the license file if one is present in the manifest
     pub fn license_file(&self) -> Option<PathBuf> {
-        self.license_file
-            .as_ref()
-            .map(|file| self.manifest_path.parent().unwrap_or(&self.manifest_path).join(file))
+        self.license_file.as_ref().map(|file| {
+            self.manifest_path
+                .parent()
+                .unwrap_or(&self.manifest_path)
+                .join(file)
+        })
     }
 
     /// Full path to the readme file if one is present in the manifest
@@ -556,7 +554,7 @@ impl MetadataCommand {
 
     /// Parses `cargo metadata` output.  `data` must have been
     /// produced by a command built with `cargo_command`.
-    pub fn parse<T : AsRef<str>>(data : T) -> Result<Metadata> {
+    pub fn parse<T: AsRef<str>>(data: T) -> Result<Metadata> {
         let meta = serde_json::from_str(data.as_ref())?;
         Ok(meta)
     }
