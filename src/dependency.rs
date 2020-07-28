@@ -1,8 +1,7 @@
 //! This module contains `Dependency` and the types/functions it uses for deserialization.
 
 use semver::VersionReq;
-use serde::{Deserialize, Deserializer};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 
 #[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
