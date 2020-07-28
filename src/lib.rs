@@ -95,7 +95,7 @@ pub use messages::parse_messages;
 pub use messages::{
     Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message, MessageIter,
 };
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 mod dependency;
 pub mod diagnostic;
