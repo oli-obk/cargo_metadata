@@ -279,10 +279,8 @@ pub struct Package {
     /// This contents can be serialized to a struct using serde:
     ///
     /// ```rust
-    /// #[macro_use]
-    /// extern crate serde_json;
-    /// #[macro_use]
-    /// extern crate serde_derive;
+    /// use serde::Deserialize;
+    /// use serde_json::json;
     ///
     /// #[derive(Debug, Deserialize)]
     /// struct SomePackageMetadata {

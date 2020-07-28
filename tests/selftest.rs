@@ -1,16 +1,10 @@
-extern crate cargo_metadata;
-extern crate semver;
-extern crate serde_json;
-
-#[macro_use]
-extern crate serde_derive;
-
 use std::env::current_dir;
 use std::path::PathBuf;
 
 use semver::Version;
 
 use cargo_metadata::{CargoOpt, Error, MetadataCommand};
+use serde::{Deserialize};
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
 struct TestPackageMetadata {
