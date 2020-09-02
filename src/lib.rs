@@ -380,6 +380,11 @@ pub struct Target {
     /// This is always `true` if running with a version of Cargo older than 1.37.
     #[serde(default = "default_true")]
     pub doctest: bool,
+    /// Whether or not this target is tested by default by `cargo test`.
+    ///
+    /// This is always `true` if running with a version of Cargo older than 1.47.
+    #[serde(default = "default_true")]
+    pub test: bool,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),
