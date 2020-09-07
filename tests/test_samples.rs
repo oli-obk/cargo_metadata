@@ -94,6 +94,7 @@ fn old_minimal() {
     assert_eq!(target.src_path, PathBuf::from("/foo/src/main.rs"));
     assert_eq!(target.edition, "2015");
     assert_eq!(target.doctest, true);
+    assert_eq!(target.test, true);
     assert_eq!(pkg.features.len(), 0);
     assert_eq!(pkg.manifest_path, PathBuf::from("/foo/Cargo.toml"));
     assert_eq!(pkg.categories.len(), 0);
@@ -141,10 +142,10 @@ fn cargo_version() -> semver::Version {
 
 #[test]
 fn all_the_fields() {
-    // All the fields currently generated as of 1.41. This tries to exercise as
+    // All the fields currently generated as of 1.47. This tries to exercise as
     // much as possible.
     let ver = cargo_version();
-    let minimum = semver::Version::parse("1.41.0").unwrap();
+    let minimum = semver::Version::parse("1.47.0").unwrap();
     if ver < minimum {
         // edition added in 1.30
         // rename added in 1.31
@@ -152,6 +153,7 @@ fn all_the_fields() {
         // doctest added in 1.37
         // publish added in 1.39
         // dep_kinds added in 1.41
+        // test added in 1.47
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -262,11 +264,13 @@ fn all_the_fields() {
     assert_eq!(lib.required_features.len(), 0);
     assert_eq!(lib.edition, "2018");
     assert_eq!(lib.doctest, true);
+    assert_eq!(lib.test, true);
 
     let main = get_file_name!("main.rs");
     assert_eq!(main.crate_types, vec!["bin"]);
     assert_eq!(main.kind, vec!["bin"]);
     assert_eq!(main.doctest, false);
+    assert_eq!(main.test, true);
 
     let otherbin = get_file_name!("otherbin.rs");
     assert_eq!(otherbin.edition, "2015");
@@ -276,6 +280,7 @@ fn all_the_fields() {
 
     let ex1 = get_file_name!("ex1.rs");
     assert_eq!(ex1.kind, vec!["example"]);
+    assert_eq!(ex1.test, false);
 
     let t1 = get_file_name!("t1.rs");
     assert_eq!(t1.kind, vec!["test"]);
