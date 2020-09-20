@@ -6,7 +6,7 @@ use std::path::PathBuf;
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ArtifactProfile {
     /// Optimization level. Possible values are 0-3, s or z.
     pub opt_level: String,
@@ -25,7 +25,7 @@ pub struct ArtifactProfile {
 }
 
 /// A compiler-generated file.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct Artifact {
     /// The package this artifact belongs to
     pub package_id: PackageId,
@@ -49,7 +49,7 @@ pub struct Artifact {
 
 /// Message left by the compiler
 // TODO: Better name. This one comes from machine_message.rs
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct CompilerMessage {
     /// The package this message belongs to
     pub package_id: PackageId,
@@ -63,7 +63,7 @@ pub struct CompilerMessage {
 }
 
 /// Output of a build script execution.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct BuildScript {
     /// The package this build script execution belongs to
     pub package_id: PackageId,
@@ -86,7 +86,7 @@ pub struct BuildScript {
 }
 
 /// Final result of a build.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct BuildFinished {
     /// Whether or not the build finished successfully.
     pub success: bool,
@@ -96,7 +96,7 @@ pub struct BuildFinished {
 }
 
 /// A cargo message
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(tag = "reason", rename_all = "kebab-case")]
 pub enum Message {
     /// The compiler generated an artifact
