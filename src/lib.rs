@@ -139,6 +139,14 @@ pub struct Metadata {
     __do_not_match_exhaustively: (),
 }
 
+impl Metadata {
+    /// Get the root package of this metadata instance.
+    pub fn root_package(&self) -> Option<&Package> {
+        let root = self.resolve.as_ref()?.root.as_ref()?;
+        self.packages.iter().find(|pkg| &pkg.id == root)
+    }
+}
+
 impl<'a> std::ops::Index<&'a PackageId> for Metadata {
     type Output = Package;
 
