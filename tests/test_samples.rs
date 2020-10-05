@@ -112,6 +112,7 @@ fn old_minimal() {
     );
     assert!(meta.resolve.is_none());
     assert_eq!(meta.workspace_root, PathBuf::from("/foo"));
+    assert_eq!(meta.workspace_metadata, serde_json::Value::Null);
     assert_eq!(meta.target_directory, PathBuf::from("/foo/target"));
 }
 
@@ -140,6 +141,16 @@ fn cargo_version() -> semver::Version {
     ver
 }
 
+#[derive(serde::Deserialize, PartialEq, Eq, Debug)]
+struct WorkspaceMetadata {
+    testobject: TestObject,
+}
+
+#[derive(serde::Deserialize, PartialEq, Eq, Debug)]
+struct TestObject {
+    myvalue: String,
+}
+
 #[test]
 fn all_the_fields() {
     // All the fields currently generated as of 1.47. This tries to exercise as
@@ -164,6 +175,14 @@ fn all_the_fields() {
     assert_eq!(
         meta.workspace_root.file_name().unwrap(),
         PathBuf::from("all")
+    );
+    assert_eq!(
+        serde_json::from_value::<WorkspaceMetadata>(meta.workspace_metadata).unwrap(),
+        WorkspaceMetadata {
+            testobject: TestObject {
+                myvalue: "abc".to_string()
+            }
+        }
     );
     assert_eq!(meta.workspace_members.len(), 1);
     assert!(meta.workspace_members[0].to_string().starts_with("all"));
