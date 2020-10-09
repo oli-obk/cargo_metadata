@@ -50,5 +50,8 @@ edition = '2015'
 name = "reqfeat"
 required-features = ["feat2"]
 
+[workspace]
+exclude = ["bdep", "benches", "devdep", "examples", "featdep", "namedep", "oldname", "path-dep", "windep"]
+
 [workspace.metadata.testobject]
 myvalue = "abc"
