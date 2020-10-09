@@ -50,5 +50,5 @@ edition = '2015'
 name = "reqfeat"
 required-features = ["feat2"]
 
-[metadata.testobject]
+[workspace.metadata.testobject]
 myvalue = "abc"
