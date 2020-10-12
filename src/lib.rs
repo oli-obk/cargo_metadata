@@ -120,6 +120,14 @@ impl std::fmt::Display for PackageId {
     }
 }
 
+// Helpers for default metadata fields
+fn is_null(value: &serde_json::Value) -> bool {
+    match value {
+        serde_json::Value::Null => true,
+        _ => false,
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 /// Starting point for metadata returned by `cargo metadata`
 pub struct Metadata {
@@ -133,6 +141,9 @@ pub struct Metadata {
     pub workspace_root: PathBuf,
     /// Build directory
     pub target_directory: PathBuf,
+    /// The workspace-level metadata object. Null if non-existent.
+    #[serde(rename = "metadata", default, skip_serializing_if = "is_null")]
+    pub workspace_metadata: serde_json::Value,
     version: usize,
     #[doc(hidden)]
     #[serde(skip)]
@@ -305,7 +316,7 @@ pub struct Package {
     /// }
     ///
     /// ```
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_null")]
     pub metadata: serde_json::Value,
     /// The name of a native library the package is linking to.
     pub links: Option<String>,
