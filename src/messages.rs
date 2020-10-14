@@ -144,7 +144,12 @@ impl<R: BufRead> Iterator for MessageIter<R> {
     type Item = io::Result<Message>;
     fn next(&mut self) -> Option<Self::Item> {
         let line = self.lines.next()?;
-        let message = line.map(|it| serde_json::from_str(&it).unwrap_or(Message::TextLine(it)));
+        let message = line.map(|it| {
+            let mut deserializer = serde_json::Deserializer::from_str(&it);
+            deserializer.disable_recursion_limit();
+            let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
+            Message::deserialize(deserializer).unwrap_or(Message::TextLine(it))
+        });
         Some(message)
     }
 }
