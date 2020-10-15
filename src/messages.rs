@@ -147,8 +147,7 @@ impl<R: BufRead> Iterator for MessageIter<R> {
         let message = line.map(|it| {
             let mut deserializer = serde_json::Deserializer::from_str(&it);
             deserializer.disable_recursion_limit();
-            let deserializer = serde_stacker::Deserializer::new(&mut deserializer);
-            Message::deserialize(deserializer).unwrap_or(Message::TextLine(it))
+            Message::deserialize(&mut deserializer).unwrap_or(Message::TextLine(it))
         });
         Some(message)
     }
