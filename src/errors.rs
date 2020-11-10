@@ -76,17 +76,17 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::CargoMetadata { stderr } => {
-                write!(f, "Error during execution of `cargo metadata`: {}", stderr)
+                write!(f, "failed to run `cargo metadata`: {}", stderr.trim_end())
             }
             Error::Io(err) => write!(f, "{}", err),
-            Error::Utf8(err) => write!(f, "Cannot convert the stdout of `cargo metadata`: {}", err),
+            Error::Utf8(err) => write!(f, "cannot convert the stdout of `cargo metadata`: {}", err),
             Error::ErrUtf8(err) => {
-                write!(f, "Cannot convert the stderr of `cargo metadata`: {}", err)
+                write!(f, "cannot convert the stderr of `cargo metadata`: {}", err)
             }
-            Error::Json(err) => write!(f, "Failed to interpret `cargo metadata`'s json: {}", err),
+            Error::Json(err) => write!(f, "failed to interpret `cargo metadata`'s json: {}", err),
             Error::NoJson => write!(
                 f,
-                "Could not find any json in the output of `cargo metadata`"
+                "could not find any json in the output of `cargo metadata`"
             ),
         }
     }
