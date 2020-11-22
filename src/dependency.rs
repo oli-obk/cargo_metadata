@@ -57,7 +57,7 @@ pub struct Dependency {
     ///
     /// Use the [`Display`] trait to access the contents.
     ///
-    /// [`Display`]: https://doc.rust-lang.org/std/fmt/trait.Display.html
+    /// [`Display`]: std::fmt::Display
     pub target: Option<Platform>,
     /// If the dependency is renamed, this is the new name for the dependency
     /// as a string.  None if it is not renamed.
