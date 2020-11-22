@@ -10,6 +10,9 @@ edition = "2018"
 
 [dependencies]
 semver = { version = "0.11.0", features = ["serde"] }
+# Used to pin a version, so that semver-parser will compile on 1.32
+# Remove this when the MSRV is bumped or `semver` is updated.
+semver-parser = "=0.10.0"
 serde = { version = "1.0.107", features = ["derive"] }
 serde_json = { version = "1.0.59", features = ["unbounded_depth"] }
 
