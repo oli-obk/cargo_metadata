@@ -550,7 +550,7 @@ impl MetadataCommand {
 
     /// Builds a command for `cargo metadata`.  This is the first
     /// part of the work of `exec`.
-    pub fn cargo_command(&self) -> Result<Command> {
+    pub fn cargo_command(&self) -> Command {
         let cargo = self
             .cargo_path
             .clone()
@@ -582,7 +582,7 @@ impl MetadataCommand {
         }
         cmd.args(&self.other_options);
 
-        Ok(cmd)
+        cmd
     }
 
     /// Parses `cargo metadata` output.  `data` must have been
@@ -594,8 +594,7 @@ impl MetadataCommand {
 
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
     pub fn exec(&self) -> Result<Metadata> {
-        let mut cmd = self.cargo_command()?;
-        let output = cmd.output()?;
+        let output = self.cargo_command().output()?;
         if !output.status.success() {
             return Err(Error::CargoMetadata {
                 stderr: String::from_utf8(output.stderr)?,
