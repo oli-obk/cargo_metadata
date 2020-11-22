@@ -2,7 +2,6 @@
 
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
-use std::fmt;
 
 #[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
 /// Dependencies can come in three kinds
@@ -71,16 +70,4 @@ pub struct Dependency {
     __do_not_match_exhaustively: (),
 }
 
-/// A target platform.
-#[derive(Clone, Serialize, Deserialize, Debug)]
-#[serde(transparent)]
-pub struct Platform {
-    /// The underlying string representation of a platform.
-    pub repr: String,
-}
-
-impl fmt::Display for Platform {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self.repr, f)
-    }
-}
+pub use cargo_platform::Platform;
