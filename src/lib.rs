@@ -287,6 +287,14 @@ pub struct Package {
     /// Repository as given in the `Cargo.toml`
     // can't use `url::Url` because that requires a more recent stable compiler
     pub repository: Option<String>,
+    /// Homepage as given in the `Cargo.toml`
+    ///
+    /// On versions of cargo before 1.49, this will always be [`None`].
+    pub homepage: Option<String>,
+    /// Documentation URL as given in the `Cargo.toml`
+    ///
+    /// On versions of cargo before 1.49, this will always be [`None`].
+    pub documentation: Option<String>,
     /// Default Rust edition for the package
     ///
     /// Beware that individual targets may specify their own edition in

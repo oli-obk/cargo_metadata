@@ -10,6 +10,8 @@ categories = ["command-line-utilities"]
 keywords = ["cli"]
 readme = "README.md"
 repository = "https://github.com/oli-obk/cargo_metadata/"
+homepage = "https://github.com/oli-obk/cargo_metadata/"
+documentation = "https://docs.rs/cargo_metadata/"
 links = "foo"
 publish = false
 

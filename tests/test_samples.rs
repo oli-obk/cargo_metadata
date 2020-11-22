@@ -101,6 +101,8 @@ fn old_minimal() {
     assert_eq!(pkg.keywords.len(), 0);
     assert_eq!(pkg.readme, None);
     assert_eq!(pkg.repository, None);
+    assert_eq!(pkg.homepage, None);
+    assert_eq!(pkg.documentation, None);
     assert_eq!(pkg.edition, "2015");
     assert_eq!(pkg.metadata, serde_json::Value::Null);
     assert_eq!(pkg.links, None);
@@ -153,10 +155,10 @@ struct TestObject {
 
 #[test]
 fn all_the_fields() {
-    // All the fields currently generated as of 1.47. This tries to exercise as
+    // All the fields currently generated as of 1.49. This tries to exercise as
     // much as possible.
     let ver = cargo_version();
-    let minimum = semver::Version::parse("1.47.0").unwrap();
+    let minimum = semver::Version::parse("1.49.0").unwrap();
     if ver < minimum {
         // edition added in 1.30
         // rename added in 1.31
@@ -165,6 +167,8 @@ fn all_the_fields() {
         // publish added in 1.39
         // dep_kinds added in 1.41
         // test added in 1.47
+        // homepage added in 1.49
+        // documentation added in 1.49
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -322,6 +326,14 @@ fn all_the_fields() {
     assert_eq!(
         all.repository,
         Some("https://github.com/oli-obk/cargo_metadata/".to_string())
+    );
+    assert_eq!(
+        all.homepage,
+        Some("https://github.com/oli-obk/cargo_metadata/".to_string())
+    );
+    assert_eq!(
+        all.documentation,
+        Some("https://docs.rs/cargo_metadata/".to_string())
     );
     assert_eq!(all.edition, "2018");
     assert_eq!(
