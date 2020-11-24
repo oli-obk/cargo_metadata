@@ -51,7 +51,7 @@
 //! use cargo_metadata::Message;
 //!
 //! let mut command = Command::new("cargo")
-//!     .args(&["build", "--message-format=json"])
+//!     .args(&["build", "--message-format=json-render-diagnostics"])
 //!     .stdout(Stdio::piped())
 //!     .spawn()
 //!     .unwrap();
