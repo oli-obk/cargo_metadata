@@ -4,7 +4,7 @@ use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 
-#[derive(PartialEq, Clone, Debug, Copy, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize)]
 /// Dependencies can come in three kinds
 pub enum DependencyKind {
     #[serde(rename = "normal")]
