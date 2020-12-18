@@ -4,7 +4,7 @@ extern crate semver;
 extern crate serde_json;
 
 use cargo_metadata::{CargoOpt, DependencyKind, Metadata, MetadataCommand};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[test]
 fn old_minimal() {
@@ -169,6 +169,7 @@ fn all_the_fields() {
         // test added in 1.47
         // homepage added in 1.49
         // documentation added in 1.49
+        // path added in 1.50
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -224,6 +225,13 @@ fn all_the_fields() {
     assert_eq!(path_dep.source, None);
     assert_eq!(path_dep.kind, DependencyKind::Normal);
     assert_eq!(path_dep.req, semver::VersionReq::parse("*").unwrap());
+    assert_eq!(
+        path_dep
+            .path
+            .as_deref()
+            .map(|p| p.ends_with("path-dep/Cargo.toml")),
+        Some(true),
+    );
 
     all.dependencies
         .iter()
