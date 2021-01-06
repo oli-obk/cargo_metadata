@@ -68,7 +68,7 @@ pub struct Dependency {
     pub registry: Option<String>,
     /// The file system path for a local path dependency.
     ///
-    /// Only produced on cargo 1.50+
+    /// Only produced on cargo 1.51+
     pub path: Option<PathBuf>,
     #[doc(hidden)]
     #[serde(skip)]

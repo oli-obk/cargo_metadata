@@ -169,7 +169,7 @@ fn all_the_fields() {
         // test added in 1.47
         // homepage added in 1.49
         // documentation added in 1.49
-        // path added in 1.50
+        // path added in 1.51
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
