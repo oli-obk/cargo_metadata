@@ -4,7 +4,7 @@ extern crate semver;
 extern crate serde_json;
 
 use cargo_metadata::{CargoOpt, DependencyKind, Metadata, MetadataCommand};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 #[test]
 fn old_minimal() {
@@ -225,13 +225,15 @@ fn all_the_fields() {
     assert_eq!(path_dep.source, None);
     assert_eq!(path_dep.kind, DependencyKind::Normal);
     assert_eq!(path_dep.req, semver::VersionReq::parse("*").unwrap());
-    assert_eq!(
-        path_dep
-            .path
-            .as_deref()
-            .map(|p| p.ends_with("path-dep/Cargo.toml")),
-        Some(true),
-    );
+    if ver >= semver::Version::parse("1.51.0").unwrap() {
+        assert_eq!(
+            path_dep
+                .path
+                .as_ref()
+                .map(|p| p.ends_with("path-dep/Cargo.toml")),
+            Some(true),
+        );
+    }
 
     all.dependencies
         .iter()
