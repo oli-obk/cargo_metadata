@@ -227,10 +227,7 @@ fn all_the_fields() {
     assert_eq!(path_dep.req, semver::VersionReq::parse("*").unwrap());
     if ver >= semver::Version::parse("1.51.0").unwrap() {
         assert_eq!(
-            path_dep
-                .path
-                .as_ref()
-                .map(|p| p.ends_with("path-dep/Cargo.toml")),
+            path_dep.path.as_ref().map(|p| p.ends_with("path-dep")),
             Some(true),
         );
     }
