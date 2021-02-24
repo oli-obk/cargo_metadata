@@ -1,8 +1,8 @@
 use super::{Diagnostic, PackageId, Target};
+use camino::Utf8PathBuf;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::io::{self, BufRead, Lines, Read};
-use std::path::PathBuf;
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.
@@ -37,9 +37,9 @@ pub struct Artifact {
     pub features: Vec<String>,
     /// The full paths to the generated artifacts
     /// (e.g. binary file and separate debug info)
-    pub filenames: Vec<PathBuf>,
+    pub filenames: Vec<Utf8PathBuf>,
     /// Path to the executable file
-    pub executable: Option<PathBuf>,
+    pub executable: Option<Utf8PathBuf>,
     /// If true, then the files were already generated
     pub fresh: bool,
     #[doc(hidden)]
@@ -68,9 +68,9 @@ pub struct BuildScript {
     /// The package this build script execution belongs to
     pub package_id: PackageId,
     /// The libs to link
-    pub linked_libs: Vec<PathBuf>,
+    pub linked_libs: Vec<Utf8PathBuf>,
     /// The paths to search when resolving libs
-    pub linked_paths: Vec<PathBuf>,
+    pub linked_paths: Vec<Utf8PathBuf>,
     /// Various `--cfg` flags to pass to the compiler
     pub cfgs: Vec<String>,
     /// The environment variables to add to the compilation
@@ -79,7 +79,7 @@ pub struct BuildScript {
     ///
     /// Added in Rust 1.41.
     #[serde(default)]
-    pub out_dir: PathBuf,
+    pub out_dir: Utf8PathBuf,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),

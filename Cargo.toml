@@ -9,6 +9,7 @@ readme = "README.md"
 edition = "2018"
 
 [dependencies]
+camino = { version = "1.0.1", features = ["serde1"] }
 cargo-platform = "0.1"
 semver = { version = "0.11.0", features = ["serde"] }
 semver-parser = "0.10.2"
