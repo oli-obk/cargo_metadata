@@ -78,6 +78,7 @@
 //! let output = command.wait().expect("Couldn't get cargo's exit status");
 //! ```
 
+use camino::Utf8PathBuf;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
@@ -85,6 +86,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
 
+pub use camino;
 pub use semver::Version;
 
 pub use dependency::{Dependency, DependencyKind};
@@ -138,9 +140,9 @@ pub struct Metadata {
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     /// Workspace root
-    pub workspace_root: PathBuf,
+    pub workspace_root: Utf8PathBuf,
     /// Build directory
-    pub target_directory: PathBuf,
+    pub target_directory: Utf8PathBuf,
     /// The workspace-level metadata object. Null if non-existent.
     #[serde(rename = "metadata", default, skip_serializing_if = "is_null")]
     pub workspace_metadata: serde_json::Value,
@@ -272,13 +274,13 @@ pub struct Package {
     pub license: Option<String>,
     /// If the package is using a nonstandard license, this key may be specified instead of
     /// `license`, and must point to a file relative to the manifest.
-    pub license_file: Option<PathBuf>,
+    pub license_file: Option<Utf8PathBuf>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
-    pub manifest_path: PathBuf,
+    pub manifest_path: Utf8PathBuf,
     /// Categories as given in the `Cargo.toml`
     #[serde(default)]
     pub categories: Vec<String>,
@@ -286,7 +288,7 @@ pub struct Package {
     #[serde(default)]
     pub keywords: Vec<String>,
     /// Readme as given in the `Cargo.toml`
-    pub readme: Option<PathBuf>,
+    pub readme: Option<Utf8PathBuf>,
     /// Repository as given in the `Cargo.toml`
     // can't use `url::Url` because that requires a more recent stable compiler
     pub repository: Option<String>,
@@ -344,7 +346,7 @@ pub struct Package {
 
 impl Package {
     /// Full path to the license file if one is present in the manifest
-    pub fn license_file(&self) -> Option<PathBuf> {
+    pub fn license_file(&self) -> Option<Utf8PathBuf> {
         self.license_file.as_ref().map(|file| {
             self.manifest_path
                 .parent()
@@ -354,7 +356,7 @@ impl Package {
     }
 
     /// Full path to the readme file if one is present in the manifest
-    pub fn readme(&self) -> Option<PathBuf> {
+    pub fn readme(&self) -> Option<Utf8PathBuf> {
         self.readme
             .as_ref()
             .map(|file| self.manifest_path.join(file))
@@ -400,7 +402,7 @@ pub struct Target {
     /// It doesn't apply to `lib` targets.
     pub required_features: Vec<String>,
     /// Path to the main source file of the target
-    pub src_path: PathBuf,
+    pub src_path: Utf8PathBuf,
     /// Rust edition for this target
     #[serde(default = "edition_default")]
     pub edition: String,

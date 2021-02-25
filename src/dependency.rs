@@ -1,8 +1,8 @@
 //! This module contains `Dependency` and the types/functions it uses for deserialization.
 
+use camino::Utf8PathBuf;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
-use std::path::PathBuf;
 
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize)]
 /// Dependencies can come in three kinds
@@ -69,7 +69,7 @@ pub struct Dependency {
     /// The file system path for a local path dependency.
     ///
     /// Only produced on cargo 1.51+
-    pub path: Option<PathBuf>,
+    pub path: Option<Utf8PathBuf>,
     #[doc(hidden)]
     #[serde(skip)]
     __do_not_match_exhaustively: (),

@@ -3,8 +3,8 @@ extern crate semver;
 #[macro_use]
 extern crate serde_json;
 
+use camino::Utf8PathBuf;
 use cargo_metadata::{CargoOpt, DependencyKind, Metadata, MetadataCommand};
-use std::path::PathBuf;
 
 #[test]
 fn old_minimal() {
@@ -91,12 +91,12 @@ fn old_minimal() {
     assert_eq!(target.kind, vec!["bin"]);
     assert_eq!(target.crate_types, vec!["bin"]);
     assert_eq!(target.required_features.len(), 0);
-    assert_eq!(target.src_path, PathBuf::from("/foo/src/main.rs"));
+    assert_eq!(target.src_path, "/foo/src/main.rs");
     assert_eq!(target.edition, "2015");
     assert_eq!(target.doctest, true);
     assert_eq!(target.test, true);
     assert_eq!(pkg.features.len(), 0);
-    assert_eq!(pkg.manifest_path, PathBuf::from("/foo/Cargo.toml"));
+    assert_eq!(pkg.manifest_path, "/foo/Cargo.toml");
     assert_eq!(pkg.categories.len(), 0);
     assert_eq!(pkg.keywords.len(), 0);
     assert_eq!(pkg.readme, None);
@@ -113,9 +113,9 @@ fn old_minimal() {
         "foo 0.1.0 (path+file:///foo)"
     );
     assert!(meta.resolve.is_none());
-    assert_eq!(meta.workspace_root, PathBuf::from("/foo"));
+    assert_eq!(meta.workspace_root, "/foo");
     assert_eq!(meta.workspace_metadata, serde_json::Value::Null);
-    assert_eq!(meta.target_directory, PathBuf::from("/foo/target"));
+    assert_eq!(meta.target_directory, "/foo/target");
 }
 
 macro_rules! sorted {
@@ -177,10 +177,7 @@ fn all_the_fields() {
         .manifest_path("tests/all/Cargo.toml")
         .exec()
         .unwrap();
-    assert_eq!(
-        meta.workspace_root.file_name().unwrap(),
-        PathBuf::from("all")
-    );
+    assert_eq!(meta.workspace_root.file_name().unwrap(), "all");
     assert_eq!(
         serde_json::from_value::<WorkspaceMetadata>(meta.workspace_metadata).unwrap(),
         WorkspaceMetadata {
@@ -199,7 +196,7 @@ fn all_the_fields() {
     assert!(all.id.to_string().starts_with("all"));
     assert_eq!(all.description, Some("Package description.".to_string()));
     assert_eq!(all.license, Some("MIT/Apache-2.0".to_string()));
-    assert_eq!(all.license_file, Some(PathBuf::from("LICENSE")));
+    assert_eq!(all.license_file, Some(Utf8PathBuf::from("LICENSE")));
     assert!(all.license_file().unwrap().ends_with("tests/all/LICENSE"));
     assert_eq!(all.publish, Some(vec![]));
     assert_eq!(all.links, Some("foo".to_string()));
@@ -329,7 +326,7 @@ fn all_the_fields() {
     assert!(all.manifest_path.ends_with("all/Cargo.toml"));
     assert_eq!(all.categories, vec!["command-line-utilities"]);
     assert_eq!(all.keywords, vec!["cli"]);
-    assert_eq!(all.readme, Some(PathBuf::from("README.md")));
+    assert_eq!(all.readme, Some(Utf8PathBuf::from("README.md")));
     assert_eq!(
         all.repository,
         Some("https://github.com/oli-obk/cargo_metadata/".to_string())
