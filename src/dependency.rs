@@ -3,6 +3,7 @@
 use camino::Utf8PathBuf;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
+#[cfg(feature = "builder")]
 use derive_builder::Builder;
 
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize)]
@@ -36,9 +37,10 @@ where
     Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
-#[builder(pattern = "owned", setter(into))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 /// A dependency of the main crate
 pub struct Dependency {
     /// Name as given in the `Cargo.toml`

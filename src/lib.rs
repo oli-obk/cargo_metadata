@@ -85,6 +85,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
+#[cfg(feature = "builder")]
 use derive_builder::Builder;
 
 pub use camino;
@@ -131,9 +132,10 @@ fn is_null(value: &serde_json::Value) -> bool {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
-#[builder(pattern = "owned", setter(into))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 /// Starting point for metadata returned by `cargo metadata`
 pub struct Metadata {
     /// A list of all crates referenced by this crate (and the crate itself)
@@ -172,9 +174,10 @@ impl<'a> std::ops::Index<&'a PackageId> for Metadata {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
-#[builder(pattern = "owned", setter(into))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 /// A dependency graph
 pub struct Resolve {
     /// Nodes in a dependencies graph
@@ -184,9 +187,10 @@ pub struct Resolve {
     pub root: Option<PackageId>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
-#[builder(pattern = "owned", setter(into))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 /// A node in a dependencies graph
 pub struct Node {
     /// An opaque identifier for a package
@@ -206,9 +210,10 @@ pub struct Node {
     pub features: Vec<String>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
-#[builder(pattern = "owned", setter(into))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 /// A dependency in a node
 pub struct NodeDep {
     /// The name of the dependency's library target.
@@ -223,9 +228,10 @@ pub struct NodeDep {
     pub dep_kinds: Vec<DepKindInfo>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
-#[builder(pattern = "owned", setter(into))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 /// Information about a dependency kind.
 pub struct DepKindInfo {
     /// The kind of dependency.
@@ -245,9 +251,10 @@ pub struct DepKindInfo {
     pub target: Option<dependency::Platform>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
-#[builder(pattern = "owned", setter(into))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 /// One or more crates described by a single `Cargo.toml`
 ///
 /// Each [`target`][Package::targets] of a `Package` will be built as a crate.
@@ -380,8 +387,9 @@ impl std::fmt::Display for Source {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Builder)]
-#[builder(pattern = "owned", setter(into))]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "builder", derive(Builder))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 #[non_exhaustive]
 /// A single target (lib, bin, example, ...) provided by a crate
 pub struct Target {
@@ -392,11 +400,11 @@ pub struct Target {
     /// Almost the same as `kind`, except when an example is a library instead of an executable.
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
     #[serde(default)]
-    #[builder(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub crate_types: Vec<String>,
 
     #[serde(default)]
-    #[builder(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     #[serde(rename = "required-features")]
     /// This target is built only if these features are enabled.
     /// It doesn't apply to `lib` targets.
@@ -405,20 +413,20 @@ pub struct Target {
     pub src_path: Utf8PathBuf,
     /// Rust edition for this target
     #[serde(default = "edition_default")]
-    #[builder(default = "edition_default()")]
+    #[cfg_attr(feature = "builder", builder(default = "edition_default()"))]
     pub edition: String,
     /// Whether or not this target has doc tests enabled, and the target is
     /// compatible with doc testing.
     ///
     /// This is always `true` if running with a version of Cargo older than 1.37.
     #[serde(default = "default_true")]
-    #[builder(default = "true")]
+    #[cfg_attr(feature = "builder", builder(default = "true"))]
     pub doctest: bool,
     /// Whether or not this target is tested by default by `cargo test`.
     ///
     /// This is always `true` if running with a version of Cargo older than 1.47.
     #[serde(default = "default_true")]
-    #[builder(default = "true")]
+    #[cfg_attr(feature = "builder", builder(default = "true"))]
     pub test: bool,
 }
 
@@ -442,24 +450,19 @@ pub enum CargoOpt {
 }
 
 /// A builder for configurating `cargo metadata` invocation.
-#[derive(Debug, Clone, Builder)]
-#[non_exhaustive]
-#[builder(setter(into, strip_option), build_fn(skip), name = "MetadataCommand", public)]
-struct MetadataCommandInner {
+#[derive(Debug, Clone, Default)]
+pub struct MetadataCommand {
     /// Path to `cargo` executable.  If not set, this will use the
     /// the `$CARGO` environment variable, and if that is not set, will
     /// simply be `cargo`.
-    cargo_path: PathBuf,
+    cargo_path: Option<PathBuf>,
     /// Path to `Cargo.toml`
-    manifest_path: PathBuf,
+    manifest_path: Option<PathBuf>,
     /// Current directory of the `cargo metadata` process.
-    current_dir: PathBuf,
+    current_dir: Option<PathBuf>,
     /// Output information only about the root package and don't fetch dependencies.
-    // Cannot derive this automatically, as that will have a bool argument.
-    #[builder(setter(custom))]
     no_deps: bool,
     /// Collections of `CargoOpt::SomeFeatures(..)`
-    #[builder(setter(custom))]
     features: Vec<String>,
     /// Latched `CargoOpt::AllFeatures`
     all_features: bool,
@@ -476,9 +479,26 @@ impl MetadataCommand {
     pub fn new() -> MetadataCommand {
         MetadataCommand::default()
     }
+    /// Path to `cargo` executable.  If not set, this will use the
+    /// the `$CARGO` environment variable, and if that is not set, will
+    /// simply be `cargo`.
+    pub fn cargo_path(&mut self, path: impl Into<PathBuf>) -> &mut MetadataCommand {
+        self.cargo_path = Some(path.into());
+        self
+    }
+    /// Path to `Cargo.toml`
+    pub fn manifest_path(&mut self, path: impl Into<PathBuf>) -> &mut MetadataCommand {
+        self.manifest_path = Some(path.into());
+        self
+    }
+    /// Current directory of the `cargo metadata` process.
+    pub fn current_dir(&mut self, path: impl Into<PathBuf>) -> &mut MetadataCommand {
+        self.current_dir = Some(path.into());
+        self
+    }
     /// Output information only about the root package and don't fetch dependencies.
     pub fn no_deps(&mut self) -> &mut MetadataCommand {
-        self.no_deps = Some(true);
+        self.no_deps = true;
         self
     }
     /// Which features to include.
@@ -521,24 +541,28 @@ impl MetadataCommand {
     /// ```
     pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
         match features {
-            CargoOpt::SomeFeatures(features) => self.features.get_or_insert_with(Default::default).extend(features),
+            CargoOpt::SomeFeatures(features) => self.features.extend(features),
             CargoOpt::NoDefaultFeatures => {
-                let no_default_features = self.no_default_features.get_or_insert(false);
                 assert!(
-                    !*no_default_features,
+                    !self.no_default_features,
                     "Do not supply CargoOpt::NoDefaultFeatures more than once!"
                 );
-                *no_default_features = true;
+                self.no_default_features = true;
             }
             CargoOpt::AllFeatures => {
-                let all_features = self.all_features.get_or_insert(false);
                 assert!(
-                    !*all_features,
+                    !self.all_features,
                     "Do not supply CargoOpt::AllFeatures more than once!"
                 );
-                *all_features = true;
+                self.all_features = true;
             }
         }
+        self
+    }
+    /// Arbitrary command line flags to pass to `cargo`.  These will be added
+    /// to the end of the command line invocation.
+    pub fn other_options(&mut self, options: impl Into<Vec<String>>) -> &mut MetadataCommand {
+        self.other_options = options.into();
         self
     }
 
@@ -553,7 +577,7 @@ impl MetadataCommand {
         let mut cmd = Command::new(cargo);
         cmd.args(&["metadata", "--format-version", "1"]);
 
-        if self.no_deps == Some(true) {
+        if self.no_deps {
             cmd.arg("--no-deps");
         }
 
@@ -561,24 +585,20 @@ impl MetadataCommand {
             cmd.current_dir(path);
         }
 
-        if let Some(features) = &self.features {
-            if !features.is_empty() {
-                cmd.arg("--features").arg(features.join(","));
-            }
+        if !self.features.is_empty() {
+            cmd.arg("--features").arg(self.features.join(","));
         }
-        if self.all_features == Some(true) {
+        if self.all_features {
             cmd.arg("--all-features");
         }
-        if self.no_default_features == Some(true) {
+        if self.no_default_features {
             cmd.arg("--no-default-features");
         }
 
         if let Some(manifest_path) = &self.manifest_path {
             cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
         }
-        if let Some(other_options) = &self.other_options {
-            cmd.args(other_options);
-        }
+        cmd.args(&self.other_options);
 
         cmd
     }
