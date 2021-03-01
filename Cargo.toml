@@ -11,6 +11,7 @@ edition = "2018"
 [dependencies]
 camino = { version = "1.0.1", features = ["serde1"] }
 cargo-platform = "0.1"
+derive_builder = "0.9.0"
 semver = { version = "0.11.0", features = ["serde"] }
 semver-parser = "0.10.2"
 serde = { version = "1.0.107", features = ["derive"] }

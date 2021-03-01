@@ -85,6 +85,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
+use derive_builder::Builder;
 
 pub use camino;
 pub use semver::Version;
@@ -384,7 +385,9 @@ impl std::fmt::Display for Source {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, Builder)]
+#[builder(pattern = "owned", setter(into))]
+#[non_exhaustive]
 /// A single target (lib, bin, example, ...) provided by a crate
 pub struct Target {
     /// Name as given in the `Cargo.toml` or generated from the file name
@@ -394,9 +397,11 @@ pub struct Target {
     /// Almost the same as `kind`, except when an example is a library instead of an executable.
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
     #[serde(default)]
+    #[builder(default)]
     pub crate_types: Vec<String>,
 
     #[serde(default)]
+    #[builder(default)]
     #[serde(rename = "required-features")]
     /// This target is built only if these features are enabled.
     /// It doesn't apply to `lib` targets.
@@ -405,21 +410,21 @@ pub struct Target {
     pub src_path: Utf8PathBuf,
     /// Rust edition for this target
     #[serde(default = "edition_default")]
+    #[builder(default = "edition_default()")]
     pub edition: String,
     /// Whether or not this target has doc tests enabled, and the target is
     /// compatible with doc testing.
     ///
     /// This is always `true` if running with a version of Cargo older than 1.37.
     #[serde(default = "default_true")]
+    #[builder(default = "true")]
     pub doctest: bool,
     /// Whether or not this target is tested by default by `cargo test`.
     ///
     /// This is always `true` if running with a version of Cargo older than 1.47.
     #[serde(default = "default_true")]
+    #[builder(default = "true")]
     pub test: bool,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
 }
 
 fn default_true() -> bool {
