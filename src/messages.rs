@@ -3,10 +3,13 @@ use camino::Utf8PathBuf;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::io::{self, BufRead, Lines, Read};
+use derive_builder::Builder;
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Builder)]
+#[non_exhaustive]
+#[builder(pattern = "owned", setter(into))]
 pub struct ArtifactProfile {
     /// Optimization level. Possible values are 0-3, s or z.
     pub opt_level: String,
@@ -19,13 +22,12 @@ pub struct ArtifactProfile {
     pub overflow_checks: bool,
     /// Whether this profile is a test
     pub test: bool,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
 }
 
 /// A compiler-generated file.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Builder)]
+#[non_exhaustive]
+#[builder(pattern = "owned", setter(into))]
 pub struct Artifact {
     /// The package this artifact belongs to
     pub package_id: PackageId,
@@ -42,14 +44,13 @@ pub struct Artifact {
     pub executable: Option<Utf8PathBuf>,
     /// If true, then the files were already generated
     pub fresh: bool,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
 }
 
 /// Message left by the compiler
 // TODO: Better name. This one comes from machine_message.rs
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Builder)]
+#[non_exhaustive]
+#[builder(pattern = "owned", setter(into))]
 pub struct CompilerMessage {
     /// The package this message belongs to
     pub package_id: PackageId,
@@ -57,13 +58,12 @@ pub struct CompilerMessage {
     pub target: Target,
     /// The message the compiler sent.
     pub message: Diagnostic,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
 }
 
 /// Output of a build script execution.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Builder)]
+#[non_exhaustive]
+#[builder(pattern = "owned", setter(into))]
 pub struct BuildScript {
     /// The package this build script execution belongs to
     pub package_id: PackageId,
@@ -80,23 +80,20 @@ pub struct BuildScript {
     /// Added in Rust 1.41.
     #[serde(default)]
     pub out_dir: Utf8PathBuf,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
 }
 
 /// Final result of a build.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash, Builder)]
+#[non_exhaustive]
+#[builder(pattern = "owned", setter(into))]
 pub struct BuildFinished {
     /// Whether or not the build finished successfully.
     pub success: bool,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
 }
 
 /// A cargo message
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 #[serde(tag = "reason", rename_all = "kebab-case")]
 pub enum Message {
     /// The compiler generated an artifact
@@ -114,9 +111,6 @@ pub enum Message {
     /// Line separator is not included
     #[serde(skip)]
     TextLine(String),
-    #[doc(hidden)]
-    #[serde(other)]
-    Unknown,
 }
 
 impl Message {

@@ -3,6 +3,7 @@
 use camino::Utf8PathBuf;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
+use derive_builder::Builder;
 
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize)]
 /// Dependencies can come in three kinds
@@ -35,7 +36,9 @@ where
     Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[non_exhaustive]
+#[builder(pattern = "owned", setter(into))]
 /// A dependency of the main crate
 pub struct Dependency {
     /// Name as given in the `Cargo.toml`
@@ -70,9 +73,6 @@ pub struct Dependency {
     ///
     /// Only produced on cargo 1.51+
     pub path: Option<Utf8PathBuf>,
-    #[doc(hidden)]
-    #[serde(skip)]
-    __do_not_match_exhaustively: (),
 }
 
 pub use cargo_platform::Platform;
