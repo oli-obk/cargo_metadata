@@ -119,6 +119,9 @@ pub enum DiagnosticLevel {
     Error,
     /// Warning
     Warning,
+    /// Failure note
+    #[serde(rename = "failure-note")]
+    FailureNote,
     /// Note
     Note,
     /// Help
