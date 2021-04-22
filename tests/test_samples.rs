@@ -597,3 +597,11 @@ fn advanced_feature_configuration() {
     });
     assert_eq!(sorted!(all_flag_variants), sorted!(all_features));
 }
+
+#[test]
+fn depkind_to_string() {
+    assert_eq!(DependencyKind::Normal.to_string(), "normal");
+    assert_eq!(DependencyKind::Development.to_string(), "dev");
+    assert_eq!(DependencyKind::Build.to_string(), "build");
+    assert_eq!(DependencyKind::Unknown.to_string(), "Unknown");
+}

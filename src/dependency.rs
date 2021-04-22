@@ -1,5 +1,7 @@
 //! This module contains `Dependency` and the types/functions it uses for deserialization.
 
+use std::fmt;
+
 use camino::Utf8PathBuf;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
@@ -26,6 +28,14 @@ pub enum DependencyKind {
 impl Default for DependencyKind {
     fn default() -> DependencyKind {
         DependencyKind::Normal
+    }
+}
+
+impl fmt::Display for DependencyKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = serde_json::to_string(self).unwrap();
+        // skip opening and closing quotes
+        f.write_str(&s[1..s.len() - 1])
     }
 }
 
