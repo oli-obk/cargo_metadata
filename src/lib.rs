@@ -235,7 +235,7 @@ pub struct NodeDep {
 /// Information about a dependency kind.
 pub struct DepKindInfo {
     /// The kind of dependency.
-    #[serde(deserialize_with = "dependency::parse_dependency_kind")]
+    #[serde(default)]
     pub kind: DependencyKind,
     /// The target platform for the dependency.
     ///

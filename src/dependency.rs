@@ -2,7 +2,7 @@
 
 use camino::Utf8PathBuf;
 use semver::VersionReq;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
 
@@ -29,14 +29,6 @@ impl Default for DependencyKind {
     }
 }
 
-/// The `kind` can be `null`, which is interpreted as the default - `Normal`.
-pub(super) fn parse_dependency_kind<'de, D>(d: D) -> Result<DependencyKind, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
-}
-
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
@@ -50,7 +42,7 @@ pub struct Dependency {
     /// The required version
     pub req: VersionReq,
     /// The kind of dependency this is
-    #[serde(deserialize_with = "parse_dependency_kind")]
+    #[serde(default)]
     pub kind: DependencyKind,
     /// Whether this dependency is required or optional
     pub optional: bool,
