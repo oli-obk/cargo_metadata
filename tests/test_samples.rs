@@ -138,8 +138,8 @@ fn cargo_version() -> semver::Version {
     assert!(split.len() >= 2, "cargo -V output is unexpected: {}", out);
     let mut ver = semver::Version::parse(split[1]).expect("cargo -V semver could not be parsed");
     // Don't care about metadata, it is awkward to compare.
-    ver.pre = Vec::new();
-    ver.build = Vec::new();
+    ver.pre = semver::Prerelease::EMPTY;
+    ver.build = semver::BuildMetadata::EMPTY;
     ver
 }
 
