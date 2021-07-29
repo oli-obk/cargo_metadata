@@ -518,7 +518,7 @@ impl MetadataCommand {
     /// # Panics
     ///
     /// `cargo metadata` rejects multiple `--no-default-features` flags. Similarly, the `features()`
-    /// method panics when specifiying multiple `CargoOpt::NoDefaultFeatures`:
+    /// method panics when specifying multiple `CargoOpt::NoDefaultFeatures`:
     ///
     /// ```should_panic
     /// # use cargo_metadata::{CargoOpt, MetadataCommand};
