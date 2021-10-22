@@ -89,7 +89,7 @@ use std::process::Command;
 use std::str::from_utf8;
 
 pub use camino;
-pub use semver::Version;
+pub use semver::{Version, VersionReq};
 
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
@@ -349,6 +349,10 @@ pub struct Package {
     ///
     /// This is always `None` if running with a version of Cargo older than 1.55.
     pub default_run: Option<String>,
+    /// The minimum supported Rust version of this package.
+    ///
+    /// This is always `None` if running with a version of Cargo older than 1.58.
+    pub rust_version: Option<VersionReq>,
 }
 
 impl Package {

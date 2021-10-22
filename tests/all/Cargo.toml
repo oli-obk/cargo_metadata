@@ -15,6 +15,7 @@ documentation = "https://docs.rs/cargo_metadata/"
 links = "foo"
 publish = false
 default-run = "otherbin"
+rust-version = "1.56"
 
 [package.metadata.docs.rs]
 all-features = true

@@ -74,6 +74,7 @@ fn old_minimal() {
     assert_eq!(pkg.license, None);
     assert_eq!(pkg.license_file, None);
     assert_eq!(pkg.default_run, None);
+    assert_eq!(pkg.rust_version, None);
     assert_eq!(pkg.dependencies.len(), 1);
     let dep = &pkg.dependencies[0];
     assert_eq!(dep.name, "somedep");
@@ -157,10 +158,10 @@ struct TestObject {
 
 #[test]
 fn all_the_fields() {
-    // All the fields currently generated as of 1.55. This tries to exercise as
+    // All the fields currently generated as of 1.58. This tries to exercise as
     // much as possible.
     let ver = cargo_version();
-    let minimum = semver::Version::parse("1.55.0").unwrap();
+    let minimum = semver::Version::parse("1.56.0").unwrap();
     if ver < minimum {
         // edition added in 1.30
         // rename added in 1.31
@@ -174,6 +175,7 @@ fn all_the_fields() {
         // doc added in 1.50
         // path added in 1.51
         // default_run added in 1.55
+        // rust_version added in 1.58
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -205,6 +207,12 @@ fn all_the_fields() {
     assert_eq!(all.publish, Some(vec![]));
     assert_eq!(all.links, Some("foo".to_string()));
     assert_eq!(all.default_run, Some("otherbin".to_string()));
+    if ver >= semver::Version::parse("1.58.0").unwrap() {
+        assert_eq!(
+            all.rust_version,
+            Some(semver::VersionReq::parse("1.56").unwrap())
+        );
+    }
 
     assert_eq!(all.dependencies.len(), 8);
     let bitflags = all
