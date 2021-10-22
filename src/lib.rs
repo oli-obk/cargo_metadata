@@ -345,6 +345,10 @@ pub struct Package {
     ///
     /// This is always `None` if running with a version of Cargo older than 1.39.
     pub publish: Option<Vec<String>>,
+    /// The default binary to run by `cargo run`.
+    ///
+    /// This is always `None` if running with a version of Cargo older than 1.55.
+    pub default_run: Option<String>,
 }
 
 impl Package {

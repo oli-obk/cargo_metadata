@@ -14,6 +14,7 @@ homepage = "https://github.com/oli-obk/cargo_metadata/"
 documentation = "https://docs.rs/cargo_metadata/"
 links = "foo"
 publish = false
+default-run = "otherbin"
 
 [package.metadata.docs.rs]
 all-features = true
