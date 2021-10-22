@@ -79,14 +79,14 @@
 //! ```
 
 use camino::Utf8PathBuf;
+#[cfg(feature = "builder")]
+use derive_builder::Builder;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
-#[cfg(feature = "builder")]
-use derive_builder::Builder;
 
 pub use camino;
 pub use semver::Version;

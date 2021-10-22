@@ -1,10 +1,10 @@
 use super::{Diagnostic, PackageId, Target};
 use camino::Utf8PathBuf;
+#[cfg(feature = "builder")]
+use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::io::{self, BufRead, Lines, Read};
-#[cfg(feature = "builder")]
-use derive_builder::Builder;
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.

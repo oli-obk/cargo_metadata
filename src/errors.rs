@@ -76,7 +76,11 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::CargoMetadata { stderr } => {
-                write!(f, "`cargo metadata` exited with an error: {}", stderr.trim_end())
+                write!(
+                    f,
+                    "`cargo metadata` exited with an error: {}",
+                    stderr.trim_end()
+                )
             }
             Error::Io(err) => write!(f, "failed to start `cargo metadata`: {}", err),
             Error::Utf8(err) => write!(f, "cannot convert the stdout of `cargo metadata`: {}", err),
