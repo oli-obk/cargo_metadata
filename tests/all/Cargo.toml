@@ -47,6 +47,7 @@ crate-type = ["rlib", "cdylib", "dylib", "staticlib"]
 [[bin]]
 name = "otherbin"
 edition = '2015'
+doc = false
 
 [[bin]]
 name = "reqfeat"

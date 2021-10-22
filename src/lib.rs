@@ -428,6 +428,12 @@ pub struct Target {
     #[serde(default = "default_true")]
     #[cfg_attr(feature = "builder", builder(default = "true"))]
     pub test: bool,
+    /// Whether or not this target is documented by `cargo doc`.
+    ///
+    /// This is always `true` if running with a version of Cargo older than 1.50.
+    #[serde(default = "default_true")]
+    #[cfg_attr(feature = "builder", builder(default = "true"))]
+    pub doc: bool,
 }
 
 fn default_true() -> bool {
