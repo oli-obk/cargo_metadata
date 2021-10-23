@@ -3,10 +3,10 @@
 use std::fmt;
 
 use camino::Utf8PathBuf;
-use semver::VersionReq;
-use serde::{Deserialize, Deserializer, Serialize};
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
+use semver::VersionReq;
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize)]
 /// Dependencies can come in three kinds

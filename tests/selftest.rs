@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use semver::Version;
 
 use cargo_metadata::{CargoOpt, Error, MetadataCommand};
-use serde::{Deserialize};
+use serde::Deserialize;
 
 #[derive(Debug, PartialEq, Eq, Deserialize)]
 struct TestPackageMetadata {

@@ -1,9 +1,9 @@
 //! This module contains `Diagnostic` and the types/functions it uses for deserialization.
 
-use serde::{Deserialize, Serialize};
-use std::fmt;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
+use serde::{Deserialize, Serialize};
+use std::fmt;
 
 /// The error code associated to this diagnostic.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
