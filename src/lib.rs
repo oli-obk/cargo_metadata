@@ -89,7 +89,7 @@ use std::process::Command;
 use std::str::from_utf8;
 
 pub use camino;
-pub use semver::Version;
+pub use semver::{Version, VersionReq};
 
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
@@ -345,6 +345,14 @@ pub struct Package {
     ///
     /// This is always `None` if running with a version of Cargo older than 1.39.
     pub publish: Option<Vec<String>>,
+    /// The default binary to run by `cargo run`.
+    ///
+    /// This is always `None` if running with a version of Cargo older than 1.55.
+    pub default_run: Option<String>,
+    /// The minimum supported Rust version of this package.
+    ///
+    /// This is always `None` if running with a version of Cargo older than 1.58.
+    pub rust_version: Option<VersionReq>,
 }
 
 impl Package {
@@ -428,6 +436,12 @@ pub struct Target {
     #[serde(default = "default_true")]
     #[cfg_attr(feature = "builder", builder(default = "true"))]
     pub test: bool,
+    /// Whether or not this target is documented by `cargo doc`.
+    ///
+    /// This is always `true` if running with a version of Cargo older than 1.50.
+    #[serde(default = "default_true")]
+    #[cfg_attr(feature = "builder", builder(default = "true"))]
+    pub doc: bool,
 }
 
 fn default_true() -> bool {

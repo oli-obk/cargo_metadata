@@ -73,6 +73,8 @@ fn old_minimal() {
     assert_eq!(pkg.description, None);
     assert_eq!(pkg.license, None);
     assert_eq!(pkg.license_file, None);
+    assert_eq!(pkg.default_run, None);
+    assert_eq!(pkg.rust_version, None);
     assert_eq!(pkg.dependencies.len(), 1);
     let dep = &pkg.dependencies[0];
     assert_eq!(dep.name, "somedep");
@@ -95,6 +97,7 @@ fn old_minimal() {
     assert_eq!(target.edition, "2015");
     assert_eq!(target.doctest, true);
     assert_eq!(target.test, true);
+    assert_eq!(target.doc, true);
     assert_eq!(pkg.features.len(), 0);
     assert_eq!(pkg.manifest_path, "/foo/Cargo.toml");
     assert_eq!(pkg.categories.len(), 0);
@@ -155,10 +158,10 @@ struct TestObject {
 
 #[test]
 fn all_the_fields() {
-    // All the fields currently generated as of 1.49. This tries to exercise as
+    // All the fields currently generated as of 1.58. This tries to exercise as
     // much as possible.
     let ver = cargo_version();
-    let minimum = semver::Version::parse("1.49.0").unwrap();
+    let minimum = semver::Version::parse("1.56.0").unwrap();
     if ver < minimum {
         // edition added in 1.30
         // rename added in 1.31
@@ -169,7 +172,10 @@ fn all_the_fields() {
         // test added in 1.47
         // homepage added in 1.49
         // documentation added in 1.49
+        // doc added in 1.50
         // path added in 1.51
+        // default_run added in 1.55
+        // rust_version added in 1.58
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -200,6 +206,13 @@ fn all_the_fields() {
     assert!(all.license_file().unwrap().ends_with("tests/all/LICENSE"));
     assert_eq!(all.publish, Some(vec![]));
     assert_eq!(all.links, Some("foo".to_string()));
+    assert_eq!(all.default_run, Some("otherbin".to_string()));
+    if ver >= semver::Version::parse("1.58.0").unwrap() {
+        assert_eq!(
+            all.rust_version,
+            Some(semver::VersionReq::parse("1.56").unwrap())
+        );
+    }
 
     assert_eq!(all.dependencies.len(), 8);
     let bitflags = all
@@ -222,12 +235,10 @@ fn all_the_fields() {
     assert_eq!(path_dep.source, None);
     assert_eq!(path_dep.kind, DependencyKind::Normal);
     assert_eq!(path_dep.req, semver::VersionReq::parse("*").unwrap());
-    if ver >= semver::Version::parse("1.51.0").unwrap() {
-        assert_eq!(
-            path_dep.path.as_ref().map(|p| p.ends_with("path-dep")),
-            Some(true),
-        );
-    }
+    assert_eq!(
+        path_dep.path.as_ref().map(|p| p.ends_with("path-dep")),
+        Some(true),
+    );
 
     all.dependencies
         .iter()
@@ -292,15 +303,18 @@ fn all_the_fields() {
     assert_eq!(lib.edition, "2018");
     assert_eq!(lib.doctest, true);
     assert_eq!(lib.test, true);
+    assert_eq!(lib.doc, true);
 
     let main = get_file_name!("main.rs");
     assert_eq!(main.crate_types, vec!["bin"]);
     assert_eq!(main.kind, vec!["bin"]);
     assert_eq!(main.doctest, false);
     assert_eq!(main.test, true);
+    assert_eq!(main.doc, true);
 
     let otherbin = get_file_name!("otherbin.rs");
     assert_eq!(otherbin.edition, "2015");
+    assert_eq!(otherbin.doc, false);
 
     let reqfeat = get_file_name!("reqfeat.rs");
     assert_eq!(reqfeat.required_features, vec!["feat2"]);

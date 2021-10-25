@@ -14,6 +14,8 @@ homepage = "https://github.com/oli-obk/cargo_metadata/"
 documentation = "https://docs.rs/cargo_metadata/"
 links = "foo"
 publish = false
+default-run = "otherbin"
+rust-version = "1.56"
 
 [package.metadata.docs.rs]
 all-features = true
@@ -47,6 +49,7 @@ crate-type = ["rlib", "cdylib", "dylib", "staticlib"]
 [[bin]]
 name = "otherbin"
 edition = '2015'
+doc = false
 
 [[bin]]
 name = "reqfeat"
