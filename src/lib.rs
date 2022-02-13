@@ -251,7 +251,7 @@ pub struct DepKindInfo {
     pub target: Option<dependency::Platform>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
@@ -375,7 +375,7 @@ impl Package {
 }
 
 /// The source of a package such as crates.io.
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(transparent)]
 pub struct Source {
     /// The underlying string representation of a source.
