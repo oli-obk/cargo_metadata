@@ -158,7 +158,7 @@ struct TestObject {
 
 #[test]
 fn all_the_fields() {
-    // All the fields currently generated as of 1.58. This tries to exercise as
+    // All the fields currently generated as of 1.60. This tries to exercise as
     // much as possible.
     let ver = cargo_version();
     let minimum = semver::Version::parse("1.56.0").unwrap();
@@ -291,13 +291,10 @@ fn all_the_fields() {
     assert_eq!(all.targets.len(), 8);
     let lib = get_file_name!("lib.rs");
     assert_eq!(lib.name, "all");
-    assert_eq!(
-        sorted!(lib.kind),
-        vec!["cdylib", "dylib", "rlib", "staticlib"]
-    );
+    assert_eq!(sorted!(lib.kind), vec!["cdylib", "rlib", "staticlib"]);
     assert_eq!(
         sorted!(lib.crate_types),
-        vec!["cdylib", "dylib", "rlib", "staticlib"]
+        vec!["cdylib", "rlib", "staticlib"]
     );
     assert_eq!(lib.required_features.len(), 0);
     assert_eq!(lib.edition, "2018");
@@ -332,7 +329,13 @@ fn all_the_fields() {
     let build = get_file_name!("build.rs");
     assert_eq!(build.kind, vec!["custom-build"]);
 
-    assert_eq!(all.features.len(), 3);
+    if ver >= semver::Version::parse("1.60.0").unwrap() {
+        // 1.60 now reports optional dependencies within the features table
+        assert_eq!(all.features.len(), 4);
+        assert_eq!(all.features["bitflags"], vec!["dep:bitflags"]);
+    } else {
+        assert_eq!(all.features.len(), 3);
+    }
     assert_eq!(all.features["feat1"].len(), 0);
     assert_eq!(all.features["feat2"].len(), 0);
     assert_eq!(sorted!(all.features["default"]), vec!["bitflags", "feat1"]);

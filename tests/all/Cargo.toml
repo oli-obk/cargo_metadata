@@ -44,7 +44,7 @@ feat1 = []
 feat2 = []
 
 [lib]
-crate-type = ["rlib", "cdylib", "dylib", "staticlib"]
+crate-type = ["rlib", "cdylib", "staticlib"]
 
 [[bin]]
 name = "otherbin"
