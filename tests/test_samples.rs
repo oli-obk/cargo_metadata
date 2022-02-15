@@ -291,13 +291,10 @@ fn all_the_fields() {
     assert_eq!(all.targets.len(), 8);
     let lib = get_file_name!("lib.rs");
     assert_eq!(lib.name, "all");
-    assert_eq!(
-        sorted!(lib.kind),
-        vec!["cdylib", "dylib", "rlib", "staticlib"]
-    );
+    assert_eq!(sorted!(lib.kind), vec!["cdylib", "rlib", "staticlib"]);
     assert_eq!(
         sorted!(lib.crate_types),
-        vec!["cdylib", "dylib", "rlib", "staticlib"]
+        vec!["cdylib", "rlib", "staticlib"]
     );
     assert_eq!(lib.required_features.len(), 0);
     assert_eq!(lib.edition, "2018");
