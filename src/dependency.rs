@@ -47,7 +47,7 @@ where
     Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
