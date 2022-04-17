@@ -124,12 +124,9 @@ impl std::fmt::Display for PackageId {
     }
 }
 
-// Helpers for default metadata fields
+/// Helpers for default metadata fields
 fn is_null(value: &serde_json::Value) -> bool {
-    match value {
-        serde_json::Value::Null => true,
-        _ => false,
-    }
+    matches!(value, serde_json::Value::Null)
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
