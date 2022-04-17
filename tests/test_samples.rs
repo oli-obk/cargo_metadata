@@ -4,7 +4,7 @@ extern crate semver;
 extern crate serde_json;
 
 use camino::Utf8PathBuf;
-use cargo_metadata::{CargoOpt, DependencyKind, Metadata, MetadataCommand};
+use cargo_metadata::{CargoOpt, DependencyKind, Edition, Metadata, MetadataCommand};
 
 #[test]
 fn old_minimal() {
@@ -94,7 +94,7 @@ fn old_minimal() {
     assert_eq!(target.crate_types, vec!["bin"]);
     assert_eq!(target.required_features.len(), 0);
     assert_eq!(target.src_path, "/foo/src/main.rs");
-    assert_eq!(target.edition, "2015");
+    assert_eq!(target.edition, Edition::E2015);
     assert_eq!(target.doctest, true);
     assert_eq!(target.test, true);
     assert_eq!(target.doc, true);
@@ -106,7 +106,7 @@ fn old_minimal() {
     assert_eq!(pkg.repository, None);
     assert_eq!(pkg.homepage, None);
     assert_eq!(pkg.documentation, None);
-    assert_eq!(pkg.edition, "2015");
+    assert_eq!(pkg.edition, Edition::E2015);
     assert_eq!(pkg.metadata, serde_json::Value::Null);
     assert_eq!(pkg.links, None);
     assert_eq!(pkg.publish, None);
@@ -297,7 +297,7 @@ fn all_the_fields() {
         vec!["cdylib", "rlib", "staticlib"]
     );
     assert_eq!(lib.required_features.len(), 0);
-    assert_eq!(lib.edition, "2018");
+    assert_eq!(lib.edition, Edition::E2018);
     assert_eq!(lib.doctest, true);
     assert_eq!(lib.test, true);
     assert_eq!(lib.doc, true);
@@ -310,7 +310,7 @@ fn all_the_fields() {
     assert_eq!(main.doc, true);
 
     let otherbin = get_file_name!("otherbin.rs");
-    assert_eq!(otherbin.edition, "2015");
+    assert_eq!(otherbin.edition, Edition::E2015);
     assert_eq!(otherbin.doc, false);
 
     let reqfeat = get_file_name!("reqfeat.rs");
@@ -356,7 +356,7 @@ fn all_the_fields() {
         all.documentation,
         Some("https://docs.rs/cargo_metadata/".to_string())
     );
-    assert_eq!(all.edition, "2018");
+    assert_eq!(all.edition, Edition::E2018);
     assert_eq!(
         all.metadata,
         json!({
