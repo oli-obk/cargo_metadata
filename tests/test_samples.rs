@@ -306,8 +306,8 @@ fn all_the_fields() {
     assert_eq!(main.crate_types, vec!["bin"]);
     assert_eq!(main.kind, vec!["bin"]);
     assert!(!main.doctest);
-    assert!(!main.test);
-    assert!(!main.doc);
+    assert!(main.test);
+    assert!(main.doc);
 
     let otherbin = get_file_name!("otherbin.rs");
     assert_eq!(otherbin.edition, Edition::E2015);
