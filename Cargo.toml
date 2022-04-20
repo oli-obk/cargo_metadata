@@ -6,7 +6,7 @@ repository = "https://github.com/oli-obk/cargo_metadata"
 description = "structured access to the output of `cargo metadata`"
 license = "MIT"
 readme = "README.md"
-edition = "2021"
+edition = "2018"
 
 [dependencies]
 camino = { version = "1.0.7", features = ["serde1"] }
