@@ -4,7 +4,7 @@ extern crate semver;
 extern crate serde_json;
 
 use camino::Utf8PathBuf;
-use cargo_metadata::{CargoOpt, DependencyKind, Metadata, MetadataCommand};
+use cargo_metadata::{CargoOpt, DependencyKind, Edition, Metadata, MetadataCommand};
 
 #[test]
 fn old_minimal() {
@@ -81,8 +81,8 @@ fn old_minimal() {
     assert_eq!(dep.source, None);
     assert_eq!(dep.req, semver::VersionReq::parse("^1.0").unwrap());
     assert_eq!(dep.kind, DependencyKind::Normal);
-    assert_eq!(dep.optional, false);
-    assert_eq!(dep.uses_default_features, true);
+    assert!(!dep.optional);
+    assert!(dep.uses_default_features);
     assert_eq!(dep.features.len(), 0);
     assert!(dep.target.is_none());
     assert_eq!(dep.rename, None);
@@ -94,10 +94,10 @@ fn old_minimal() {
     assert_eq!(target.crate_types, vec!["bin"]);
     assert_eq!(target.required_features.len(), 0);
     assert_eq!(target.src_path, "/foo/src/main.rs");
-    assert_eq!(target.edition, "2015");
-    assert_eq!(target.doctest, true);
-    assert_eq!(target.test, true);
-    assert_eq!(target.doc, true);
+    assert_eq!(target.edition, Edition::E2015);
+    assert!(target.doctest);
+    assert!(target.test);
+    assert!(target.doc);
     assert_eq!(pkg.features.len(), 0);
     assert_eq!(pkg.manifest_path, "/foo/Cargo.toml");
     assert_eq!(pkg.categories.len(), 0);
@@ -106,7 +106,7 @@ fn old_minimal() {
     assert_eq!(pkg.repository, None);
     assert_eq!(pkg.homepage, None);
     assert_eq!(pkg.documentation, None);
-    assert_eq!(pkg.edition, "2015");
+    assert_eq!(pkg.edition, Edition::E2015);
     assert_eq!(pkg.metadata, serde_json::Value::Null);
     assert_eq!(pkg.links, None);
     assert_eq!(pkg.publish, None);
@@ -224,7 +224,7 @@ fn all_the_fields() {
         bitflags.source,
         Some("registry+https://github.com/rust-lang/crates.io-index".to_string())
     );
-    assert_eq!(bitflags.optional, true);
+    assert!(bitflags.optional);
     assert_eq!(bitflags.req, semver::VersionReq::parse("^1.0").unwrap());
 
     let path_dep = all
@@ -251,7 +251,7 @@ fn all_the_fields() {
         .find(|d| d.name == "featdep")
         .unwrap();
     assert_eq!(featdep.features, vec!["i128"]);
-    assert_eq!(featdep.uses_default_features, false);
+    assert!(!featdep.uses_default_features);
 
     let renamed = all
         .dependencies
@@ -297,28 +297,28 @@ fn all_the_fields() {
         vec!["cdylib", "rlib", "staticlib"]
     );
     assert_eq!(lib.required_features.len(), 0);
-    assert_eq!(lib.edition, "2018");
-    assert_eq!(lib.doctest, true);
-    assert_eq!(lib.test, true);
-    assert_eq!(lib.doc, true);
+    assert_eq!(lib.edition, Edition::E2018);
+    assert!(lib.doctest);
+    assert!(lib.test);
+    assert!(lib.doc);
 
     let main = get_file_name!("main.rs");
     assert_eq!(main.crate_types, vec!["bin"]);
     assert_eq!(main.kind, vec!["bin"]);
-    assert_eq!(main.doctest, false);
-    assert_eq!(main.test, true);
-    assert_eq!(main.doc, true);
+    assert!(!main.doctest);
+    assert!(main.test);
+    assert!(main.doc);
 
     let otherbin = get_file_name!("otherbin.rs");
-    assert_eq!(otherbin.edition, "2015");
-    assert_eq!(otherbin.doc, false);
+    assert_eq!(otherbin.edition, Edition::E2015);
+    assert!(!otherbin.doc);
 
     let reqfeat = get_file_name!("reqfeat.rs");
     assert_eq!(reqfeat.required_features, vec!["feat2"]);
 
     let ex1 = get_file_name!("ex1.rs");
     assert_eq!(ex1.kind, vec!["example"]);
-    assert_eq!(ex1.test, false);
+    assert!(!ex1.test);
 
     let t1 = get_file_name!("t1.rs");
     assert_eq!(t1.kind, vec!["test"]);
@@ -356,7 +356,7 @@ fn all_the_fields() {
         all.documentation,
         Some("https://docs.rs/cargo_metadata/".to_string())
     );
-    assert_eq!(all.edition, "2018");
+    assert_eq!(all.edition, Edition::E2018);
     assert_eq!(
         all.metadata,
         json!({

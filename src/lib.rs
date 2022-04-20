@@ -124,12 +124,9 @@ impl std::fmt::Display for PackageId {
     }
 }
 
-// Helpers for default metadata fields
+/// Helpers for default metadata fields
 fn is_null(value: &serde_json::Value) -> bool {
-    match value {
-        serde_json::Value::Null => true,
-        _ => false,
-    }
+    matches!(value, serde_json::Value::Null)
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -310,8 +307,8 @@ pub struct Package {
     ///
     /// Beware that individual targets may specify their own edition in
     /// [`Target::edition`].
-    #[serde(default = "edition_default")]
-    pub edition: String,
+    #[serde(default)]
+    pub edition: Edition,
     /// Contents of the free form package.metadata section
     ///
     /// This contents can be serialized to a struct using serde:
@@ -420,9 +417,9 @@ pub struct Target {
     /// Path to the main source file of the target
     pub src_path: Utf8PathBuf,
     /// Rust edition for this target
-    #[serde(default = "edition_default")]
-    #[cfg_attr(feature = "builder", builder(default = "edition_default()"))]
-    pub edition: String,
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
+    pub edition: Edition,
     /// Whether or not this target has doc tests enabled, and the target is
     /// compatible with doc testing.
     ///
@@ -444,12 +441,29 @@ pub struct Target {
     pub doc: bool,
 }
 
-fn default_true() -> bool {
-    true
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+/// The rust edition
+pub enum Edition {
+    /// Edition 2015
+    #[serde(rename = "2015")]
+    E2015,
+    /// Edition 2018
+    #[serde(rename = "2018")]
+    E2018,
+    /// Edition 2021
+    #[serde(rename = "2021")]
+    E2021,
 }
 
-fn edition_default() -> String {
-    "2015".to_string()
+impl Default for Edition {
+    fn default() -> Self {
+        Self::E2015
+    }
+}
+
+fn default_true() -> bool {
+    true
 }
 
 /// Cargo features flags
