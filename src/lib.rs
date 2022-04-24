@@ -370,7 +370,7 @@ impl Package {
             .map(|file| self.manifest_path.join(file))
     }
 
-    /// Return true if the field `publish` in Cargo.toml:
+    /// Return true if the field `publish` in the manifest:
     /// - is not `[]`
     /// - is not `false`
     pub fn is_publishable(&self) -> bool {
