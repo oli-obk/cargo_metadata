@@ -158,6 +158,14 @@ impl Metadata {
         let root = self.resolve.as_ref()?.root.as_ref()?;
         self.packages.iter().find(|pkg| &pkg.id == root)
     }
+
+    /// Get the workspace packages.
+    pub fn workspace_packages(&self) -> Vec<&Package> {
+        self.packages
+            .iter()
+            .filter(|&p| self.workspace_members.contains(&p.id))
+            .collect()
+    }
 }
 
 impl<'a> std::ops::Index<&'a PackageId> for Metadata {
