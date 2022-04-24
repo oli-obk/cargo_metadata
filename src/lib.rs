@@ -369,6 +369,19 @@ impl Package {
             .as_ref()
             .map(|file| self.manifest_path.join(file))
     }
+
+    /// Return true if the field `publish` in Cargo.toml:
+    /// - is not `[]`
+    /// - is not `false`
+    pub fn is_publishable(&self) -> bool {
+        if let Some(publish) = &self.publish {
+            // The package can be published only to certain registries
+            !publish.is_empty()
+        } else {
+            // The package can be published anywhere
+            true
+        }
+    }
 }
 
 /// The source of a package such as crates.io.
