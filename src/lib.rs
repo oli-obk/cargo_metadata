@@ -89,7 +89,7 @@ use std::process::Command;
 use std::str::from_utf8;
 
 pub use camino;
-pub use semver::{Version, VersionReq};
+pub use semver::{BuildMetadata, Prerelease, Version, VersionReq};
 
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
