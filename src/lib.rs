@@ -81,6 +81,7 @@
 use camino::Utf8PathBuf;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
@@ -450,19 +451,30 @@ pub struct Target {
     pub doc: bool,
 }
 
+/// The Rust edition
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-#[non_exhaustive]
-/// The rust edition
-pub enum Edition {
-    /// Edition 2015
-    #[serde(rename = "2015")]
-    E2015,
-    /// Edition 2018
-    #[serde(rename = "2018")]
-    E2018,
-    /// Edition 2021
-    #[serde(rename = "2021")]
-    E2021,
+#[serde(transparent)]
+pub struct Edition(pub Cow<'static, str>);
+
+impl Edition {
+    /// Creates a new `Edition`.
+    pub fn new(edition: impl Into<Cow<'static, str>>) -> Self {
+        Self(edition.into())
+    }
+
+    /// Creates a new `Edition` from a static string.
+    pub const fn new_const(edition: &'static str) -> Self {
+        Self(Cow::Borrowed(edition))
+    }
+
+    /// Edition 2015.
+    pub const E2015: Self = Self::new_const("2015");
+
+    /// Edition 2018.
+    pub const E2018: Self = Self::new_const("2018");
+
+    /// Edition 2021.
+    pub const E2021: Self = Self::new_const("2021");
 }
 
 impl Default for Edition {
