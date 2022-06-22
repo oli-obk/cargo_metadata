@@ -4,7 +4,7 @@ use camino::Utf8PathBuf;
 use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use std::io::{self, BufRead, Lines, Read};
+use std::io::{self, BufRead, Read};
 
 /// Profile settings used to determine which compiler flags to use for a
 /// target.
@@ -122,10 +122,8 @@ pub enum Message {
 impl Message {
     /// Creates an iterator of Message from a Read outputting a stream of JSON
     /// messages. For usage information, look at the top-level documentation.
-    pub fn parse_stream<R: BufRead>(input: R) -> MessageIter<R> {
-        MessageIter {
-            lines: input.lines(),
-        }
+    pub fn parse_stream<R: Read>(input: R) -> MessageIter<R> {
+        MessageIter { input }
     }
 }
 
@@ -137,19 +135,25 @@ impl fmt::Display for CompilerMessage {
 
 /// An iterator of Messages.
 pub struct MessageIter<R> {
-    lines: Lines<R>,
+    input: R,
 }
 
 impl<R: BufRead> Iterator for MessageIter<R> {
     type Item = io::Result<Message>;
     fn next(&mut self) -> Option<Self::Item> {
-        let line = self.lines.next()?;
-        let message = line.map(|it| {
-            let mut deserializer = serde_json::Deserializer::from_str(&it);
-            deserializer.disable_recursion_limit();
-            Message::deserialize(&mut deserializer).unwrap_or(Message::TextLine(it))
-        });
-        Some(message)
+        let mut line = String::new();
+        self.input.read_line(&mut line).map(|n| {
+            if n == 0 {
+                None
+            } else {
+                if line.ends_with('\n') {
+                    line.truncate(line.len() - 1);
+                }
+                let mut deserializer = serde_json::Deserializer::from_str(&line);
+                deserializer.disable_recursion_limit();
+                Some(Message::deserialize(&mut deserializer).unwrap_or(Message::TextLine(line)))
+            }
+        }).transpose()
     }
 }
 
