@@ -453,28 +453,21 @@ pub struct Target {
 
 /// The Rust edition
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-#[serde(transparent)]
-pub struct Edition(pub Cow<'static, str>);
-
-impl Edition {
-    /// Creates a new `Edition`.
-    pub fn new(edition: impl Into<Cow<'static, str>>) -> Self {
-        Self(edition.into())
-    }
-
-    /// Creates a new `Edition` from a static string.
-    pub const fn new_const(edition: &'static str) -> Self {
-        Self(Cow::Borrowed(edition))
-    }
-
-    /// Edition 2015.
-    pub const E2015: Self = Self::new_const("2015");
-
-    /// Edition 2018.
-    pub const E2018: Self = Self::new_const("2018");
-
-    /// Edition 2021.
-    pub const E2021: Self = Self::new_const("2021");
+pub enum Edition {
+    /// Edition 2015
+    #[serde(rename = "2015")]
+    E2015,
+    /// Edition 2018
+    #[serde(rename = "2018")]
+    E2018,
+    /// Edition 2021
+    #[serde(rename = "2021")]
+    E2021,
+    /// An unknown value was passed instead of a valid edition.
+    ///
+    /// This can mean one of two things. Either some corrupted data, or an edition not supported by the current crate version.
+    /// If you believe the latter is the case feel free to open an issue.
+    Unknown(Cow<'static, str>),
 }
 
 impl Default for Edition {
