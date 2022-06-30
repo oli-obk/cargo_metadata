@@ -85,6 +85,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
+use std::hash::Hash;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
@@ -452,7 +453,7 @@ pub struct Target {
 }
 
 /// The Rust edition
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Edition {
     /// Edition 2015
     #[serde(rename = "2015")]
@@ -469,6 +470,37 @@ pub enum Edition {
     /// If you believe the latter is the case feel free to open an issue.
     Unknown(Cow<'static, str>),
 }
+
+impl Hash for Edition {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            Edition::Unknown(ref unknown) => match unknown.as_ref() {
+                "2015" => Self::E2015.hash(state),
+                "2018" => Self::E2018.hash(state),
+                "2021" => Self::E2021.hash(state),
+                _ => {
+                    core::mem::discriminant(unknown).hash(state);
+                    core::mem::discriminant(self).hash(state);
+                }
+            },
+            _ => core::mem::discriminant(self).hash(state),
+        }
+    }
+}
+
+impl PartialEq for Edition {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Unknown(left), Self::Unknown(right)) => left == right,
+            (Self::E2015, Self::Unknown(unknown)) => unknown == "2015",
+            (Self::E2018, Self::Unknown(unknown)) => unknown == "2018",
+            (Self::E2021, Self::Unknown(unknown)) => unknown == "2021",
+            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+        }
+    }
+}
+
+impl Eq for Edition {}
 
 impl Default for Edition {
     fn default() -> Self {
