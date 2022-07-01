@@ -699,3 +699,67 @@ impl MetadataCommand {
         Self::parse(stdout)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::{
+        borrow::Cow,
+        collections::hash_map::DefaultHasher,
+        hash::{Hash, Hasher},
+    };
+
+    use crate::Edition;
+
+    // This test ensures that the manual implementation of PartialEq/Eq for the Edition enum are valid
+    #[test]
+    fn eq() {
+        assert_eq!(Edition::E2015, Edition::Unknown(Cow::Borrowed("2015")));
+        assert_eq!(Edition::E2018, Edition::Unknown(Cow::Borrowed("2018")));
+        assert_eq!(Edition::E2021, Edition::Unknown(Cow::Borrowed("2021")));
+        assert_ne!(Edition::E2015, Edition::Unknown(Cow::Borrowed("garbage")));
+        assert_ne!(
+            Edition::E2018,
+            Edition::Unknown(Cow::Borrowed("other garbage"))
+        );
+        assert_ne!(
+            Edition::E2021,
+            Edition::Unknown(Cow::Borrowed("final garbage"))
+        );
+    }
+
+    // This test ensures that the mannal implementation of Hash for the Edition enum is valid and that it upholds the following property
+    // k1 == k2 -> hash(k1) == hash(k2)
+    #[test]
+    fn eq_hash() {
+        fn calculate_hash<T: Hash>(t: &T) -> u64 {
+            let mut s = DefaultHasher::new();
+            t.hash(&mut s);
+            s.finish()
+        }
+
+        assert_eq!(
+            calculate_hash(&Edition::E2015),
+            calculate_hash(&Edition::Unknown(Cow::Borrowed("2015")))
+        );
+        assert_eq!(
+            calculate_hash(&Edition::E2018),
+            calculate_hash(&Edition::Unknown(Cow::Borrowed("2018")))
+        );
+        assert_eq!(
+            calculate_hash(&Edition::E2021),
+            calculate_hash(&Edition::Unknown(Cow::Borrowed("2021")))
+        );
+        assert_ne!(
+            calculate_hash(&Edition::E2015),
+            calculate_hash(&Edition::Unknown(Cow::Borrowed("garbage")))
+        );
+        assert_ne!(
+            calculate_hash(&Edition::E2018),
+            calculate_hash(&Edition::Unknown(Cow::Borrowed("other garbage")))
+        );
+        assert_ne!(
+            calculate_hash(&Edition::E2021),
+            calculate_hash(&Edition::Unknown(Cow::Borrowed("final garbage")))
+        );
+    }
+}
