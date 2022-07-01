@@ -454,8 +454,9 @@ pub struct Target {
 
 /// The Rust edition
 ///
-/// As of writing this comment rust editions 2024, 2027 and 2030 are not actually a thing yet but are here nonetheless for future proofing.
+/// As of writing this comment rust editions 2024, 2027 and 2030 are not actually a thing yet but are parsed nonetheless for future proofing.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
 pub enum Edition {
     /// Edition 2015
     #[serde(rename = "2015")]
@@ -466,15 +467,15 @@ pub enum Edition {
     /// Edition 2021
     #[serde(rename = "2021")]
     E2021,
-    /// Edition 2024
+    #[doc(hidden)]
     #[serde(rename = "2024")]
-    E2024,
-    /// Edition 2027
+    _E2024,
+    #[doc(hidden)]
     #[serde(rename = "2027")]
-    E2027,
-    /// Edition 2030
+    _E2027,
+    #[doc(hidden)]
     #[serde(rename = "2030")]
-    E2030,
+    _E2030,
 }
 
 impl Default for Edition {
