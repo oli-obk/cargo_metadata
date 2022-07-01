@@ -8,7 +8,6 @@
 
 ### Changed
 
-- Added `Unknown` variant to `Edition` enum to make it future proof.
 - Made `parse_stream` more versatile by accepting anything that implements `Read`.
 
 ### Removed
