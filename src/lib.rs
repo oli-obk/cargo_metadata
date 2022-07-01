@@ -85,6 +85,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
+use std::hash::Hash;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
@@ -452,29 +453,29 @@ pub struct Target {
 }
 
 /// The Rust edition
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-#[serde(transparent)]
-pub struct Edition(pub Cow<'static, str>);
-
-impl Edition {
-    /// Creates a new `Edition`.
-    pub fn new(edition: impl Into<Cow<'static, str>>) -> Self {
-        Self(edition.into())
-    }
-
-    /// Creates a new `Edition` from a static string.
-    pub const fn new_const(edition: &'static str) -> Self {
-        Self(Cow::Borrowed(edition))
-    }
-
-    /// Edition 2015.
-    pub const E2015: Self = Self::new_const("2015");
-
-    /// Edition 2018.
-    pub const E2018: Self = Self::new_const("2018");
-
-    /// Edition 2021.
-    pub const E2021: Self = Self::new_const("2021");
+///
+/// As of writing this comment rust editions 2024, 2027 and 2030 are not actually a thing yet but are parsed nonetheless for future proofing.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
+pub enum Edition {
+    /// Edition 2015
+    #[serde(rename = "2015")]
+    E2015,
+    /// Edition 2018
+    #[serde(rename = "2018")]
+    E2018,
+    /// Edition 2021
+    #[serde(rename = "2021")]
+    E2021,
+    #[doc(hidden)]
+    #[serde(rename = "2024")]
+    _E2024,
+    #[doc(hidden)]
+    #[serde(rename = "2027")]
+    _E2027,
+    #[doc(hidden)]
+    #[serde(rename = "2030")]
+    _E2030,
 }
 
 impl Default for Edition {
