@@ -453,7 +453,9 @@ pub struct Target {
 }
 
 /// The Rust edition
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// As of writing this comment rust editions 2024, 2027 and 2030 are not actually a thing yet but are here nonetheless for future proofing.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Edition {
     /// Edition 2015
     #[serde(rename = "2015")]
@@ -464,43 +466,16 @@ pub enum Edition {
     /// Edition 2021
     #[serde(rename = "2021")]
     E2021,
-    /// An unknown value was passed instead of a valid edition.
-    ///
-    /// This can mean one of two things. Either some corrupted data, or an edition not supported by the current crate version.
-    /// If you believe the latter is the case feel free to open an issue.
-    Unknown(Cow<'static, str>),
+    /// Edition 2024
+    #[serde(rename = "2024")]
+    E2024,
+    /// Edition 2027
+    #[serde(rename = "2027")]
+    E2027,
+    /// Edition 2030
+    #[serde(rename = "2030")]
+    E2030,
 }
-
-impl Hash for Edition {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            Edition::Unknown(ref unknown) => match unknown.as_ref() {
-                "2015" => Self::E2015.hash(state),
-                "2018" => Self::E2018.hash(state),
-                "2021" => Self::E2021.hash(state),
-                _ => {
-                    core::mem::discriminant(unknown).hash(state);
-                    core::mem::discriminant(self).hash(state);
-                }
-            },
-            _ => core::mem::discriminant(self).hash(state),
-        }
-    }
-}
-
-impl PartialEq for Edition {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Unknown(left), Self::Unknown(right)) => left == right,
-            (Self::E2015, Self::Unknown(unknown)) => unknown == "2015",
-            (Self::E2018, Self::Unknown(unknown)) => unknown == "2018",
-            (Self::E2021, Self::Unknown(unknown)) => unknown == "2021",
-            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
-        }
-    }
-}
-
-impl Eq for Edition {}
 
 impl Default for Edition {
     fn default() -> Self {
@@ -697,69 +672,5 @@ impl MetadataCommand {
             .find(|line| line.starts_with('{'))
             .ok_or(Error::NoJson)?;
         Self::parse(stdout)
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use std::{
-        borrow::Cow,
-        collections::hash_map::DefaultHasher,
-        hash::{Hash, Hasher},
-    };
-
-    use crate::Edition;
-
-    // This test ensures that the manual implementation of PartialEq/Eq for the Edition enum are valid
-    #[test]
-    fn eq() {
-        assert_eq!(Edition::E2015, Edition::Unknown(Cow::Borrowed("2015")));
-        assert_eq!(Edition::E2018, Edition::Unknown(Cow::Borrowed("2018")));
-        assert_eq!(Edition::E2021, Edition::Unknown(Cow::Borrowed("2021")));
-        assert_ne!(Edition::E2015, Edition::Unknown(Cow::Borrowed("garbage")));
-        assert_ne!(
-            Edition::E2018,
-            Edition::Unknown(Cow::Borrowed("other garbage"))
-        );
-        assert_ne!(
-            Edition::E2021,
-            Edition::Unknown(Cow::Borrowed("final garbage"))
-        );
-    }
-
-    // This test ensures that the mannal implementation of Hash for the Edition enum is valid and that it upholds the following property
-    // k1 == k2 -> hash(k1) == hash(k2)
-    #[test]
-    fn eq_hash() {
-        fn calculate_hash<T: Hash>(t: &T) -> u64 {
-            let mut s = DefaultHasher::new();
-            t.hash(&mut s);
-            s.finish()
-        }
-
-        assert_eq!(
-            calculate_hash(&Edition::E2015),
-            calculate_hash(&Edition::Unknown(Cow::Borrowed("2015")))
-        );
-        assert_eq!(
-            calculate_hash(&Edition::E2018),
-            calculate_hash(&Edition::Unknown(Cow::Borrowed("2018")))
-        );
-        assert_eq!(
-            calculate_hash(&Edition::E2021),
-            calculate_hash(&Edition::Unknown(Cow::Borrowed("2021")))
-        );
-        assert_ne!(
-            calculate_hash(&Edition::E2015),
-            calculate_hash(&Edition::Unknown(Cow::Borrowed("garbage")))
-        );
-        assert_ne!(
-            calculate_hash(&Edition::E2018),
-            calculate_hash(&Edition::Unknown(Cow::Borrowed("other garbage")))
-        );
-        assert_ne!(
-            calculate_hash(&Edition::E2021),
-            calculate_hash(&Edition::Unknown(Cow::Borrowed("final garbage")))
-        );
     }
 }
