@@ -108,7 +108,7 @@ mod dependency;
 pub mod diagnostic;
 mod errors;
 mod messages;
-
+mod unit_graph;
 /// An "opaque" identifier for a package.
 /// It is possible to inspect the `repr` field, if the need arises, but its
 /// precise format is an implementation detail and is subject to change.
