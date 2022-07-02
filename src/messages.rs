@@ -34,7 +34,7 @@ pub struct ArtifactProfile {
 pub struct Artifact {
     /// The package this artifact belongs to
     pub package_id: PackageId,
-    /// Path containing the `Cargo.toml`
+    /// Path to the `Cargo.toml` file
     pub manifest_path: Utf8PathBuf,
     /// The target this artifact was compiled for
     pub target: Target,
