@@ -1,9 +1,14 @@
 use cargo_platform::Platform;
+#[cfg(feature = "builder")]
+use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 
 use crate::{PackageId, Target};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[non_exhaustive]
+#[cfg_attr(feature = "builder", derive(Builder))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 pub struct UnitGraph {
     /// Version of the JSON output structure.
     /// If any backwards incompatible changes are made, this value will be increased.
@@ -15,6 +20,9 @@ pub struct UnitGraph {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[non_exhaustive]
+#[cfg_attr(feature = "builder", derive(Builder))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 pub struct Unit {
     /// An opaque string which indicates the package.
     pub pkg_id: PackageId,
@@ -41,6 +49,9 @@ pub struct Unit {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[non_exhaustive]
+#[cfg_attr(feature = "builder", derive(Builder))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 pub struct Profile {
     /// The profile name these settings are derived from.
     pub name: String, // TODO: could be an enum.
@@ -67,6 +78,8 @@ pub struct Profile {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[non_exhaustive]
+
 pub enum PanicStrategy {
     #[serde(rename = "unwind")]
     Unwind,
@@ -76,6 +89,7 @@ pub enum PanicStrategy {
 
 /// The "mode" of a unit.
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[non_exhaustive]
 pub enum Mode {
     /// Build using `rustc` as a test.
     #[serde(rename = "test")]
@@ -99,6 +113,9 @@ pub enum Mode {
 
 /// Array of dependencies of a unit.
 #[derive(Clone, Serialize, Deserialize, Debug)]
+#[non_exhaustive]
+#[cfg_attr(feature = "builder", derive(Builder))]
+#[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
 pub struct Dependency {
     /// Index in the "units" array for the dependency.
     pub index: usize,
