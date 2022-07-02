@@ -81,7 +81,6 @@
 use camino::Utf8PathBuf;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::env;
 use std::fmt;
