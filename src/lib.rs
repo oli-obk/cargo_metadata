@@ -78,7 +78,11 @@
 //! let output = command.wait().expect("Couldn't get cargo's exit status");
 //! ```
 
+#[cfg(feature = "camino")]
 use camino::Utf8PathBuf;
+#[cfg(not(feature = "camino"))]
+use std::path::PathBuf as Utf8PathBuf;
+
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
 use std::borrow::Cow;
@@ -90,6 +94,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::from_utf8;
 
+#[cfg(feature = "camino")]
 pub use camino;
 pub use semver;
 use semver::{Version, VersionReq};

@@ -9,6 +9,7 @@
 ### Changed
 
 - Made `parse_stream` more versatile by accepting anything that implements `Read`.
+- Made `camino` an optional dependency disabled by default.
 
 ### Removed
 

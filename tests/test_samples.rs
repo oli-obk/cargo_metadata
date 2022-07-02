@@ -3,7 +3,11 @@ extern crate semver;
 #[macro_use]
 extern crate serde_json;
 
+#[cfg(feature = "camino")]
 use camino::Utf8PathBuf;
+#[cfg(not(feature = "camino"))]
+use std::path::PathBuf as Utf8PathBuf;
+
 use cargo_metadata::{CargoOpt, DependencyKind, Edition, Metadata, MetadataCommand};
 
 #[test]
@@ -93,13 +97,13 @@ fn old_minimal() {
     assert_eq!(target.kind, vec!["bin"]);
     assert_eq!(target.crate_types, vec!["bin"]);
     assert_eq!(target.required_features.len(), 0);
-    assert_eq!(target.src_path, "/foo/src/main.rs");
+    assert_eq!(target.src_path, Utf8PathBuf::from("/foo/src/main.rs"));
     assert_eq!(target.edition, Edition::E2015);
     assert!(target.doctest);
     assert!(target.test);
     assert!(target.doc);
     assert_eq!(pkg.features.len(), 0);
-    assert_eq!(pkg.manifest_path, "/foo/Cargo.toml");
+    assert_eq!(pkg.manifest_path, Utf8PathBuf::from("/foo/Cargo.toml"));
     assert_eq!(pkg.categories.len(), 0);
     assert_eq!(pkg.keywords.len(), 0);
     assert_eq!(pkg.readme, None);
@@ -116,9 +120,9 @@ fn old_minimal() {
         "foo 0.1.0 (path+file:///foo)"
     );
     assert!(meta.resolve.is_none());
-    assert_eq!(meta.workspace_root, "/foo");
+    assert_eq!(meta.workspace_root, Utf8PathBuf::from("/foo"));
     assert_eq!(meta.workspace_metadata, serde_json::Value::Null);
-    assert_eq!(meta.target_directory, "/foo/target");
+    assert_eq!(meta.target_directory, Utf8PathBuf::from("/foo/target"));
 }
 
 macro_rules! sorted {

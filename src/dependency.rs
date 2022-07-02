@@ -2,7 +2,11 @@
 
 use std::fmt;
 
+#[cfg(feature = "camino")]
 use camino::Utf8PathBuf;
+#[cfg(not(feature = "camino"))]
+use std::path::PathBuf as Utf8PathBuf;
+
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
 use semver::VersionReq;
