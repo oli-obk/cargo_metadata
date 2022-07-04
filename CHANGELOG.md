@@ -14,6 +14,10 @@
 
 - Removed re-exports for `BuildMetadata` and `Prerelease` from `semver` crate.
 
+### Fixed
+
+- Added missing `manifest_path` field to `Artifact`. Fixes #187.
+
 ## [0.15.0] - 2022-06-22
 
 ### Added
