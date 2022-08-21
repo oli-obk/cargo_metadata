@@ -375,9 +375,12 @@ impl Package {
 
     /// Full path to the readme file if one is present in the manifest
     pub fn readme(&self) -> Option<Utf8PathBuf> {
-        self.readme
-            .as_ref()
-            .map(|file| self.manifest_path.join(file))
+        self.readme.as_ref().map(|file| {
+            self.manifest_path
+                .parent()
+                .unwrap_or(&self.manifest_path)
+                .join(file)
+        })
     }
 }
 
