@@ -344,6 +344,7 @@ fn all_the_fields() {
     assert_eq!(all.categories, vec!["command-line-utilities"]);
     assert_eq!(all.keywords, vec!["cli"]);
     assert_eq!(all.readme, Some(Utf8PathBuf::from("README.md")));
+    assert!(all.readme().unwrap().ends_with("tests/all/README.md"));
     assert_eq!(
         all.repository,
         Some("https://github.com/oli-obk/cargo_metadata/".to_string())
