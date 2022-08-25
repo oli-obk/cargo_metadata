@@ -492,6 +492,12 @@ impl Edition {
     }
 }
 
+impl fmt::Display for Edition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 impl Default for Edition {
     fn default() -> Self {
         Self::E2015
