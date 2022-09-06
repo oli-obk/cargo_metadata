@@ -1,3 +1,4 @@
+# Used in tests/test_samples.rs
 [package]
 name = "all"
 version = "0.1.0"
