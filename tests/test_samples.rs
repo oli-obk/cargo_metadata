@@ -623,3 +623,25 @@ fn depkind_to_string() {
     assert_eq!(DependencyKind::Build.to_string(), "build");
     assert_eq!(DependencyKind::Unknown.to_string(), "Unknown");
 }
+
+#[test]
+fn basic_workspace_root_package_exists() {
+    // First try with dependencies
+    let meta = MetadataCommand::new()
+        .manifest_path("tests/basic_workspace/Cargo.toml")
+        .exec()
+        .unwrap();
+    assert_eq!(meta.root_package().unwrap().name, "ex_bin");
+    // Now with no_deps, it should still work exactly the same
+    let meta = MetadataCommand::new()
+        .manifest_path("tests/basic_workspace/Cargo.toml")
+        .no_deps()
+        .exec()
+        .unwrap();
+    assert_eq!(
+        meta.root_package()
+            .expect("workspace root still exists when no_deps used")
+            .name,
+        "ex_bin"
+    );
+}

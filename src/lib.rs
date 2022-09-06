@@ -155,10 +155,22 @@ pub struct Metadata {
 }
 
 impl Metadata {
-    /// Get the root package of this metadata instance.
+    /// Get the workspace's root package of this metadata instance.
     pub fn root_package(&self) -> Option<&Package> {
-        let root = self.resolve.as_ref()?.root.as_ref()?;
-        self.packages.iter().find(|pkg| &pkg.id == root)
+        match &self.resolve {
+            Some(resolve) => {
+                // if dependencies are resolved, use Cargo's answer
+                let root = resolve.root.as_ref()?;
+                self.packages.iter().find(|pkg| &pkg.id == root)
+            }
+            None => {
+                // if dependencies aren't resolved, check for a root package manually
+                let root_manifest_path = self.workspace_root.join("Cargo.toml");
+                self.packages
+                    .iter()
+                    .find(|pkg| pkg.manifest_path == root_manifest_path)
+            }
+        }
     }
 
     /// Get the workspace packages.
@@ -533,7 +545,7 @@ pub struct MetadataCommand {
     manifest_path: Option<PathBuf>,
     /// Current directory of the `cargo metadata` process.
     current_dir: Option<PathBuf>,
-    /// Output information only about the root package and don't fetch dependencies.
+    /// Output information only about workspace members and don't fetch dependencies.
     no_deps: bool,
     /// Collections of `CargoOpt::SomeFeatures(..)`
     features: Vec<String>,
@@ -569,7 +581,7 @@ impl MetadataCommand {
         self.current_dir = Some(path.into());
         self
     }
-    /// Output information only about the root package and don't fetch dependencies.
+    /// Output information only about workspace members and don't fetch dependencies.
     pub fn no_deps(&mut self) -> &mut MetadataCommand {
         self.no_deps = true;
         self
