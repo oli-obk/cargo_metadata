@@ -425,7 +425,7 @@ impl std::fmt::Display for Source {
 pub struct Target {
     /// Name as given in the `Cargo.toml` or generated from the file name
     pub name: String,
-    /// Kind of target ("bin", "example", "test", "bench", "lib")
+    /// Kind of target ("bin", "example", "test", "bench", "lib", "custom-build")
     pub kind: Vec<String>,
     /// Almost the same as `kind`, except when an example is a library instead of an executable.
     /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
@@ -464,6 +464,42 @@ pub struct Target {
     #[serde(default = "default_true")]
     #[cfg_attr(feature = "builder", builder(default = "true"))]
     pub doc: bool,
+}
+
+impl Target {
+    fn is_kind(&self, name: &str) -> bool {
+        self.kind.iter().any(|kind| kind == name)
+    }
+
+    /// Return true if this target is of kind "lib".
+    pub fn is_lib(&self) -> bool {
+        self.is_kind("lib")
+    }
+
+    /// Return true if this target is of kind "bin".
+    pub fn is_bin(&self) -> bool {
+        self.is_kind("bin")
+    }
+
+    /// Return true if this target is of kind "example".
+    pub fn is_example(&self) -> bool {
+        self.is_kind("example")
+    }
+
+    /// Return true if this target is of kind "test".
+    pub fn is_test(&self) -> bool {
+        self.is_kind("test")
+    }
+
+    /// Return true if this target is of kind "bench".
+    pub fn is_bench(&self) -> bool {
+        self.is_kind("bench")
+    }
+
+    /// Return true if this target is of kind "custom-build".
+    pub fn is_custom_build(&self) -> bool {
+        self.is_kind("custom-build")
+    }
 }
 
 /// The Rust edition
