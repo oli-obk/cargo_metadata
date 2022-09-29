@@ -92,6 +92,7 @@ use std::str::from_utf8;
 pub use camino;
 pub use semver;
 use semver::{Version, VersionReq};
+pub use serde_json::{Map, Number, Value};
 
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
