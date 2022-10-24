@@ -12,6 +12,12 @@ jobs:
     - name: Check formatting
       run: cargo fmt -- --check
 
+  semver:
+    name: Check semver
+    runs-on: ubuntu-latest
+    steps:
+    - uses: obi1kenobi/cargo-semver-checks-action@v1
+
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -33,7 +39,3 @@ jobs:
         cargo test --verbose
         cargo test --verbose --no-default-features
         cargo test --verbose --all-features
-
-    # doesn't work right now
-    #- name: Check semver
-    #  uses: obi1kenobi/cargo-semver-checks-action@v1
