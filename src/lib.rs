@@ -86,7 +86,7 @@ use std::env;
 use std::fmt;
 use std::hash::Hash;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::str::from_utf8;
 
 pub use camino;
@@ -592,6 +592,8 @@ pub struct MetadataCommand {
     /// Arbitrary command line flags to pass to `cargo`.  These will be added
     /// to the end of the command line invocation.
     other_options: Vec<String>,
+    /// Show stderr
+    verbose: bool,
 }
 
 impl MetadataCommand {
@@ -687,6 +689,12 @@ impl MetadataCommand {
         self
     }
 
+    /// Set whether to show stderr
+    pub fn verbose(&mut self, verbose: bool) -> &mut MetadataCommand {
+        self.verbose = verbose;
+        self
+    }
+
     /// Builds a command for `cargo metadata`.  This is the first
     /// part of the work of `exec`.
     pub fn cargo_command(&self) -> Command {
@@ -733,7 +741,11 @@ impl MetadataCommand {
 
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
     pub fn exec(&self) -> Result<Metadata> {
-        let output = self.cargo_command().output()?;
+        let mut command = self.cargo_command();
+        if self.verbose {
+            command.stderr(Stdio::inherit());
+        }
+        let output = command.output()?;
         if !output.status.success() {
             return Err(Error::CargoMetadata {
                 stderr: String::from_utf8(output.stderr)?,
