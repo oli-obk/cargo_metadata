@@ -35,6 +35,7 @@ pub struct Artifact {
     /// The package this artifact belongs to
     pub package_id: PackageId,
     /// Path to the `Cargo.toml` file
+    #[serde(default)]
     pub manifest_path: Utf8PathBuf,
     /// The target this artifact was compiled for
     pub target: Target,
