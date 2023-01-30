@@ -694,6 +694,21 @@ impl MetadataCommand {
 
     /// Arbitrary environment variables to set when running `cargo`.  These will be merged into
     /// the calling environment, overriding any which clash.
+    ///
+    /// Some examples of when you may want to use this:
+    /// 1. Setting cargo config values without needing a .cargo/config.toml file, e.g. to set
+    ///    `CARGO_NET_GIT_FETCH_WITH_CLI=true`
+    /// 2. To specify a custom path to RUSTC if your rust toolchain components aren't laid out in
+    ///    the way cargo expects by default.
+    ///
+    /// ```no_run
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .env(String::from("CARGO_NET_GIT_FETCH_WITH_CLI"), String::from("true"))
+    ///     .env(String::from("RUSTC"), String::from("/path/to/rustc"))
+    ///     // ...
+    ///     # ;
+    /// ```
     pub fn env(&mut self, key: String, val: String) -> &mut MetadataCommand {
         self.env.insert(key, val);
         self
