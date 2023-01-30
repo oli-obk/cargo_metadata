@@ -592,6 +592,9 @@ pub struct MetadataCommand {
     /// Arbitrary command line flags to pass to `cargo`.  These will be added
     /// to the end of the command line invocation.
     other_options: Vec<String>,
+    /// Arbitrary environment variables to set when running `cargo`.  These will be merged into
+    /// the calling environment, overriding any which clash.
+    env: HashMap<String, String>,
     /// Show stderr
     verbose: bool,
 }
@@ -689,6 +692,13 @@ impl MetadataCommand {
         self
     }
 
+    /// Arbitrary environment variables to set when running `cargo`.  These will be merged into
+    /// the calling environment, overriding any which clash.
+    pub fn env(&mut self, key: String, val: String) -> &mut MetadataCommand {
+        self.env.insert(key, val);
+        self
+    }
+
     /// Set whether to show stderr
     pub fn verbose(&mut self, verbose: bool) -> &mut MetadataCommand {
         self.verbose = verbose;
@@ -728,6 +738,8 @@ impl MetadataCommand {
             cmd.arg("--manifest-path").arg(manifest_path.as_os_str());
         }
         cmd.args(&self.other_options);
+
+        cmd.envs(&self.env);
 
         cmd
     }
