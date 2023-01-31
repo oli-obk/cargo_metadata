@@ -710,7 +710,11 @@ impl MetadataCommand {
     ///     // ...
     ///     # ;
     /// ```
-    pub fn env<K: Into<OsString>, V: Into<OsString>>(&mut self, key: K, val: V) -> &mut MetadataCommand {
+    pub fn env<K: Into<OsString>, V: Into<OsString>>(
+        &mut self,
+        key: K,
+        val: V,
+    ) -> &mut MetadataCommand {
         self.env.insert(key.into(), val.into());
         self
     }
