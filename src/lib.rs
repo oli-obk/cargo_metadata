@@ -83,6 +83,7 @@ use camino::Utf8PathBuf;
 use derive_builder::Builder;
 use std::collections::HashMap;
 use std::env;
+use std::ffi::OsString;
 use std::fmt;
 use std::hash::Hash;
 use std::path::PathBuf;
@@ -594,7 +595,7 @@ pub struct MetadataCommand {
     other_options: Vec<String>,
     /// Arbitrary environment variables to set when running `cargo`.  These will be merged into
     /// the calling environment, overriding any which clash.
-    env: HashMap<String, String>,
+    env: HashMap<OsString, OsString>,
     /// Show stderr
     verbose: bool,
 }
@@ -704,13 +705,13 @@ impl MetadataCommand {
     /// ```no_run
     /// # use cargo_metadata::{CargoOpt, MetadataCommand};
     /// MetadataCommand::new()
-    ///     .env(String::from("CARGO_NET_GIT_FETCH_WITH_CLI"), String::from("true"))
-    ///     .env(String::from("RUSTC"), String::from("/path/to/rustc"))
+    ///     .env("CARGO_NET_GIT_FETCH_WITH_CLI", "true")
+    ///     .env("RUSTC", "/path/to/rustc")
     ///     // ...
     ///     # ;
     /// ```
-    pub fn env(&mut self, key: String, val: String) -> &mut MetadataCommand {
-        self.env.insert(key, val);
+    pub fn env<K: Into<OsString>, V: Into<OsString>>(&mut self, key: K, val: V) -> &mut MetadataCommand {
+        self.env.insert(key.into(), val.into());
         self
     }
 
