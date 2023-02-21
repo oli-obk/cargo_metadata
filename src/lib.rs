@@ -94,6 +94,8 @@ pub use camino;
 pub use semver;
 use semver::{Version, VersionReq};
 
+#[cfg(feature = "builder")]
+pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, Result};
@@ -101,6 +103,11 @@ pub use errors::{Error, Result};
 pub use messages::parse_messages;
 pub use messages::{
     Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message, MessageIter,
+};
+#[cfg(feature = "builder")]
+pub use messages::{
+    ArtifactBuilder, ArtifactProfileBuilder, BuildFinishedBuilder, BuildScriptBuilder,
+    CompilerMessageBuilder,
 };
 use serde::{Deserialize, Serialize};
 
