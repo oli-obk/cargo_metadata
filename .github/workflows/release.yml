@@ -64,7 +64,7 @@ jobs:
         run: |
           # Fail on first error, on undefined variables, and on errors in pipes.
           set -euo pipefail
-          git tag "${{ steps.version-check.outputs.version }}"
+          git tag "v${{ steps.version-check.outputs.version }}"
           git push origin "${{ steps.version-check.outputs.version }}"
 
       - uses: taiki-e/create-gh-release-action@v1
