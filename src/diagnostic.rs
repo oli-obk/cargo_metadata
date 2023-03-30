@@ -2,7 +2,7 @@
 
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 
 /// The error code associated to this diagnostic.

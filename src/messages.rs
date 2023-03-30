@@ -2,7 +2,8 @@ use super::{Diagnostic, PackageId, Target};
 use camino::Utf8PathBuf;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize as _;
+use serde_derive::{Deserialize, Serialize};
 use std::fmt;
 use std::io::{self, BufRead, Read};
 

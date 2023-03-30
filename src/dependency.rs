@@ -6,7 +6,8 @@ use camino::Utf8PathBuf;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
 use semver::VersionReq;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::Deserializer;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize)]
 /// Dependencies can come in three kinds
@@ -44,7 +45,7 @@ pub(super) fn parse_dependency_kind<'de, D>(d: D) -> Result<DependencyKind, D::E
 where
     D: Deserializer<'de>,
 {
-    Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
+    serde::Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or_default())
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]

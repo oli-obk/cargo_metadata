@@ -109,7 +109,7 @@ pub use messages::{
     ArtifactBuilder, ArtifactProfileBuilder, BuildFinishedBuilder, BuildScriptBuilder,
     CompilerMessageBuilder,
 };
-use serde::{Deserialize, Serialize};
+use serde_derive::{Deserialize, Serialize};
 
 mod dependency;
 pub mod diagnostic;
