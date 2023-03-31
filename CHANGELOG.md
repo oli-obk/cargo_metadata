@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bumped MSRV from `1.42.0` to `1.56.0`.
+
 ### Added
 
 - Re-exported `semver` crate directly.
