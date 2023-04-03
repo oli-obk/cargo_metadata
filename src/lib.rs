@@ -81,7 +81,7 @@
 use camino::Utf8PathBuf;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::ffi::OsString;
 use std::fmt;
@@ -109,7 +109,7 @@ pub use messages::{
     ArtifactBuilder, ArtifactProfileBuilder, BuildFinishedBuilder, BuildScriptBuilder,
     CompilerMessageBuilder,
 };
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 
 mod dependency;
 pub mod diagnostic;
@@ -137,6 +137,18 @@ impl std::fmt::Display for PackageId {
 /// Helpers for default metadata fields
 fn is_null(value: &serde_json::Value) -> bool {
     matches!(value, serde_json::Value::Null)
+}
+
+/// Helper to ensure that hashmaps serialize in sorted order, to make
+/// serialization deterministic.
+fn sorted_map<S: Serializer, K: Serialize + Ord, V: Serialize>(
+    value: &HashMap<K, V>,
+    serializer: S,
+) -> std::result::Result<S::Ok, S::Error> {
+    value
+        .iter()
+        .collect::<BTreeMap<_, _>>()
+        .serialize(serializer)
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -311,6 +323,7 @@ pub struct Package {
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
+    #[serde(serialize_with = "sorted_map")]
     pub features: HashMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: Utf8PathBuf,
