@@ -46,14 +46,10 @@ jobs:
             exit 1
           fi
 
-      # TODO: Replace this with the cargo-semver-checks v2 GitHub Action when it's stabilized:
-      #       https://github.com/obi1kenobi/cargo-semver-checks-action/pull/21
       - name: Semver-check
-        run: |
-          # Fail on first error, on undefined variables, and on errors in pipes.
-          set -euo pipefail
-          cargo install --locked cargo-semver-checks
-          cargo semver-checks check-release
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: manual  # we've already installed Rust, don't install a new one
 
       - name: Publish
         run: cargo publish
