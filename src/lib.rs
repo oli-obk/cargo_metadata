@@ -81,7 +81,7 @@
 use camino::Utf8PathBuf;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::env;
 use std::ffi::OsString;
 use std::fmt;
@@ -109,7 +109,7 @@ pub use messages::{
     ArtifactBuilder, ArtifactProfileBuilder, BuildFinishedBuilder, BuildScriptBuilder,
     CompilerMessageBuilder,
 };
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 mod dependency;
 pub mod diagnostic;
@@ -128,7 +128,7 @@ pub struct PackageId {
     pub repr: String,
 }
 
-impl std::fmt::Display for PackageId {
+impl fmt::Display for PackageId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&self.repr, f)
     }
@@ -137,18 +137,6 @@ impl std::fmt::Display for PackageId {
 /// Helpers for default metadata fields
 fn is_null(value: &serde_json::Value) -> bool {
     matches!(value, serde_json::Value::Null)
-}
-
-/// Helper to ensure that hashmaps serialize in sorted order, to make
-/// serialization deterministic.
-fn sorted_map<S: Serializer, K: Serialize + Ord, V: Serialize>(
-    value: &HashMap<K, V>,
-    serializer: S,
-) -> std::result::Result<S::Ok, S::Error> {
-    value
-        .iter()
-        .collect::<BTreeMap<_, _>>()
-        .serialize(serializer)
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -323,8 +311,7 @@ pub struct Package {
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
-    #[serde(serialize_with = "sorted_map")]
-    pub features: HashMap<String, Vec<String>>,
+    pub features: BTreeMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: Utf8PathBuf,
     /// Categories as given in the `Cargo.toml`
@@ -432,7 +419,7 @@ impl Source {
     }
 }
 
-impl std::fmt::Display for Source {
+impl fmt::Display for Source {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&self.repr, f)
     }
@@ -615,7 +602,7 @@ pub struct MetadataCommand {
     other_options: Vec<String>,
     /// Arbitrary environment variables to set when running `cargo`.  These will be merged into
     /// the calling environment, overriding any which clash.
-    env: HashMap<OsString, OsString>,
+    env: BTreeMap<OsString, OsString>,
     /// Show stderr
     verbose: bool,
 }
