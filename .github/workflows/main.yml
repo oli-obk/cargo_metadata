@@ -44,6 +44,3 @@ jobs:
         cargo test --verbose --no-default-features
         cargo test --verbose --all-features
 
-    # doesn't work right now
-    #- name: Check semver
-    #  uses: obi1kenobi/cargo-semver-checks-action@v1
