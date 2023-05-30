@@ -7,12 +7,12 @@ description = "structured access to the output of `cargo metadata`"
 license = "MIT"
 readme = "README.md"
 edition = "2018"
-rust-version = "1.42.0"
+rust-version = "1.56.0"
 
 [dependencies]
 camino = { version = "1.0.7", features = ["serde1"] }
 cargo-platform = "0.1.2"
-derive_builder = { version = "0.11.1", optional = true }
+derive_builder = { version = "0.12", optional = true }
 semver = { version = "1.0.7", features = ["serde"] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = { version = "1.0.79", features = ["unbounded_depth"] }

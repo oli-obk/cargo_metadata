@@ -741,7 +741,7 @@ impl MetadataCommand {
             .or_else(|| env::var("CARGO").map(PathBuf::from).ok())
             .unwrap_or_else(|| PathBuf::from("cargo"));
         let mut cmd = Command::new(cargo);
-        cmd.args(&["metadata", "--format-version", "1"]);
+        cmd.args(["metadata", "--format-version", "1"]);
 
         if self.no_deps {
             cmd.arg("--no-deps");
