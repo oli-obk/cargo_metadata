@@ -4,7 +4,7 @@ extern crate semver;
 extern crate serde_json;
 
 use camino::Utf8PathBuf;
-use cargo_metadata::{CargoOpt, DependencyKind, Edition, Metadata, MetadataCommand};
+use cargo_metadata::{CargoOpt, DependencyKind, Edition, Metadata, MetadataCommand, Readme};
 
 #[test]
 fn old_minimal() {
@@ -343,7 +343,10 @@ fn all_the_fields() {
     assert!(all.manifest_path.ends_with("all/Cargo.toml"));
     assert_eq!(all.categories, vec!["command-line-utilities"]);
     assert_eq!(all.keywords, vec!["cli"]);
-    assert_eq!(all.readme, Some(Utf8PathBuf::from("README.md")));
+    assert_eq!(
+        all.readme,
+        Some(Readme::Path(Utf8PathBuf::from("README.md")))
+    );
     assert!(all.readme().unwrap().ends_with("tests/all/README.md"));
     assert_eq!(
         all.repository,
@@ -517,6 +520,108 @@ fn alt_registry() {
     assert_eq!(deps.len(), 1);
     let dep = &deps[0];
     assert_eq!(dep.registry, Some("https://example.com".to_string()));
+}
+
+#[test]
+fn alt_readme() {
+    let json = r#"
+{
+    "packages": [
+        {
+          "name": "foo",
+          "version": "0.1.0",
+          "id": "foo 0.1.0 (path+file:///foo)",
+          "license": null,
+          "readme": "README.txt",
+          "dependencies": [],
+          "targets": [],
+          "features": {},
+          "manifest_path": "/foo/Cargo.toml"
+        }
+      ],
+      "workspace_members": [
+        "foo 0.1.0 (path+file:///foo)"
+      ],
+      "resolve": null,
+      "target_directory": "/foo/target",
+      "version": 1,
+      "workspace_root": "/foo"
+    }
+"#;
+    let meta: Metadata = serde_json::from_str(json).unwrap();
+    assert_eq!(meta.packages.len(), 1);
+    let foo = &meta.packages[0];
+    assert_eq!(
+        foo.readme,
+        Some(Readme::Path(Utf8PathBuf::from("README.txt")))
+    );
+    assert!(foo.readme().unwrap().ends_with("/foo/README.txt"));
+}
+
+#[test]
+fn default_readme() {
+    let json = r#"
+{
+    "packages": [
+        {
+          "name": "foo",
+          "version": "0.1.0",
+          "id": "foo 0.1.0 (path+file:///foo)",
+          "license": null,
+          "readme": true,
+          "dependencies": [],
+          "targets": [],
+          "features": {},
+          "manifest_path": "/foo/Cargo.toml"
+        }
+      ],
+      "workspace_members": [
+        "foo 0.1.0 (path+file:///foo)"
+      ],
+      "resolve": null,
+      "target_directory": "/foo/target",
+      "version": 1,
+      "workspace_root": "/foo"
+    }
+"#;
+    let meta: Metadata = serde_json::from_str(json).unwrap();
+    assert_eq!(meta.packages.len(), 1);
+    let foo = &meta.packages[0];
+    assert_eq!(foo.readme, Some(Readme::Enabled(true)));
+    assert!(foo.readme().unwrap().ends_with("/foo/README.md"));
+}
+
+#[test]
+fn disabled_readme() {
+    let json = r#"
+{
+    "packages": [
+        {
+          "name": "foo",
+          "version": "0.1.0",
+          "id": "foo 0.1.0 (path+file:///foo)",
+          "license": null,
+          "readme": false,
+          "dependencies": [],
+          "targets": [],
+          "features": {},
+          "manifest_path": "/foo/Cargo.toml"
+        }
+      ],
+      "workspace_members": [
+        "foo 0.1.0 (path+file:///foo)"
+      ],
+      "resolve": null,
+      "target_directory": "/foo/target",
+      "version": 1,
+      "workspace_root": "/foo"
+    }
+"#;
+    let meta: Metadata = serde_json::from_str(json).unwrap();
+    assert_eq!(meta.packages.len(), 1);
+    let foo = &meta.packages[0];
+    assert_eq!(foo.readme, Some(Readme::Enabled(false)));
+    assert_eq!(foo.readme(), None);
 }
 
 #[test]

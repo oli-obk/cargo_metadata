@@ -321,7 +321,7 @@ pub struct Package {
     #[serde(default)]
     pub keywords: Vec<String>,
     /// Readme as given in the `Cargo.toml`
-    pub readme: Option<Utf8PathBuf>,
+    pub readme: Option<Readme>,
     /// Repository as given in the `Cargo.toml`
     // can't use `url::Url` because that requires a more recent stable compiler
     pub repository: Option<String>,
@@ -395,12 +395,17 @@ impl Package {
 
     /// Full path to the readme file if one is present in the manifest
     pub fn readme(&self) -> Option<Utf8PathBuf> {
-        self.readme.as_ref().map(|file| {
+        let join = |path| {
             self.manifest_path
                 .parent()
                 .unwrap_or(&self.manifest_path)
-                .join(file)
-        })
+                .join(path)
+        };
+        match &self.readme {
+            Some(Readme::Enabled(false)) => None,
+            Some(Readme::Path(path)) => Some(join(path.to_owned())),
+            _ => Some(join(Utf8PathBuf::from("README.md"))),
+        }
     }
 }
 
@@ -508,6 +513,16 @@ impl Target {
     pub fn is_custom_build(&self) -> bool {
         self.is_kind("custom-build")
     }
+}
+
+/// The specified readme for the crate.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(untagged)]
+pub enum Readme {
+    /// Whether the readme is enabled.
+    Enabled(bool),
+    /// Path to the readme.
+    Path(Utf8PathBuf),
 }
 
 /// The Rust edition
