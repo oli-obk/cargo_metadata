@@ -1,4 +1,5 @@
-use std::{io, str::Utf8Error, string::FromUtf8Error};
+use core::fmt;
+use std::{error::Error as StdError, io, str::Utf8Error, string::FromUtf8Error};
 
 /// Custom result type for `cargo_metadata::Error`
 pub type Result<T> = ::std::result::Result<T, Error>;
@@ -21,32 +22,75 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 ///    really want to. (Either through foreign_links or by making it a field
 ///    value of a `ErrorKind` variant).
 ///
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
 pub enum Error {
     /// Error during execution of `cargo metadata`
-    #[error("`cargo metadata` exited with an error: {stderr}")]
     CargoMetadata {
         /// stderr returned by the `cargo metadata` command
         stderr: String,
     },
 
     /// IO Error during execution of `cargo metadata`
-    #[error("failed to start `cargo metadata`: {0}")]
-    Io(#[from] io::Error),
+    Io(io::Error),
 
     /// Output of `cargo metadata` was not valid utf8
-    #[error("cannot convert the stdout of `cargo metadata`: {0}")]
-    Utf8(#[from] Utf8Error),
+    Utf8(Utf8Error),
 
     /// Error output of `cargo metadata` was not valid utf8
-    #[error("cannot convert the stderr of `cargo metadata`: {0}")]
-    ErrUtf8(#[from] FromUtf8Error),
+    ErrUtf8(FromUtf8Error),
 
     /// Deserialization error (structure of json did not match expected structure)
-    #[error("failed to interpret `cargo metadata`'s json: {0}")]
-    Json(#[from] ::serde_json::Error),
+    Json(::serde_json::Error),
 
     /// The output did not contain any json
-    #[error("could not find any json in the output of `cargo metadata`")]
     NoJson,
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        match self {
+            Error::Io(err) => Some(err),
+            Error::Json(err) => Some(err),
+            Error::Utf8(err) => Some(err),
+            Error::ErrUtf8(err) => Some(err),
+            _ => None,
+        }
+    }
+}
+
+impl From<io::Error> for Error {
+    fn from(err: io::Error) -> Self {
+        Error::Io(err)
+    }
+}
+
+impl From<Utf8Error> for Error {
+    fn from(err: Utf8Error) -> Self {
+        Error::Utf8(err)
+    }
+}
+
+impl From<FromUtf8Error> for Error {
+    fn from(err: FromUtf8Error) -> Self {
+        Error::ErrUtf8(err)
+    }
+}
+
+impl From<::serde_json::Error> for Error {
+    fn from(err: ::serde_json::Error) -> Self {
+        Error::Json(err)
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::CargoMetadata { stderr } => write!(f, "`cargo metadata` exited with an error: {stderr}"),
+            Error::Io(err) => write!(f, "failed to start `cargo metadata`: {err}"),
+            Error::Utf8(err) => write!(f, "cannot convert the stdout of `cargo metadata`: {err}"),
+            Error::ErrUtf8(err) => write!(f, "cannot convert the stderr of `cargo metadata`: {err}"),
+            Error::Json(err) => write!(f, "failed to interpret `cargo metadata`'s json: {err}"),
+            Error::NoJson => f.write_str("could not find any json in the output of `cargo metadata`"),
+}
+    }
 }
