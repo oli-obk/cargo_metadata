@@ -85,12 +85,18 @@ impl From<::serde_json::Error> for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::CargoMetadata { stderr } => write!(f, "`cargo metadata` exited with an error: {stderr}"),
+            Error::CargoMetadata { stderr } => {
+                write!(f, "`cargo metadata` exited with an error: {stderr}")
+            }
             Error::Io(err) => write!(f, "failed to start `cargo metadata`: {err}"),
             Error::Utf8(err) => write!(f, "cannot convert the stdout of `cargo metadata`: {err}"),
-            Error::ErrUtf8(err) => write!(f, "cannot convert the stderr of `cargo metadata`: {err}"),
+            Error::ErrUtf8(err) => {
+                write!(f, "cannot convert the stderr of `cargo metadata`: {err}")
+            }
             Error::Json(err) => write!(f, "failed to interpret `cargo metadata`'s json: {err}"),
-            Error::NoJson => f.write_str("could not find any json in the output of `cargo metadata`"),
-}
+            Error::NoJson => {
+                f.write_str("could not find any json in the output of `cargo metadata`")
+            }
+        }
     }
 }
