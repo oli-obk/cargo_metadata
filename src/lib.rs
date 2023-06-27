@@ -117,6 +117,7 @@ mod errors;
 mod messages;
 
 /// An "opaque" identifier for a package.
+///
 /// It is possible to inspect the `repr` field, if the need arises, but its
 /// precise format is an implementation detail and is subject to change.
 ///
@@ -405,6 +406,9 @@ impl Package {
 }
 
 /// The source of a package such as crates.io.
+///
+/// It is possible to inspect the `repr` field, if the need arises, but its
+/// precise format is an implementation detail and is subject to change.
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(transparent)]
 pub struct Source {
