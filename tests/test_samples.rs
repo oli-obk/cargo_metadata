@@ -4,7 +4,9 @@ extern crate semver;
 extern crate serde_json;
 
 use camino::Utf8PathBuf;
-use cargo_metadata::{CargoOpt, DependencyKind, Edition, Metadata, MetadataCommand};
+use cargo_metadata::{
+    ArtifactDebuginfo, CargoOpt, DependencyKind, Edition, Message, Metadata, MetadataCommand,
+};
 
 #[test]
 fn old_minimal() {
@@ -644,4 +646,47 @@ fn basic_workspace_root_package_exists() {
             .name,
         "ex_bin"
     );
+}
+
+#[test]
+fn debuginfo_variants() {
+    // Checks behavior for the different debuginfo variants.
+    let variants = [
+        ("0", ArtifactDebuginfo::None),
+        ("1", ArtifactDebuginfo::Limited),
+        ("2", ArtifactDebuginfo::Full),
+        (
+            "\"line-directives-only\"",
+            ArtifactDebuginfo::LineDirectivesOnly,
+        ),
+        ("\"line-tables-only\"", ArtifactDebuginfo::LineTablesOnly),
+        ("3", ArtifactDebuginfo::UnknownInt(3)),
+        (
+            "\"abc\"",
+            ArtifactDebuginfo::UnknownString("abc".to_string()),
+        ),
+        ("null", ArtifactDebuginfo::None),
+    ];
+    for (value, expected) in variants {
+        let s = r#"{"reason":"compiler-artifact","package_id":"cargo_metadata 0.16.0 (path+file:////cargo_metadata)","manifest_path":"/cargo_metadata/Cargo.toml","target":{"kind":["lib"],"crate_types":["lib"],"name":"cargo_metadata","src_path":"/cargo_metadata/src/lib.rs","edition":"2018","doc":true,"doctest":true,"test":true},"profile":{"opt_level":"0","debuginfo":DEBUGINFO,"debug_assertions":true,"overflow_checks":true,"test":false},"features":["default"],"filenames":["/cargo_metadata/target/debug/deps/libcargo_metadata-27f582f7187b9a2c.rmeta"],"executable":null,"fresh":false}"#;
+        let message: Message = serde_json::from_str(&s.replace("DEBUGINFO", value)).unwrap();
+        match message {
+            Message::CompilerArtifact(artifact) => {
+                assert_eq!(artifact.profile.debuginfo, expected);
+                let de_s = serde_json::to_string(&artifact.profile.debuginfo).unwrap();
+                // Note: Roundtrip does not retain null value.
+                if value == "null" {
+                    assert_eq!(artifact.profile.debuginfo.to_string(), "0");
+                    assert_eq!(de_s, "0");
+                } else {
+                    assert_eq!(
+                        artifact.profile.debuginfo.to_string(),
+                        value.trim_matches('"')
+                    );
+                    assert_eq!(de_s, value);
+                }
+            }
+            _ => panic!("unexpected {:?}", message),
+        }
+    }
 }
