@@ -102,7 +102,8 @@ pub use errors::{Error, Result};
 #[allow(deprecated)]
 pub use messages::parse_messages;
 pub use messages::{
-    Artifact, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage, Message, MessageIter,
+    Artifact, ArtifactDebuginfo, ArtifactProfile, BuildFinished, BuildScript, CompilerMessage,
+    Message, MessageIter,
 };
 #[cfg(feature = "builder")]
 pub use messages::{
