@@ -212,7 +212,7 @@ fn all_the_fields() {
     if ver >= semver::Version::parse("1.58.0").unwrap() {
         assert_eq!(
             all.rust_version,
-            Some(semver::VersionReq::parse("1.56").unwrap())
+            Some(semver::Version::parse("1.56.0").unwrap())
         );
     }
 
