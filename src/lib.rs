@@ -78,6 +78,7 @@
 //! let output = command.wait().expect("Couldn't get cargo's exit status");
 //! ```
 
+use bare_version::BareVersion;
 use camino::Utf8PathBuf;
 #[cfg(feature = "builder")]
 use derive_builder::Builder;
@@ -92,7 +93,7 @@ use std::str::from_utf8;
 
 pub use camino;
 pub use semver;
-use semver::{Version, VersionReq};
+use semver::Version;
 
 #[cfg(feature = "builder")]
 pub use dependency::DependencyBuilder;
@@ -112,6 +113,7 @@ pub use messages::{
 };
 use serde::{Deserialize, Serialize};
 
+pub mod bare_version;
 mod dependency;
 pub mod diagnostic;
 mod errors;
@@ -381,7 +383,7 @@ pub struct Package {
     /// The minimum supported Rust version of this package.
     ///
     /// This is always `None` if running with a version of Cargo older than 1.58.
-    pub rust_version: Option<VersionReq>,
+    pub rust_version: Option<BareVersion>,
 }
 
 impl Package {

@@ -210,10 +210,7 @@ fn all_the_fields() {
     assert_eq!(all.links, Some("foo".to_string()));
     assert_eq!(all.default_run, Some("otherbin".to_string()));
     if ver >= semver::Version::parse("1.58.0").unwrap() {
-        assert_eq!(
-            all.rust_version,
-            Some(semver::VersionReq::parse("1.56").unwrap())
-        );
+        assert_eq!(all.rust_version, Some("1.56".parse().unwrap()));
     }
 
     assert_eq!(all.dependencies.len(), 8);
