@@ -92,7 +92,7 @@ use std::str::from_utf8;
 
 pub use camino;
 pub use semver;
-use semver::{Version, VersionReq};
+use semver::Version;
 
 #[cfg(feature = "builder")]
 pub use dependency::DependencyBuilder;
@@ -110,7 +110,7 @@ pub use messages::{
     ArtifactBuilder, ArtifactProfileBuilder, BuildFinishedBuilder, BuildScriptBuilder,
     CompilerMessageBuilder,
 };
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 mod dependency;
 pub mod diagnostic;
@@ -381,7 +381,9 @@ pub struct Package {
     /// The minimum supported Rust version of this package.
     ///
     /// This is always `None` if running with a version of Cargo older than 1.58.
-    pub rust_version: Option<VersionReq>,
+    #[serde(default)]
+    #[serde(deserialize_with = "deserialize_rust_version")]
+    pub rust_version: Option<Version>,
 }
 
 impl Package {
@@ -800,5 +802,83 @@ impl MetadataCommand {
             .find(|line| line.starts_with('{'))
             .ok_or(Error::NoJson)?;
         Self::parse(stdout)
+    }
+}
+
+/// As per the Cargo Book the [`rust-version` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field) must:
+///
+/// > be a bare version number with two or three components;
+/// > it cannot include semver operators or pre-release identifiers.
+///
+/// [`semver::Version`] however requires three components. This function takes
+/// care of appending `.0` if the provided version number only has two components
+/// and ensuring that it does not contain a pre-release version or build metadata.
+fn deserialize_rust_version<'de, D>(
+    deserializer: D,
+) -> std::result::Result<Option<Version>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let mut buf = match Option::<String>::deserialize(deserializer)? {
+        None => return Ok(None),
+        Some(buf) => buf,
+    };
+
+    for char in buf.chars() {
+        if char == '-' {
+            return Err(serde::de::Error::custom(
+                "pre-release identifiers are not supported in rust-version",
+            ));
+        } else if char == '+' {
+            return Err(serde::de::Error::custom(
+                "build metadata is not supported in rust-version",
+            ));
+        }
+    }
+
+    if buf.matches('.').count() == 1 {
+        // e.g. 1.0 -> 1.0.0
+        buf.push_str(".0");
+    }
+
+    Ok(Some(
+        Version::parse(&buf).map_err(serde::de::Error::custom)?,
+    ))
+}
+
+#[cfg(test)]
+mod test {
+    use semver::Version;
+
+    #[derive(Debug, serde::Deserialize)]
+    struct BareVersion(
+        #[serde(deserialize_with = "super::deserialize_rust_version")] Option<semver::Version>,
+    );
+
+    fn bare_version(str: &str) -> Version {
+        serde_json::from_str::<BareVersion>(&format!(r#""{}""#, str))
+            .unwrap()
+            .0
+            .unwrap()
+    }
+
+    fn bare_version_err(str: &str) -> String {
+        serde_json::from_str::<BareVersion>(&format!(r#""{}""#, str))
+            .unwrap_err()
+            .to_string()
+    }
+
+    #[test]
+    fn test_deserialize_rust_version() {
+        assert_eq!(bare_version("1.2"), Version::new(1, 2, 0));
+        assert_eq!(bare_version("1.2.0"), Version::new(1, 2, 0));
+        assert_eq!(
+            bare_version_err("1.2.0-alpha"),
+            "pre-release identifiers are not supported in rust-version"
+        );
+        assert_eq!(
+            bare_version_err("1.2.0+123"),
+            "build metadata is not supported in rust-version"
+        );
     }
 }
