@@ -151,6 +151,10 @@ pub struct Metadata {
     pub packages: Vec<Package>,
     /// A list of all workspace members
     pub workspace_members: Vec<PackageId>,
+    /// A list of all workspace members
+    ///
+    /// This is always `None` if running with a version of Cargo older than 1.71.
+    pub workspace_default_members: Option<Vec<PackageId>>,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     /// Workspace root
@@ -189,6 +193,20 @@ impl Metadata {
             .iter()
             .filter(|&p| self.workspace_members.contains(&p.id))
             .collect()
+    }
+
+    /// Get the workspace default packages.
+    ///
+    /// This will always return `None` if running with a version of Cargo older than 1.71.
+    pub fn workspace_default_packages(&self) -> Option<Vec<&Package>> {
+        self.workspace_default_members
+            .as_ref()
+            .map(|workspace_default_members| {
+                self.packages
+                    .iter()
+                    .filter(|&p| workspace_default_members.contains(&p.id))
+                    .collect()
+            })
     }
 }
 

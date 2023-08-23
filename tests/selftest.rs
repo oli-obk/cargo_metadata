@@ -135,6 +135,9 @@ fn metadata_deps() {
     let workspace_packages = metadata.workspace_packages();
     assert_eq!(workspace_packages.len(), 1);
     assert_eq!(&workspace_packages[0].id, this_id);
+    if let Some(default_packages) = metadata.workspace_default_packages() {
+        assert_eq!(default_packages, workspace_packages);
+    }
 
     let lib = this
         .targets

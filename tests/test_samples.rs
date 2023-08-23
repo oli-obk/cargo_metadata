@@ -178,6 +178,7 @@ fn all_the_fields() {
         // path added in 1.51
         // default_run added in 1.55
         // rust_version added in 1.58
+        // workspace_default_members added in 1.71
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -196,6 +197,11 @@ fn all_the_fields() {
     );
     assert_eq!(meta.workspace_members.len(), 1);
     assert!(meta.workspace_members[0].to_string().starts_with("all"));
+    if ver >= semver::Version::parse("1.71.0").unwrap() {
+        assert_eq!(meta.workspace_default_members, Some(meta.workspace_members));
+    } else {
+        assert_eq!(meta.workspace_default_members, None);
+    }
 
     assert_eq!(meta.packages.len(), 9);
     let all = meta.packages.iter().find(|p| p.name == "all").unwrap();
