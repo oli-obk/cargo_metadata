@@ -151,10 +151,11 @@ pub struct Metadata {
     pub packages: Vec<Package>,
     /// A list of all workspace members
     pub workspace_members: Vec<PackageId>,
-    /// A list of all workspace members
+    /// The list of default workspace members
     ///
-    /// This is always `None` if running with a version of Cargo older than 1.71.
-    pub workspace_default_members: Option<Vec<PackageId>>,
+    /// This not available if running with a version of Cargo older than 1.71.
+    #[serde(skip_serializing_if = "workspace_default_members_is_missing")]
+    pub workspace_default_members: WorkspaceDefaultMembers,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
     /// Workspace root
@@ -197,16 +198,14 @@ impl Metadata {
 
     /// Get the workspace default packages.
     ///
-    /// This will always return `None` if running with a version of Cargo older than 1.71.
-    pub fn workspace_default_packages(&self) -> Option<Vec<&Package>> {
-        self.workspace_default_members
-            .as_ref()
-            .map(|workspace_default_members| {
-                self.packages
-                    .iter()
-                    .filter(|&p| workspace_default_members.contains(&p.id))
-                    .collect()
-            })
+    /// # Panics
+    ///
+    /// This will panic if running with a version of Cargo older than 1.71.
+    pub fn workspace_default_packages(&self) -> Vec<&Package> {
+        self.packages
+            .iter()
+            .filter(|&p| self.workspace_default_members.contains(&p.id))
+            .collect()
     }
 }
 
@@ -219,6 +218,41 @@ impl<'a> std::ops::Index<&'a PackageId> for Metadata {
             .find(|p| p.id == *idx)
             .unwrap_or_else(|| panic!("no package with this id: {:?}", idx))
     }
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(transparent)]
+/// A list of default workspace members.
+///
+/// See [`Metadata::workspace_default_members`].
+///
+/// It is only available if running a version of Cargo of 1.71 or newer.
+///
+/// # Panics
+///
+/// Dereferencing when running an older version of Cargo will panic.
+pub struct WorkspaceDefaultMembers(Option<Vec<PackageId>>);
+
+impl core::ops::Deref for WorkspaceDefaultMembers {
+    type Target = [PackageId];
+
+    fn deref(&self) -> &Self::Target {
+        self.0
+            .as_ref()
+            .expect("WorkspaceDefaultMembers should only be dereferenced on Cargo versions >= 1.71")
+    }
+}
+
+/// Return true if a valid value for [`WorkspaceDefaultMembers`] is missing, and
+/// dereferencing it would panic.
+///
+/// Internal helper for `skip_serializing_if` and test code. Might be removed in
+/// the future.
+#[doc(hidden)]
+pub fn workspace_default_members_is_missing(
+    workspace_default_members: &WorkspaceDefaultMembers,
+) -> bool {
+    workspace_default_members.0.is_none()
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
