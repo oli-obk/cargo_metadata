@@ -5,19 +5,19 @@ extern crate serde_json;
 
 use camino::Utf8PathBuf;
 use cargo_metadata::{
-    ArtifactDebuginfo, CargoOpt, DependencyKind, Edition, Message, Metadata, MetadataCommand,
+    workspace_default_members_is_missing, ArtifactDebuginfo, CargoOpt, DependencyKind, Edition,
+    Message, Metadata, MetadataCommand,
 };
 
-#[test]
-fn old_minimal() {
-    // Output from oldest supported version (1.24).
-    // This intentionally has as many null fields as possible.
-    // 1.8 is when metadata was introduced.
-    // Older versions not supported because the following are required:
-    // - `workspace_members` added in 1.13
-    // - `target_directory` added in 1.19
-    // - `workspace_root` added in 1.24
-    let json = r#"
+/// Output from oldest version ever supported (1.24).
+///
+/// This intentionally has as many null fields as possible.
+/// 1.8 is when metadata was introduced.
+/// Older versions not supported because the following are required:
+/// - `workspace_members` added in 1.13
+/// - `target_directory` added in 1.19
+/// - `workspace_root` added in 1.24
+const JSON_OLD_MINIMAL: &str = r#"
 {
   "packages": [
     {
@@ -65,7 +65,10 @@ fn old_minimal() {
   "workspace_root": "/foo"
 }
 "#;
-    let meta: Metadata = serde_json::from_str(json).unwrap();
+
+#[test]
+fn old_minimal() {
+    let meta: Metadata = serde_json::from_str(JSON_OLD_MINIMAL).unwrap();
     assert_eq!(meta.packages.len(), 1);
     let pkg = &meta.packages[0];
     assert_eq!(pkg.name, "foo");
@@ -121,6 +124,15 @@ fn old_minimal() {
     assert_eq!(meta.workspace_root, "/foo");
     assert_eq!(meta.workspace_metadata, serde_json::Value::Null);
     assert_eq!(meta.target_directory, "/foo/target");
+
+    assert!(workspace_default_members_is_missing(
+        &meta.workspace_default_members
+    ));
+    let serialized = serde_json::to_value(meta).unwrap();
+    assert!(!serialized
+        .as_object()
+        .unwrap()
+        .contains_key("workspace_default_members"));
 }
 
 macro_rules! sorted {
@@ -178,6 +190,7 @@ fn all_the_fields() {
         // path added in 1.51
         // default_run added in 1.55
         // rust_version added in 1.58
+        // workspace_default_members added in 1.71
         eprintln!("Skipping all_the_fields test, cargo {} is too old.", ver);
         return;
     }
@@ -187,7 +200,7 @@ fn all_the_fields() {
         .unwrap();
     assert_eq!(meta.workspace_root.file_name().unwrap(), "all");
     assert_eq!(
-        serde_json::from_value::<WorkspaceMetadata>(meta.workspace_metadata).unwrap(),
+        serde_json::from_value::<WorkspaceMetadata>(meta.workspace_metadata.clone()).unwrap(),
         WorkspaceMetadata {
             testobject: TestObject {
                 myvalue: "abc".to_string()
@@ -196,6 +209,9 @@ fn all_the_fields() {
     );
     assert_eq!(meta.workspace_members.len(), 1);
     assert!(meta.workspace_members[0].to_string().starts_with("all"));
+    if ver >= semver::Version::parse("1.71.0").unwrap() {
+        assert_eq!(&*meta.workspace_default_members, &meta.workspace_members);
+    }
 
     assert_eq!(meta.packages.len(), 9);
     let all = meta.packages.iter().find(|p| p.name == "all").unwrap();
@@ -450,6 +466,18 @@ fn all_the_fields() {
         kind.target.as_ref().map(|x| x.to_string()),
         Some("cfg(windows)".to_string())
     );
+
+    let serialized = serde_json::to_value(meta).unwrap();
+    if ver >= semver::Version::parse("1.71.0").unwrap() {
+        assert!(serialized.as_object().unwrap()["workspace_default_members"]
+            .as_array()
+            .is_some());
+    } else {
+        assert!(!serialized
+            .as_object()
+            .unwrap()
+            .contains_key("workspace_default_members"));
+    }
 }
 
 #[test]
@@ -689,4 +717,11 @@ fn debuginfo_variants() {
             _ => panic!("unexpected {:?}", message),
         }
     }
+}
+
+#[test]
+#[should_panic = "WorkspaceDefaultMembers should only be dereferenced on Cargo versions >= 1.71"]
+fn missing_workspace_default_members() {
+    let meta: Metadata = serde_json::from_str(JSON_OLD_MINIMAL).unwrap();
+    let _ = &*meta.workspace_default_members;
 }
