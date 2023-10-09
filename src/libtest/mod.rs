@@ -104,6 +104,10 @@ impl TestEvent {
 /// Represents the output of `cargo test -- -Zunstable-options --report-time --show-output --format json`.
 ///
 /// requires --report-time
+///
+/// # Stability
+///
+/// As this struct is for interfacing with the unstable libtest json output, this struct may change at any time, without semver guarantees.
 #[serde(tag = "type")]
 #[serde(rename_all = "lowercase")]
 pub enum TestMessage {
