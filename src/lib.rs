@@ -99,7 +99,7 @@ pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, Result};
-pub use libtest::event::TestEvent;
+pub use libtest::{SuiteEvent, TestEvent, TestMessage};
 #[allow(deprecated)]
 pub use messages::parse_messages;
 pub use messages::{
