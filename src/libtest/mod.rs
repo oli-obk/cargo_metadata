@@ -81,6 +81,11 @@ pub enum TestEvent {
         /// which one
         name: String,
     },
+    /// the test has timed out
+    Timeout {
+        /// which one
+        name: String,
+    },
 }
 
 impl TestEvent {
@@ -89,7 +94,8 @@ impl TestEvent {
         let (Self::Started { name }
         | Self::Ok { name, .. }
         | Self::Ignored { name }
-        | Self::Failed { name, .. }) = self;
+        | Self::Failed { name, .. }
+        | Self::Timeout { name }) = self;
         name
     }
 }
@@ -105,6 +111,17 @@ pub enum TestMessage {
     Suite(SuiteEvent),
     /// test related message
     Test(TestEvent),
+    /// bench related message
+    Bench {
+        /// name of benchmark
+        name: String,
+        /// distribution
+        median: f32,
+        /// deviation
+        deviation: f32,
+        /// thruput in MiB per second
+        mib_per_second: Option<f32>,
+    },
 }
 
 #[test]
