@@ -68,15 +68,6 @@ pub enum TestEvent {
         /// why?
         stdout: Option<String>,
     },
-    /// the test has timed out
-    TestTimeout {
-        /// which one
-        name: String,
-        /// how long did it run
-        exec_time: f32,
-        /// did it say anything
-        stdout: Option<String>,
-    },
     /// the test has failed, with a message, i am not sure how this works.
     TestFailMessage {
         /// which one
@@ -93,6 +84,30 @@ pub enum TestEvent {
         /// which one
         name: String,
     },
+    /// the test has timed out
+    TestTimeout {
+        /// which one
+        name: String,
+        /// how long did it run
+        exec_time: f32,
+        /// did it say anything
+        stdout: Option<String>,
+    },
+}
+
+impl TestEvent {
+    /// Get the name of this test, if this is a test.
+    pub fn test_name(&self) -> Option<&str> {
+        match self {
+            Self::TestStart { name }
+            | Self::TestOk { name, .. }
+            | Self::TestFail { name, .. }
+            | Self::TestFailMessage { name, .. }
+            | Self::TestIgnore { name }
+            | Self::TestTimeout { name, .. } => Some(&name),
+            _ => None,
+        }
+    }
 }
 
 impl<'de> Deserialize<'de> for TestEvent {
