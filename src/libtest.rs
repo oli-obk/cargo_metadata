@@ -98,6 +98,14 @@ impl TestEvent {
         | Self::Timeout { name }) = self;
         name
     }
+
+	/// Get the stdout of this test, if available.
+    pub fn stdout(&self) -> Option<&str> {
+        match self {
+            Self::Ok { stdout, .. } | Self::Failed { stdout, .. } => stdout.as_deref(),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize)]
