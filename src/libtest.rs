@@ -99,12 +99,22 @@ impl TestEvent {
         name
     }
 
-	/// Get the stdout of this test, if available.
+    /// Get the stdout of this test, if available.
     pub fn stdout(&self) -> Option<&str> {
         match self {
             Self::Ok { stdout, .. } | Self::Failed { stdout, .. } => stdout.as_deref(),
             _ => None,
         }
+    }
+
+    /// If this test is in progress.
+    pub fn in_progress(&self) -> bool {
+        matches!(self, Self::Started { .. })
+    }
+
+    /// If this test has finished
+    pub fn is_finished(&self) -> bool {
+        !self.in_progress()
     }
 }
 
