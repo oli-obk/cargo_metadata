@@ -99,7 +99,7 @@ pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, Result};
-pub use libtest::{SuiteEvent, TestEvent, TestMessage};
+pub use libtest::TestMessage;
 #[allow(deprecated)]
 pub use messages::parse_messages;
 pub use messages::{
@@ -116,7 +116,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 mod dependency;
 pub mod diagnostic;
 mod errors;
-mod libtest;
+pub mod libtest;
 mod messages;
 
 /// An "opaque" identifier for a package.
