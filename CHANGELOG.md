@@ -38,3 +38,7 @@
 - Updated `derive_builder` to the latest version.
 - Made use of `matches!` macros where possible.
 - Fixed some tests
+
+### Added
+
+- Added `TestMessage`, `TestEvent`, `SuiteEvent` for parsing the `cargo test -- --format json` output.
