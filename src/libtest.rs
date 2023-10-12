@@ -1,6 +1,6 @@
 //! Parses output of [libtest](https://github.com/rust-lang/rust/blob/master/library/test/src/formatters/json.rs).
 //!
-//! As this module parses output of a unstable format, all structs in this module are volatile.
+//! Since this module parses output in an unstable format, all structs in this module may change at any time, and are exempt from semver guarantees.
 use serde::{Deserialize, Serialize};
 
 /// Suite related event
