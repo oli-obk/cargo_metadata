@@ -1,4 +1,6 @@
-//! parses output of <https://github.com/rust-lang/rust/blob/master/library/test/src/formatters/json.rs>.
+//! Parses output of [libtest](https://github.com/rust-lang/rust/blob/master/library/test/src/formatters/json.rs).
+//!
+//! As this module parses output of a unstable format, all structs in this module are volatile.
 use serde::{Deserialize, Serialize};
 
 /// Suite related event
@@ -105,16 +107,6 @@ impl TestEvent {
             Self::Ok { stdout, .. } | Self::Failed { stdout, .. } => stdout.as_deref(),
             _ => None,
         }
-    }
-
-    /// If this test is in progress.
-    pub fn in_progress(&self) -> bool {
-        matches!(self, Self::Started { .. })
-    }
-
-    /// If this test has finished
-    pub fn is_finished(&self) -> bool {
-        !self.in_progress()
     }
 }
 

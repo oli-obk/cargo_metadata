@@ -21,6 +21,7 @@ thiserror = "1.0.31"
 [features]
 default = []
 builder = ["derive_builder"]
+unstable = []
 
 [package.metadata.cargo_metadata_test]
 some_field = true
