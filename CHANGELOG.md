@@ -39,6 +39,8 @@
 - Made use of `matches!` macros where possible.
 - Fixed some tests
 
+## [0.15.1] - 2022-10-13
+
 ### Added
 
 - Added `TestMessage`, `TestEvent`, `SuiteEvent` for parsing the `cargo test -- --format json` output.
