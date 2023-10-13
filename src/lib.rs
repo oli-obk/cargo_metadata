@@ -99,6 +99,8 @@ pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
 pub use errors::{Error, Result};
+#[cfg(feature = "unstable")]
+pub use libtest::TestMessage;
 #[allow(deprecated)]
 pub use messages::parse_messages;
 pub use messages::{
@@ -115,6 +117,8 @@ use serde::{Deserialize, Deserializer, Serialize};
 mod dependency;
 pub mod diagnostic;
 mod errors;
+#[cfg(feature = "unstable")]
+pub mod libtest;
 mod messages;
 
 /// An "opaque" identifier for a package.
