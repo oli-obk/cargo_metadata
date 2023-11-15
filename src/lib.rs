@@ -577,6 +577,11 @@ impl Target {
     pub fn is_custom_build(&self) -> bool {
         self.is_kind("custom-build")
     }
+
+    /// Return true if this target is of kind "proc-macro".
+    pub fn is_proc_macro(&self) -> bool {
+        self.is_kind("proc-macro")
+    }
 }
 
 /// The Rust edition
