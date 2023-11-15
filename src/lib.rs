@@ -507,7 +507,7 @@ pub struct Target {
     /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
     /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`
     pub kind: Vec<String>,
-    /// Almost the same as `kind`, but only reports the
+    /// Similar to `kind`, but only reports the
     /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
     /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
     /// Everything that's not a proc macro or a library of some kind is reported as "bin".
