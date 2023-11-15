@@ -503,7 +503,7 @@ pub struct Target {
     /// Name as given in the `Cargo.toml` or generated from the file name
     pub name: String,
     /// Kind of target.
-    /// This can be one of `example`, `test`, `bench`, `custom-build` and/or one of the
+    /// The possible values are `example`, `test`, `bench`, `custom-build` and
     /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
     /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`
     pub kind: Vec<String>,
