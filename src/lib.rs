@@ -502,10 +502,20 @@ impl fmt::Display for Source {
 pub struct Target {
     /// Name as given in the `Cargo.toml` or generated from the file name
     pub name: String,
-    /// Kind of target ("bin", "example", "test", "bench", "lib", "custom-build")
+    /// Kind of target.
+    ///
+    /// The possible values are `example`, `test`, `bench`, `custom-build` and
+    /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
+    /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
+    ///
+    /// Other possible values may be added in the future.
     pub kind: Vec<String>,
-    /// Almost the same as `kind`, except when an example is a library instead of an executable.
-    /// In that case `crate_types` contains things like `rlib` and `dylib` while `kind` is `example`
+    /// Similar to `kind`, but only reports the
+    /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
+    /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
+    /// Everything that's not a proc macro or a library of some kind is reported as "bin".
+    ///
+    /// Other possible values may be added in the future.
     #[serde(default)]
     #[cfg_attr(feature = "builder", builder(default))]
     pub crate_types: Vec<String>,
