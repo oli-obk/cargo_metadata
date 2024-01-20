@@ -594,7 +594,6 @@ impl Target {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 /// Kind of target.
 ///
 /// The possible values are `example`, `test`, `bench`, `custom-build` and
@@ -602,6 +601,8 @@ impl Target {
 /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
 ///
 /// Other possible values may be added in the future.
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[non_exhaustive]
 pub enum TargetKind {
     /// `cargo bench` target
     #[serde(rename = "bench")]
@@ -660,13 +661,14 @@ impl From<&str> for TargetKind {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 /// Similar to `kind`, but only reports the
 /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
 /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
 /// Everything that's not a proc macro or a library of some kind is reported as "bin".
 ///
 /// Other possible values may be added in the future.
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[non_exhaustive]
 pub enum CrateType {
     /// Binary executable target
     #[serde(rename = "bin")]
