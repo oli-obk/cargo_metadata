@@ -25,13 +25,13 @@ fn metadata() {
         .iter()
         .find(|t| t.name == "cargo_metadata")
         .unwrap();
-    assert_eq!(lib.kind[0], "lib");
-    assert_eq!(lib.crate_types[0], "lib");
+    assert_eq!(lib.kind[0], "lib".into());
+    assert_eq!(lib.crate_types[0], "lib".into());
 
     let selftest = this.targets.iter().find(|t| t.name == "selftest").unwrap();
     assert_eq!(selftest.name, "selftest");
-    assert_eq!(selftest.kind[0], "test");
-    assert_eq!(selftest.crate_types[0], "bin");
+    assert_eq!(selftest.kind[0], "test".into());
+    assert_eq!(selftest.crate_types[0], "bin".into());
 
     let package_metadata = &metadata.packages[0]
         .metadata
@@ -141,13 +141,13 @@ fn metadata_deps() {
         .iter()
         .find(|t| t.name == "cargo_metadata")
         .unwrap();
-    assert_eq!(lib.kind[0], "lib");
-    assert_eq!(lib.crate_types[0], "lib");
+    assert_eq!(lib.kind[0], "lib".into());
+    assert_eq!(lib.crate_types[0], "lib".into());
 
     let selftest = this.targets.iter().find(|t| t.name == "selftest").unwrap();
     assert_eq!(selftest.name, "selftest");
-    assert_eq!(selftest.kind[0], "test");
-    assert_eq!(selftest.crate_types[0], "bin");
+    assert_eq!(selftest.kind[0], "test".into());
+    assert_eq!(selftest.crate_types[0], "bin".into());
 
     let dependencies = &this.dependencies;
 

@@ -95,8 +95,8 @@ fn old_minimal() {
     assert_eq!(pkg.targets.len(), 1);
     let target = &pkg.targets[0];
     assert_eq!(target.name, "foo");
-    assert_eq!(target.kind, vec!["bin"]);
-    assert_eq!(target.crate_types, vec!["bin"]);
+    assert_eq!(target.kind, vec!["bin".into()]);
+    assert_eq!(target.crate_types, vec!["bin".into()]);
     assert_eq!(target.required_features.len(), 0);
     assert_eq!(target.src_path, "/foo/src/main.rs");
     assert_eq!(target.edition, Edition::E2015);
@@ -309,10 +309,13 @@ fn all_the_fields() {
     assert_eq!(all.targets.len(), 8);
     let lib = get_file_name!("lib.rs");
     assert_eq!(lib.name, "all");
-    assert_eq!(sorted!(lib.kind), vec!["cdylib", "rlib", "staticlib"]);
+    assert_eq!(
+        sorted!(lib.kind),
+        vec!["cdylib".into(), "rlib".into(), "staticlib".into()]
+    );
     assert_eq!(
         sorted!(lib.crate_types),
-        vec!["cdylib", "rlib", "staticlib"]
+        vec!["cdylib".into(), "rlib".into(), "staticlib".into()]
     );
     assert_eq!(lib.required_features.len(), 0);
     assert_eq!(lib.edition, Edition::E2018);
@@ -321,8 +324,8 @@ fn all_the_fields() {
     assert!(lib.doc);
 
     let main = get_file_name!("main.rs");
-    assert_eq!(main.crate_types, vec!["bin"]);
-    assert_eq!(main.kind, vec!["bin"]);
+    assert_eq!(main.crate_types, vec!["bin".into()]);
+    assert_eq!(main.kind, vec!["bin".into()]);
     assert!(!main.doctest);
     assert!(main.test);
     assert!(main.doc);
@@ -335,17 +338,17 @@ fn all_the_fields() {
     assert_eq!(reqfeat.required_features, vec!["feat2"]);
 
     let ex1 = get_file_name!("ex1.rs");
-    assert_eq!(ex1.kind, vec!["example"]);
+    assert_eq!(ex1.kind, vec!["example".into()]);
     assert!(!ex1.test);
 
     let t1 = get_file_name!("t1.rs");
-    assert_eq!(t1.kind, vec!["test"]);
+    assert_eq!(t1.kind, vec!["test".into()]);
 
     let b1 = get_file_name!("b1.rs");
-    assert_eq!(b1.kind, vec!["bench"]);
+    assert_eq!(b1.kind, vec!["bench".into()]);
 
     let build = get_file_name!("build.rs");
-    assert_eq!(build.kind, vec!["custom-build"]);
+    assert_eq!(build.kind, vec!["custom-build".into()]);
 
     if ver >= semver::Version::parse("1.60.0").unwrap() {
         // 1.60 now reports optional dependencies within the features table
@@ -724,4 +727,58 @@ fn debuginfo_variants() {
 fn missing_workspace_default_members() {
     let meta: Metadata = serde_json::from_str(JSON_OLD_MINIMAL).unwrap();
     let _ = &*meta.workspace_default_members;
+}
+
+#[test]
+fn test_unknown_target_kind_and_crate_type() {
+    // Both kind and crate_type set to a type not yet known
+    let json = r#"
+{
+  "packages": [
+    {
+      "name": "alt",
+      "version": "0.1.0",
+      "id": "alt 0.1.0 (path+file:///alt)",
+      "source": null,
+      "dependencies": [],
+      "targets": [
+        {
+          "kind": [
+            "future-kind"
+          ],
+          "crate_types": [
+            "future-type"
+          ],
+          "name": "alt",
+          "src_path": "/alt/src/lib.rs",
+          "edition": "2018"
+        }
+      ],
+      "features": {},
+      "manifest_path": "/alt/Cargo.toml",
+      "metadata": null,
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "edition": "2018",
+      "links": null
+    }
+  ],
+  "workspace_members": [
+    "alt 0.1.0 (path+file:///alt)"
+  ],
+  "resolve": null,
+  "target_directory": "/alt/target",
+  "version": 1,
+  "workspace_root": "/alt"
+}
+"#;
+    let meta: Metadata = serde_json::from_str(json).unwrap();
+    assert_eq!(meta.packages.len(), 1);
+    assert_eq!(meta.packages[0].targets.len(), 1);
+    let target = &meta.packages[0].targets[0];
+    assert_eq!(target.kind[0], "future-kind".into());
+    assert_eq!(target.crate_types[0], "future-type".into());
 }
