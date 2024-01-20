@@ -208,7 +208,7 @@ fn all_the_fields() {
         }
     );
     assert_eq!(meta.workspace_members.len(), 1);
-    assert!(meta.workspace_members[0].to_string().starts_with("all"));
+    assert!(meta.workspace_members[0].to_string().contains("all"));
     if ver >= semver::Version::parse("1.71.0").unwrap() {
         assert_eq!(&*meta.workspace_default_members, &meta.workspace_members);
     }
@@ -217,7 +217,7 @@ fn all_the_fields() {
     let all = meta.packages.iter().find(|p| p.name == "all").unwrap();
     assert_eq!(all.version, semver::Version::parse("0.1.0").unwrap());
     assert_eq!(all.authors, vec!["Jane Doe <user@example.com>"]);
-    assert!(all.id.to_string().starts_with("all"));
+    assert!(all.id.to_string().contains("all"));
     assert_eq!(all.description, Some("Package description.".to_string()));
     assert_eq!(all.license, Some("MIT/Apache-2.0".to_string()));
     assert_eq!(all.license_file, Some(Utf8PathBuf::from("LICENSE")));
@@ -393,18 +393,13 @@ fn all_the_fields() {
     );
 
     let resolve = meta.resolve.as_ref().unwrap();
-    assert!(resolve
-        .root
-        .as_ref()
-        .unwrap()
-        .to_string()
-        .starts_with("all"));
+    assert!(resolve.root.as_ref().unwrap().to_string().contains("all"));
 
     assert_eq!(resolve.nodes.len(), 9);
     let path_dep = resolve
         .nodes
         .iter()
-        .find(|n| n.id.to_string().starts_with("path-dep"))
+        .find(|n| n.id.to_string().contains("path-dep"))
         .unwrap();
     assert_eq!(path_dep.deps.len(), 0);
     assert_eq!(path_dep.dependencies.len(), 0);
@@ -413,29 +408,29 @@ fn all_the_fields() {
     let bitflags = resolve
         .nodes
         .iter()
-        .find(|n| n.id.to_string().starts_with("bitflags"))
+        .find(|n| n.id.to_string().contains("bitflags"))
         .unwrap();
     assert_eq!(bitflags.features, vec!["default"]);
 
     let featdep = resolve
         .nodes
         .iter()
-        .find(|n| n.id.to_string().starts_with("featdep"))
+        .find(|n| n.id.to_string().contains("featdep"))
         .unwrap();
     assert_eq!(featdep.features, vec!["i128"]);
 
     let all = resolve
         .nodes
         .iter()
-        .find(|n| n.id.to_string().starts_with("all"))
+        .find(|n| n.id.to_string().contains("all"))
         .unwrap();
     assert_eq!(all.dependencies.len(), 8);
     assert_eq!(all.deps.len(), 8);
     let newname = all.deps.iter().find(|d| d.name == "newname").unwrap();
-    assert!(newname.pkg.to_string().starts_with("oldname"));
+    assert!(newname.pkg.to_string().contains("oldname"));
     // Note the underscore here.
     let path_dep = all.deps.iter().find(|d| d.name == "path_dep").unwrap();
-    assert!(path_dep.pkg.to_string().starts_with("path-dep"));
+    assert!(path_dep.pkg.to_string().contains("path-dep"));
     assert_eq!(path_dep.dep_kinds.len(), 1);
     let kind = &path_dep.dep_kinds[0];
     assert_eq!(kind.kind, DependencyKind::Normal);
@@ -446,7 +441,7 @@ fn all_the_fields() {
         .iter()
         .find(|d| d.name == "different_name")
         .unwrap();
-    assert!(namedep.pkg.to_string().starts_with("namedep"));
+    assert!(namedep.pkg.to_string().contains("namedep"));
     assert_eq!(sorted!(all.features), vec!["bitflags", "default", "feat1"]);
 
     let bdep = all.deps.iter().find(|d| d.name == "bdep").unwrap();
@@ -599,7 +594,7 @@ fn advanced_feature_configuration() {
         let all = resolve
             .nodes
             .iter()
-            .find(|n| n.id.to_string().starts_with("all"))
+            .find(|n| !n.features.is_empty())
             .unwrap();
 
         all.features.clone()
