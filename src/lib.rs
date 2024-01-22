@@ -509,7 +509,7 @@ pub struct Target {
     /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
     ///
     /// Other possible values may be added in the future.
-    pub kind: Vec<String>,
+    pub kind: Vec<TargetKind>,
     /// Similar to `kind`, but only reports the
     /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
     /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
@@ -518,7 +518,7 @@ pub struct Target {
     /// Other possible values may be added in the future.
     #[serde(default)]
     #[cfg_attr(feature = "builder", builder(default))]
-    pub crate_types: Vec<String>,
+    pub crate_types: Vec<CrateType>,
 
     #[serde(default)]
     #[cfg_attr(feature = "builder", builder(default))]
@@ -554,43 +554,160 @@ pub struct Target {
 }
 
 impl Target {
-    fn is_kind(&self, name: &str) -> bool {
-        self.kind.iter().any(|kind| kind == name)
+    fn is_kind(&self, name: TargetKind) -> bool {
+        self.kind.iter().any(|kind| kind == &name)
     }
 
     /// Return true if this target is of kind "lib".
     pub fn is_lib(&self) -> bool {
-        self.is_kind("lib")
+        self.is_kind(TargetKind::Lib)
     }
 
     /// Return true if this target is of kind "bin".
     pub fn is_bin(&self) -> bool {
-        self.is_kind("bin")
+        self.is_kind(TargetKind::Bin)
     }
 
     /// Return true if this target is of kind "example".
     pub fn is_example(&self) -> bool {
-        self.is_kind("example")
+        self.is_kind(TargetKind::Example)
     }
 
     /// Return true if this target is of kind "test".
     pub fn is_test(&self) -> bool {
-        self.is_kind("test")
+        self.is_kind(TargetKind::Test)
     }
 
     /// Return true if this target is of kind "bench".
     pub fn is_bench(&self) -> bool {
-        self.is_kind("bench")
+        self.is_kind(TargetKind::Bench)
     }
 
     /// Return true if this target is of kind "custom-build".
     pub fn is_custom_build(&self) -> bool {
-        self.is_kind("custom-build")
+        self.is_kind(TargetKind::CustomBuild)
     }
 
     /// Return true if this target is of kind "proc-macro".
     pub fn is_proc_macro(&self) -> bool {
-        self.is_kind("proc-macro")
+        self.is_kind(TargetKind::ProcMacro)
+    }
+}
+
+/// Kind of target.
+///
+/// The possible values are `example`, `test`, `bench`, `custom-build` and
+/// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
+/// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
+///
+/// Other possible values may be added in the future.
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[non_exhaustive]
+pub enum TargetKind {
+    /// `cargo bench` target
+    #[serde(rename = "bench")]
+    Bench,
+    /// Binary executable target
+    #[serde(rename = "bin")]
+    Bin,
+    /// Custom build target
+    #[serde(rename = "custom-build")]
+    CustomBuild,
+    /// Dynamic system library target
+    #[serde(rename = "cdylib")]
+    CDyLib,
+    /// Dynamic Rust library target
+    #[serde(rename = "dylib")]
+    DyLib,
+    /// Example target
+    #[serde(rename = "example")]
+    Example,
+    /// Rust library
+    #[serde(rename = "lib")]
+    Lib,
+    /// Procedural Macro
+    #[serde(rename = "proc-macro")]
+    ProcMacro,
+    /// Rust library for use as an intermediate artifact
+    #[serde(rename = "rlib")]
+    RLib,
+    /// Static system library
+    #[serde(rename = "staticlib")]
+    StaticLib,
+    /// Test target
+    #[serde(rename = "test")]
+    Test,
+    /// Unknown type
+    #[serde(untagged)]
+    Unknown(String),
+}
+
+impl From<&str> for TargetKind {
+    fn from(value: &str) -> Self {
+        match value {
+            "example" => TargetKind::Example,
+            "test" => TargetKind::Test,
+            "bench" => TargetKind::Bench,
+            "custom-build" => TargetKind::CustomBuild,
+            "bin" => TargetKind::Bin,
+            "lib" => TargetKind::Lib,
+            "rlib" => TargetKind::RLib,
+            "dylib" => TargetKind::DyLib,
+            "cdylib" => TargetKind::CDyLib,
+            "staticlib" => TargetKind::StaticLib,
+            "proc-macro" => TargetKind::ProcMacro,
+            x => TargetKind::Unknown(x.to_string()),
+        }
+    }
+}
+
+/// Similar to `kind`, but only reports the
+/// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
+/// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
+/// Everything that's not a proc macro or a library of some kind is reported as "bin".
+///
+/// Other possible values may be added in the future.
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[non_exhaustive]
+pub enum CrateType {
+    /// Binary executable target
+    #[serde(rename = "bin")]
+    Bin,
+    /// Dynamic system library target
+    #[serde(rename = "cdylib")]
+    CDyLib,
+    /// Dynamic Rust library target
+    #[serde(rename = "dylib")]
+    DyLib,
+    /// Rust library
+    #[serde(rename = "lib")]
+    Lib,
+    /// Procedural Macro
+    #[serde(rename = "proc-macro")]
+    ProcMacro,
+    /// Rust library for use as an intermediate artifact
+    #[serde(rename = "rlib")]
+    RLib,
+    /// Static system library
+    #[serde(rename = "staticlib")]
+    StaticLib,
+    /// Unkown type
+    #[serde(untagged)]
+    Unknown(String),
+}
+
+impl From<&str> for CrateType {
+    fn from(value: &str) -> Self {
+        match value {
+            "bin" => CrateType::Bin,
+            "lib" => CrateType::Lib,
+            "rlib" => CrateType::RLib,
+            "dylib" => CrateType::DyLib,
+            "cdylib" => CrateType::CDyLib,
+            "staticlib" => CrateType::StaticLib,
+            "proc-macro" => CrateType::ProcMacro,
+            x => CrateType::Unknown(x.to_string()),
+        }
     }
 }
 

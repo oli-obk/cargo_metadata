@@ -11,6 +11,7 @@
 ### Changed
 
 - Made `parse_stream` more versatile by accepting anything that implements `Read`.
+- Converted `TargetKind` and `CrateType` to an enum representation.
 
 ### Removed
 
