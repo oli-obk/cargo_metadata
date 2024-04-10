@@ -8,6 +8,7 @@ use cargo_metadata::{
     ArtifactDebuginfo, CargoOpt, DependencyKind, Edition, Message, Metadata, MetadataCommand,
     Source,
 };
+use cargo_util_schemas::manifest::FeatureName;
 
 /// Output from oldest version ever supported (1.24).
 ///
@@ -71,7 +72,7 @@ fn old_minimal() {
     let meta: Metadata = serde_json::from_str(JSON_OLD_MINIMAL).unwrap();
     assert_eq!(meta.packages.len(), 1);
     let pkg = &meta.packages[0];
-    assert_eq!(pkg.name, "foo");
+    assert_eq!(pkg.name.as_str(), "foo");
     assert_eq!(pkg.version, semver::Version::parse("0.1.0").unwrap());
     assert_eq!(pkg.authors.len(), 0);
     assert_eq!(pkg.id.to_string(), "foo 0.1.0 (path+file:///foo)");
@@ -141,6 +142,14 @@ macro_rules! sorted {
         v.sort();
         v
     }};
+}
+
+macro_rules! features {
+    ($($feat:expr),* $(,)?) => {
+        ::std::vec![
+            $(::cargo_util_schemas::manifest::FeatureName::new(String::from($feat)).unwrap()),*
+        ]
+    };
 }
 
 fn cargo_version() -> semver::Version {
@@ -214,7 +223,11 @@ fn all_the_fields() {
     }
 
     assert_eq!(meta.packages.len(), 9);
-    let all = meta.packages.iter().find(|p| p.name == "all").unwrap();
+    let all = meta
+        .packages
+        .iter()
+        .find(|p| p.name.as_str() == "all")
+        .unwrap();
     assert_eq!(all.version, semver::Version::parse("0.1.0").unwrap());
     assert_eq!(all.authors, vec!["Jane Doe <user@example.com>"]);
     assert!(all.id.to_string().contains("all"));
@@ -337,7 +350,7 @@ fn all_the_fields() {
     assert!(!otherbin.doc);
 
     let reqfeat = get_file_name!("reqfeat.rs");
-    assert_eq!(reqfeat.required_features, vec!["feat2"]);
+    assert_eq!(reqfeat.required_features, features!["feat2"]);
 
     let ex1 = get_file_name!("ex1.rs");
     assert_eq!(ex1.kind, vec!["example".into()]);
@@ -412,14 +425,14 @@ fn all_the_fields() {
         .iter()
         .find(|n| n.id.to_string().contains("bitflags"))
         .unwrap();
-    assert_eq!(bitflags.features, vec!["default"]);
+    assert_eq!(bitflags.features, features!["default"]);
 
     let featdep = resolve
         .nodes
         .iter()
         .find(|n| n.id.to_string().contains("featdep"))
         .unwrap();
-    assert_eq!(featdep.features, vec!["i128"]);
+    assert_eq!(featdep.features, features!["i128"]);
 
     let all = resolve
         .nodes
@@ -428,10 +441,10 @@ fn all_the_fields() {
         .unwrap();
     assert_eq!(all.dependencies.len(), 8);
     assert_eq!(all.deps.len(), 8);
-    let newname = all.deps.iter().find(|d| d.name == "newname").unwrap();
+    let newname = all.deps.iter().find(|d| &*d.name == "newname").unwrap();
     assert!(newname.pkg.to_string().contains("oldname"));
     // Note the underscore here.
-    let path_dep = all.deps.iter().find(|d| d.name == "path_dep").unwrap();
+    let path_dep = all.deps.iter().find(|d| &*d.name == "path_dep").unwrap();
     assert!(path_dep.pkg.to_string().contains("path-dep"));
     assert_eq!(path_dep.dep_kinds.len(), 1);
     let kind = &path_dep.dep_kinds[0];
@@ -441,24 +454,27 @@ fn all_the_fields() {
     let namedep = all
         .deps
         .iter()
-        .find(|d| d.name == "different_name")
+        .find(|d| &*d.name == "different_name")
         .unwrap();
     assert!(namedep.pkg.to_string().contains("namedep"));
-    assert_eq!(sorted!(all.features), vec!["bitflags", "default", "feat1"]);
+    assert_eq!(
+        sorted!(all.features),
+        features!["bitflags", "default", "feat1"]
+    );
 
-    let bdep = all.deps.iter().find(|d| d.name == "bdep").unwrap();
+    let bdep = all.deps.iter().find(|d| &*d.name == "bdep").unwrap();
     assert_eq!(bdep.dep_kinds.len(), 1);
     let kind = &bdep.dep_kinds[0];
     assert_eq!(kind.kind, DependencyKind::Build);
     assert!(kind.target.is_none());
 
-    let devdep = all.deps.iter().find(|d| d.name == "devdep").unwrap();
+    let devdep = all.deps.iter().find(|d| &*d.name == "devdep").unwrap();
     assert_eq!(devdep.dep_kinds.len(), 1);
     let kind = &devdep.dep_kinds[0];
     assert_eq!(kind.kind, DependencyKind::Development);
     assert!(kind.target.is_none());
 
-    let windep = all.deps.iter().find(|d| d.name == "windep").unwrap();
+    let windep = all.deps.iter().find(|d| &*d.name == "windep").unwrap();
     assert_eq!(windep.dep_kinds.len(), 1);
     let kind = &windep.dep_kinds[0];
     assert_eq!(kind.kind, DependencyKind::Normal);
@@ -555,7 +571,11 @@ fn current_dir() {
         .current_dir("tests/all/namedep")
         .exec()
         .unwrap();
-    let namedep = meta.packages.iter().find(|p| p.name == "namedep").unwrap();
+    let namedep = meta
+        .packages
+        .iter()
+        .find(|p| p.name.as_str() == "namedep")
+        .unwrap();
     assert!(namedep.name.starts_with("namedep"));
 }
 
@@ -599,7 +619,11 @@ fn advanced_feature_configuration() {
             .find(|n| !n.features.is_empty())
             .unwrap();
 
-        all.features.clone()
+        all.features
+            .clone()
+            .into_iter()
+            .map(FeatureName::into_inner)
+            .collect()
     }
 
     // Default behavior; tested above
@@ -661,7 +685,7 @@ fn basic_workspace_root_package_exists() {
         .manifest_path("tests/basic_workspace/Cargo.toml")
         .exec()
         .unwrap();
-    assert_eq!(meta.root_package().unwrap().name, "ex_bin");
+    assert_eq!(meta.root_package().unwrap().name.as_str(), "ex_bin");
     // Now with no_deps, it should still work exactly the same
     let meta = MetadataCommand::new()
         .manifest_path("tests/basic_workspace/Cargo.toml")
@@ -671,7 +695,8 @@ fn basic_workspace_root_package_exists() {
     assert_eq!(
         meta.root_package()
             .expect("workspace root still exists when no_deps used")
-            .name,
+            .name
+            .as_str(),
         "ex_bin"
     );
 }

@@ -94,6 +94,7 @@ pub use camino;
 pub use semver;
 use semver::Version;
 
+use cargo_util_schemas::manifest::{FeatureName, PackageName};
 #[cfg(feature = "builder")]
 pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
@@ -320,7 +321,7 @@ pub struct Node {
 
     /// Features enabled on the crate
     #[serde(default)]
-    pub features: Vec<String>,
+    pub features: Vec<FeatureName>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
@@ -331,7 +332,7 @@ pub struct Node {
 pub struct NodeDep {
     /// The name of the dependency's library target.
     /// If the crate was renamed, it is the new name.
-    pub name: String,
+    pub name: PackageName,
     /// Package ID (opaque unique identifier)
     pub pkg: PackageId,
     /// The kinds of dependencies.
@@ -375,7 +376,7 @@ pub struct DepKindInfo {
 pub struct Package {
     /// The [`name` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-name-field) as given in the `Cargo.toml`
     // (We say "given in" instead of "specified in" since the `name` key cannot be inherited from the workspace.)
-    pub name: String,
+    pub name: PackageName,
     /// The [`version` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-version-field) as specified in the `Cargo.toml`
     pub version: Version,
     /// The [`authors` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-authors-field) as specified in the `Cargo.toml`
@@ -386,6 +387,7 @@ pub struct Package {
     pub id: PackageId,
     /// The source of the package, e.g.
     /// crates.io or `None` for local projects.
+    // Note that this is NOT the same as cargo_util_schemas::RegistryName
     #[cfg_attr(feature = "builder", builder(default))]
     pub source: Option<Source>,
     /// The [`description` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-description-field) as specified in the `Cargo.toml`
@@ -588,7 +590,7 @@ pub struct Target {
     #[serde(rename = "required-features")]
     /// This target is built only if these features are enabled.
     /// It doesn't apply to `lib` targets.
-    pub required_features: Vec<String>,
+    pub required_features: Vec<FeatureName>,
     /// Path to the main source file of the target
     pub src_path: Utf8PathBuf,
     /// Rust edition for this target
