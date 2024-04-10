@@ -8,6 +8,7 @@ use cargo_metadata::{
     workspace_default_members_is_missing, ArtifactDebuginfo, CargoOpt, DependencyKind, Edition,
     Message, Metadata, MetadataCommand,
 };
+use cargo_util_schemas::manifest::FeatureName;
 
 /// Output from oldest version ever supported (1.24).
 ///
@@ -71,7 +72,7 @@ fn old_minimal() {
     let meta: Metadata = serde_json::from_str(JSON_OLD_MINIMAL).unwrap();
     assert_eq!(meta.packages.len(), 1);
     let pkg = &meta.packages[0];
-    assert_eq!(pkg.name, "foo");
+    assert_eq!(pkg.name.as_str(), "foo");
     assert_eq!(pkg.version, semver::Version::parse("0.1.0").unwrap());
     assert_eq!(pkg.authors.len(), 0);
     assert_eq!(pkg.id.to_string(), "foo 0.1.0 (path+file:///foo)");
@@ -141,6 +142,14 @@ macro_rules! sorted {
         v.sort();
         v
     }};
+}
+
+macro_rules! features {
+    ($($feat:expr),* $(,)?) => {
+        ::std::vec![
+            $(::cargo_util_schemas::manifest::FeatureName::new(String::from($feat)).unwrap()),*
+        ]
+    };
 }
 
 fn cargo_version() -> semver::Version {
@@ -214,7 +223,11 @@ fn all_the_fields() {
     }
 
     assert_eq!(meta.packages.len(), 9);
-    let all = meta.packages.iter().find(|p| p.name == "all").unwrap();
+    let all = meta
+        .packages
+        .iter()
+        .find(|p| p.name.as_str() == "all")
+        .unwrap();
     assert_eq!(all.version, semver::Version::parse("0.1.0").unwrap());
     assert_eq!(all.authors, vec!["Jane Doe <user@example.com>"]);
     assert!(all.id.to_string().contains("all"));
@@ -335,7 +348,7 @@ fn all_the_fields() {
     assert!(!otherbin.doc);
 
     let reqfeat = get_file_name!("reqfeat.rs");
-    assert_eq!(reqfeat.required_features, vec!["feat2"]);
+    assert_eq!(reqfeat.required_features, features!["feat2"]);
 
     let ex1 = get_file_name!("ex1.rs");
     assert_eq!(ex1.kind, vec!["example".into()]);
@@ -410,14 +423,14 @@ fn all_the_fields() {
         .iter()
         .find(|n| n.id.to_string().contains("bitflags"))
         .unwrap();
-    assert_eq!(bitflags.features, vec!["default"]);
+    assert_eq!(bitflags.features, features!["default"]);
 
     let featdep = resolve
         .nodes
         .iter()
         .find(|n| n.id.to_string().contains("featdep"))
         .unwrap();
-    assert_eq!(featdep.features, vec!["i128"]);
+    assert_eq!(featdep.features, features!["i128"]);
 
     let all = resolve
         .nodes
@@ -442,7 +455,10 @@ fn all_the_fields() {
         .find(|d| d.name == "different_name")
         .unwrap();
     assert!(namedep.pkg.to_string().contains("namedep"));
-    assert_eq!(sorted!(all.features), vec!["bitflags", "default", "feat1"]);
+    assert_eq!(
+        sorted!(all.features),
+        features!["bitflags", "default", "feat1"]
+    );
 
     let bdep = all.deps.iter().find(|d| d.name == "bdep").unwrap();
     assert_eq!(bdep.dep_kinds.len(), 1);
@@ -553,7 +569,11 @@ fn current_dir() {
         .current_dir("tests/all/namedep")
         .exec()
         .unwrap();
-    let namedep = meta.packages.iter().find(|p| p.name == "namedep").unwrap();
+    let namedep = meta
+        .packages
+        .iter()
+        .find(|p| p.name.as_str() == "namedep")
+        .unwrap();
     assert!(namedep.name.starts_with("namedep"));
 }
 
@@ -582,7 +602,7 @@ Evil proc macro was here!
 fn advanced_feature_configuration() {
     fn build_features<F: FnOnce(&mut MetadataCommand) -> &mut MetadataCommand>(
         func: F,
-    ) -> Vec<String> {
+    ) -> Vec<FeatureName> {
         let mut meta = MetadataCommand::new();
         let meta = meta.manifest_path("tests/all/Cargo.toml");
 
@@ -604,26 +624,23 @@ fn advanced_feature_configuration() {
     let default_features = build_features(|meta| meta);
     assert_eq!(
         sorted!(default_features),
-        vec!["bitflags", "default", "feat1"]
+        features!["bitflags", "default", "feat1"]
     );
 
     // Manually specify the same default features
     let manual_features = build_features(|meta| {
         meta.features(CargoOpt::NoDefaultFeatures)
-            .features(CargoOpt::SomeFeatures(vec![
-                "feat1".into(),
-                "bitflags".into(),
-            ]))
+            .features(CargoOpt::SomeFeatures(features!["feat1", "bitflags",]))
     });
-    assert_eq!(sorted!(manual_features), vec!["bitflags", "feat1"]);
+    assert_eq!(sorted!(manual_features), features!["bitflags", "feat1"]);
 
     // Multiple SomeFeatures is same as one longer SomeFeatures
     let manual_features = build_features(|meta| {
         meta.features(CargoOpt::NoDefaultFeatures)
-            .features(CargoOpt::SomeFeatures(vec!["feat1".into()]))
-            .features(CargoOpt::SomeFeatures(vec!["feat2".into()]))
+            .features(CargoOpt::SomeFeatures(features!["feat1"]))
+            .features(CargoOpt::SomeFeatures(features!["feat2"]))
     });
-    assert_eq!(sorted!(manual_features), vec!["feat1", "feat2"]);
+    assert_eq!(sorted!(manual_features), features!["feat1", "feat2"]);
 
     // No features + All features == All features
     let all_features = build_features(|meta| {
@@ -632,12 +649,12 @@ fn advanced_feature_configuration() {
     });
     assert_eq!(
         sorted!(all_features),
-        vec!["bitflags", "default", "feat1", "feat2"]
+        features!["bitflags", "default", "feat1", "feat2"]
     );
 
     // The '--all-features' flag supersedes other feature flags
     let all_flag_variants = build_features(|meta| {
-        meta.features(CargoOpt::SomeFeatures(vec!["feat2".into()]))
+        meta.features(CargoOpt::SomeFeatures(features!["feat2"]))
             .features(CargoOpt::NoDefaultFeatures)
             .features(CargoOpt::AllFeatures)
     });
@@ -659,7 +676,7 @@ fn basic_workspace_root_package_exists() {
         .manifest_path("tests/basic_workspace/Cargo.toml")
         .exec()
         .unwrap();
-    assert_eq!(meta.root_package().unwrap().name, "ex_bin");
+    assert_eq!(meta.root_package().unwrap().name.as_str(), "ex_bin");
     // Now with no_deps, it should still work exactly the same
     let meta = MetadataCommand::new()
         .manifest_path("tests/basic_workspace/Cargo.toml")
@@ -669,7 +686,8 @@ fn basic_workspace_root_package_exists() {
     assert_eq!(
         meta.root_package()
             .expect("workspace root still exists when no_deps used")
-            .name,
+            .name
+            .as_str(),
         "ex_bin"
     );
 }

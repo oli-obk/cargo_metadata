@@ -17,7 +17,7 @@ fn metadata() {
     let metadata = MetadataCommand::new().no_deps().exec().unwrap();
 
     let this = &metadata.packages[0];
-    assert_eq!(this.name, "cargo_metadata");
+    assert_eq!(this.name.as_str(), "cargo_metadata");
     assert_eq!(this.targets.len(), 3);
 
     let lib = this
@@ -130,7 +130,7 @@ fn metadata_deps() {
         .expect("Did not find ourselves");
     let this = &metadata[this_id];
 
-    assert_eq!(this.name, "cargo_metadata");
+    assert_eq!(this.name.as_str(), "cargo_metadata");
 
     let workspace_packages = metadata.workspace_packages();
     assert_eq!(workspace_packages.len(), 1);
