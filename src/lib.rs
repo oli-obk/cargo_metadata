@@ -94,6 +94,7 @@ pub use camino;
 pub use semver;
 use semver::Version;
 
+use cargo_util_schemas::manifest::{FeatureName, PackageName};
 #[cfg(feature = "builder")]
 pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
@@ -292,7 +293,7 @@ pub struct Node {
 
     /// Features enabled on the crate
     #[serde(default)]
-    pub features: Vec<String>,
+    pub features: Vec<FeatureName>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -303,7 +304,7 @@ pub struct Node {
 pub struct NodeDep {
     /// The name of the dependency's library target.
     /// If the crate was renamed, it is the new name.
-    pub name: String,
+    pub name: String, // TODO(aatifsyed): should this be PackageName?
     /// Package ID (opaque unique identifier)
     pub pkg: PackageId,
     /// The kinds of dependencies.
@@ -347,7 +348,7 @@ pub struct DepKindInfo {
 pub struct Package {
     /// The [`name` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-name-field) as given in the `Cargo.toml`
     // (We say "given in" instead of "specified in" since the `name` key cannot be inherited from the workspace.)
-    pub name: String,
+    pub name: PackageName,
     /// The [`version` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-version-field) as specified in the `Cargo.toml`
     pub version: Version,
     /// The [`authors` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-authors-field) as specified in the `Cargo.toml`
@@ -357,7 +358,7 @@ pub struct Package {
     pub id: PackageId,
     /// The source of the package, e.g.
     /// crates.io or `None` for local projects.
-    pub source: Option<Source>,
+    pub source: Option<Source>, // TODO(aatifsyed): should this be RegistryName?
     /// The [`description` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-description-field) as specified in the `Cargo.toml`
     pub description: Option<String>,
     /// List of dependencies of this particular package
@@ -371,7 +372,7 @@ pub struct Package {
     /// Targets provided by the crate (lib, bin, example, test, ...)
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
-    pub features: BTreeMap<String, Vec<String>>,
+    pub features: BTreeMap<FeatureName, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: Utf8PathBuf,
     /// The [`categories` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-categories-field) as specified in the `Cargo.toml`
@@ -525,7 +526,7 @@ pub struct Target {
     #[serde(rename = "required-features")]
     /// This target is built only if these features are enabled.
     /// It doesn't apply to `lib` targets.
-    pub required_features: Vec<String>,
+    pub required_features: Vec<FeatureName>,
     /// Path to the main source file of the target
     pub src_path: Utf8PathBuf,
     /// Rust edition for this target
@@ -776,7 +777,7 @@ pub enum CargoOpt {
     /// Run cargo with `--no-default-features`
     NoDefaultFeatures,
     /// Run cargo with `--features <FEATURES>`
-    SomeFeatures(Vec<String>),
+    SomeFeatures(Vec<FeatureName>),
 }
 
 /// A builder for configurating `cargo metadata` invocation.
@@ -876,7 +877,9 @@ impl MetadataCommand {
     /// ```
     pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
         match features {
-            CargoOpt::SomeFeatures(features) => self.features.extend(features),
+            CargoOpt::SomeFeatures(features) => self
+                .features
+                .extend(features.into_iter().map(FeatureName::into_inner)),
             CargoOpt::NoDefaultFeatures => {
                 assert!(
                     !self.no_default_features,

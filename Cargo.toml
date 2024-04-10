@@ -12,6 +12,7 @@ rust-version = "1.56.0"
 [dependencies]
 camino = { version = "1.0.7", features = ["serde1"] }
 cargo-platform = "0.1.2"
+cargo-util-schemas = "0.2.0"
 derive_builder = { version = "0.12", optional = true }
 semver = { version = "1.0.7", features = ["serde"] }
 serde = { version = "1.0.136", features = ["derive"] }
