@@ -777,7 +777,7 @@ pub enum CargoOpt {
     /// Run cargo with `--no-default-features`
     NoDefaultFeatures,
     /// Run cargo with `--features <FEATURES>`
-    SomeFeatures(Vec<FeatureName>),
+    SomeFeatures(Vec<String>),
 }
 
 /// A builder for configurating `cargo metadata` invocation.
@@ -877,9 +877,7 @@ impl MetadataCommand {
     /// ```
     pub fn features(&mut self, features: CargoOpt) -> &mut MetadataCommand {
         match features {
-            CargoOpt::SomeFeatures(features) => self
-                .features
-                .extend(features.into_iter().map(FeatureName::into_inner)),
+            CargoOpt::SomeFeatures(features) => self.features.extend(features),
             CargoOpt::NoDefaultFeatures => {
                 assert!(
                     !self.no_default_features,

@@ -602,7 +602,7 @@ Evil proc macro was here!
 fn advanced_feature_configuration() {
     fn build_features<F: FnOnce(&mut MetadataCommand) -> &mut MetadataCommand>(
         func: F,
-    ) -> Vec<FeatureName> {
+    ) -> Vec<String> {
         let mut meta = MetadataCommand::new();
         let meta = meta.manifest_path("tests/all/Cargo.toml");
 
@@ -617,30 +617,37 @@ fn advanced_feature_configuration() {
             .find(|n| !n.features.is_empty())
             .unwrap();
 
-        all.features.clone()
+        all.features
+            .clone()
+            .into_iter()
+            .map(FeatureName::into_inner)
+            .collect()
     }
 
     // Default behavior; tested above
     let default_features = build_features(|meta| meta);
     assert_eq!(
         sorted!(default_features),
-        features!["bitflags", "default", "feat1"]
+        vec!["bitflags", "default", "feat1"]
     );
 
     // Manually specify the same default features
     let manual_features = build_features(|meta| {
         meta.features(CargoOpt::NoDefaultFeatures)
-            .features(CargoOpt::SomeFeatures(features!["feat1", "bitflags",]))
+            .features(CargoOpt::SomeFeatures(vec![
+                "feat1".into(),
+                "bitflags".into(),
+            ]))
     });
-    assert_eq!(sorted!(manual_features), features!["bitflags", "feat1"]);
+    assert_eq!(sorted!(manual_features), vec!["bitflags", "feat1"]);
 
     // Multiple SomeFeatures is same as one longer SomeFeatures
     let manual_features = build_features(|meta| {
         meta.features(CargoOpt::NoDefaultFeatures)
-            .features(CargoOpt::SomeFeatures(features!["feat1"]))
-            .features(CargoOpt::SomeFeatures(features!["feat2"]))
+            .features(CargoOpt::SomeFeatures(vec!["feat1".into()]))
+            .features(CargoOpt::SomeFeatures(vec!["feat2".into()]))
     });
-    assert_eq!(sorted!(manual_features), features!["feat1", "feat2"]);
+    assert_eq!(sorted!(manual_features), vec!["feat1", "feat2"]);
 
     // No features + All features == All features
     let all_features = build_features(|meta| {
@@ -649,12 +656,12 @@ fn advanced_feature_configuration() {
     });
     assert_eq!(
         sorted!(all_features),
-        features!["bitflags", "default", "feat1", "feat2"]
+        vec!["bitflags", "default", "feat1", "feat2"]
     );
 
     // The '--all-features' flag supersedes other feature flags
     let all_flag_variants = build_features(|meta| {
-        meta.features(CargoOpt::SomeFeatures(features!["feat2"]))
+        meta.features(CargoOpt::SomeFeatures(vec!["feat2".into()]))
             .features(CargoOpt::NoDefaultFeatures)
             .features(CargoOpt::AllFeatures)
     });
