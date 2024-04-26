@@ -7,7 +7,7 @@ description = "structured access to the output of `cargo metadata`"
 license = "MIT"
 readme = "README.md"
 edition = "2018"
-rust-version = "1.56.0"
+rust-version = "1.75.0"
 
 [dependencies]
 camino = { version = "1.0.7", features = ["serde1"] }
