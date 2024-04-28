@@ -1,3 +1,4 @@
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![deny(missing_docs)]
 //! Structured access to the output of `cargo metadata` and `cargo --message-format=json`.
 //! Usually used from within a `cargo-*` executable
