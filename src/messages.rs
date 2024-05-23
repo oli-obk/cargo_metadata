@@ -28,10 +28,11 @@ pub struct ArtifactProfile {
 }
 
 /// The kind of debug information included in the artifact.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 #[non_exhaustive]
 pub enum ArtifactDebuginfo {
     /// No debug information.
+    #[default]
     None,
     /// Line directives only.
     LineDirectivesOnly,
@@ -53,12 +54,6 @@ pub enum ArtifactDebuginfo {
     /// additional levels represented by a string that are not known by this
     /// version of `cargo_metadata`.
     UnknownString(String),
-}
-
-impl Default for ArtifactDebuginfo {
-    fn default() -> Self {
-        ArtifactDebuginfo::None
-    }
 }
 
 impl ser::Serialize for ArtifactDebuginfo {

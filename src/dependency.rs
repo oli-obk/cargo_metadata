@@ -8,10 +8,11 @@ use derive_builder::Builder;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
 
-#[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize, Default)]
 /// Dependencies can come in three kinds
 pub enum DependencyKind {
     #[serde(rename = "normal")]
+    #[default]
     /// The 'normal' kind
     Normal,
     #[serde(rename = "dev")]
@@ -23,12 +24,6 @@ pub enum DependencyKind {
     #[doc(hidden)]
     #[serde(other)]
     Unknown,
-}
-
-impl Default for DependencyKind {
-    fn default() -> DependencyKind {
-        DependencyKind::Normal
-    }
 }
 
 impl fmt::Display for DependencyKind {
