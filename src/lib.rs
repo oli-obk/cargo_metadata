@@ -304,7 +304,7 @@ pub struct Node {
 pub struct NodeDep {
     /// The name of the dependency's library target.
     /// If the crate was renamed, it is the new name.
-    pub name: String, // TODO(aatifsyed): should this be PackageName?
+    pub name: PackageName,
     /// Package ID (opaque unique identifier)
     pub pkg: PackageId,
     /// The kinds of dependencies.
@@ -358,7 +358,8 @@ pub struct Package {
     pub id: PackageId,
     /// The source of the package, e.g.
     /// crates.io or `None` for local projects.
-    pub source: Option<Source>, // TODO(aatifsyed): should this be RegistryName?
+    // Note that this is NOT the same as cargo_util_schemas::RegistryName
+    pub source: Option<Source>,
     /// The [`description` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-description-field) as specified in the `Cargo.toml`
     pub description: Option<String>,
     /// List of dependencies of this particular package

@@ -439,10 +439,10 @@ fn all_the_fields() {
         .unwrap();
     assert_eq!(all.dependencies.len(), 8);
     assert_eq!(all.deps.len(), 8);
-    let newname = all.deps.iter().find(|d| d.name == "newname").unwrap();
+    let newname = all.deps.iter().find(|d| &*d.name == "newname").unwrap();
     assert!(newname.pkg.to_string().contains("oldname"));
     // Note the underscore here.
-    let path_dep = all.deps.iter().find(|d| d.name == "path_dep").unwrap();
+    let path_dep = all.deps.iter().find(|d| &*d.name == "path_dep").unwrap();
     assert!(path_dep.pkg.to_string().contains("path-dep"));
     assert_eq!(path_dep.dep_kinds.len(), 1);
     let kind = &path_dep.dep_kinds[0];
@@ -452,7 +452,7 @@ fn all_the_fields() {
     let namedep = all
         .deps
         .iter()
-        .find(|d| d.name == "different_name")
+        .find(|d| &*d.name == "different_name")
         .unwrap();
     assert!(namedep.pkg.to_string().contains("namedep"));
     assert_eq!(
@@ -460,19 +460,19 @@ fn all_the_fields() {
         features!["bitflags", "default", "feat1"]
     );
 
-    let bdep = all.deps.iter().find(|d| d.name == "bdep").unwrap();
+    let bdep = all.deps.iter().find(|d| &*d.name == "bdep").unwrap();
     assert_eq!(bdep.dep_kinds.len(), 1);
     let kind = &bdep.dep_kinds[0];
     assert_eq!(kind.kind, DependencyKind::Build);
     assert!(kind.target.is_none());
 
-    let devdep = all.deps.iter().find(|d| d.name == "devdep").unwrap();
+    let devdep = all.deps.iter().find(|d| &*d.name == "devdep").unwrap();
     assert_eq!(devdep.dep_kinds.len(), 1);
     let kind = &devdep.dep_kinds[0];
     assert_eq!(kind.kind, DependencyKind::Development);
     assert!(kind.target.is_none());
 
-    let windep = all.deps.iter().find(|d| d.name == "windep").unwrap();
+    let windep = all.deps.iter().find(|d| &*d.name == "windep").unwrap();
     assert_eq!(windep.dep_kinds.len(), 1);
     let kind = &windep.dep_kinds[0];
     assert_eq!(kind.kind, DependencyKind::Normal);
