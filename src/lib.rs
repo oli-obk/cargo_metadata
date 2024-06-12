@@ -120,7 +120,7 @@ mod errors;
 #[cfg(feature = "unstable")]
 pub mod libtest;
 mod messages;
-
+mod unit_graph;
 /// An "opaque" identifier for a package.
 ///
 /// It is possible to inspect the `repr` field, if the need arises, but its
