@@ -216,7 +216,7 @@ impl Metadata {
 impl<'a> std::ops::Index<&'a PackageId> for Metadata {
     type Output = Package;
 
-    fn index(&self, idx: &'a PackageId) -> &Package {
+    fn index(&self, idx: &'a PackageId) -> &Self::Output {
         self.packages
             .iter()
             .find(|p| p.id == *idx)
@@ -270,6 +270,17 @@ pub struct Resolve {
 
     /// The crate for which the metadata was read.
     pub root: Option<PackageId>,
+}
+
+impl<'a> std::ops::Index<&'a PackageId> for Resolve {
+    type Output = Node;
+
+    fn index(&self, idx: &'a PackageId) -> &Self::Output {
+        self.nodes
+            .iter()
+            .find(|p| p.id == *idx)
+            .unwrap_or_else(|| panic!("no Node with this id: {:?}", idx))
+    }
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
