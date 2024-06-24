@@ -8,6 +8,11 @@ use derive_builder::Builder;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
 
+#[cfg(feature = "platform")]
+pub use cargo_platform::Platform;
+#[cfg(not(feature = "platform"))]
+pub type Platform = String;
+
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize, Default)]
 /// Dependencies can come in three kinds
 pub enum DependencyKind {
@@ -81,5 +86,3 @@ pub struct Dependency {
     /// Only produced on cargo 1.51+
     pub path: Option<Utf8PathBuf>,
 }
-
-pub use cargo_platform::Platform;
