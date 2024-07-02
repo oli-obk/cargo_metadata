@@ -562,44 +562,36 @@ pub struct Target {
     pub doc: bool,
 }
 
+macro_rules! methods_target_is_kind {
+    ($($name:ident => $kind:expr),*) => {
+        $(
+            /// Return true if this target is of kind `$kind`.
+            pub fn $name(&self) -> bool {
+                self.is_kind($kind)
+            }
+        )*
+    }
+}
+
 impl Target {
-    fn is_kind(&self, name: TargetKind) -> bool {
+    /// Return true if this target is of the given kind.
+    pub fn is_kind(&self, name: TargetKind) -> bool {
         self.kind.iter().any(|kind| kind == &name)
     }
 
-    /// Return true if this target is of kind "lib".
-    pub fn is_lib(&self) -> bool {
-        self.is_kind(TargetKind::Lib)
-    }
-
-    /// Return true if this target is of kind "bin".
-    pub fn is_bin(&self) -> bool {
-        self.is_kind(TargetKind::Bin)
-    }
-
-    /// Return true if this target is of kind "example".
-    pub fn is_example(&self) -> bool {
-        self.is_kind(TargetKind::Example)
-    }
-
-    /// Return true if this target is of kind "test".
-    pub fn is_test(&self) -> bool {
-        self.is_kind(TargetKind::Test)
-    }
-
-    /// Return true if this target is of kind "bench".
-    pub fn is_bench(&self) -> bool {
-        self.is_kind(TargetKind::Bench)
-    }
-
-    /// Return true if this target is of kind "custom-build".
-    pub fn is_custom_build(&self) -> bool {
-        self.is_kind(TargetKind::CustomBuild)
-    }
-
-    /// Return true if this target is of kind "proc-macro".
-    pub fn is_proc_macro(&self) -> bool {
-        self.is_kind(TargetKind::ProcMacro)
+    // Generate `is_*` methods for each `TargetKind`
+    methods_target_is_kind! {
+        is_lib => TargetKind::Lib,
+        is_bin => TargetKind::Bin,
+        is_example => TargetKind::Example,
+        is_test => TargetKind::Test,
+        is_bench => TargetKind::Bench,
+        is_custom_build => TargetKind::CustomBuild,
+        is_proc_macro => TargetKind::ProcMacro,
+        is_cdylib => TargetKind::CDyLib,
+        is_dylib => TargetKind::DyLib,
+        is_rlib => TargetKind::RLib,
+        is_staticlib => TargetKind::StaticLib
     }
 }
 
