@@ -158,6 +158,7 @@ pub struct Metadata {
     /// The list of default workspace members
     ///
     /// This not available if running with a version of Cargo older than 1.71.
+    #[serde(default = "empty_workspace_default_members")]
     #[serde(skip_serializing_if = "workspace_default_members_is_missing")]
     pub workspace_default_members: WorkspaceDefaultMembers,
     /// Dependencies graph
@@ -257,6 +258,14 @@ pub fn workspace_default_members_is_missing(
     workspace_default_members: &WorkspaceDefaultMembers,
 ) -> bool {
     workspace_default_members.0.is_none()
+}
+
+/// A default value when Metadata is deserialized with WorkspaceDefaultMembers skipped.
+///
+/// We use this function for now because WorkspaceDefaultMembers doesn't implement Default.
+#[doc(hidden)]
+pub fn empty_workspace_default_members() -> WorkspaceDefaultMembers {
+    WorkspaceDefaultMembers(None)
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
