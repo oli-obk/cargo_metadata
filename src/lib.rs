@@ -477,6 +477,23 @@ pub struct Package {
     pub rust_version: Option<Version>,
 }
 
+#[cfg(feature = "builder")]
+impl PackageBuilder {
+    /// Construct a new `PackageBuilder` with all required fields.
+    pub fn new(
+        name: impl Into<String>,
+        version: impl Into<Version>,
+        id: impl Into<PackageId>,
+        path: impl Into<Utf8PathBuf>,
+    ) -> Self {
+        Self::default()
+            .name(name)
+            .version(version)
+            .id(id)
+            .manifest_path(path)
+    }
+}
+
 impl Package {
     /// Full path to the license file if one is present in the manifest
     pub fn license_file(&self) -> Option<Utf8PathBuf> {
