@@ -363,46 +363,60 @@ pub struct Package {
     pub version: Version,
     /// The [`authors` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-authors-field) as specified in the `Cargo.toml`
     #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub authors: Vec<String>,
     /// An opaque identifier for a package
     pub id: PackageId,
     /// The source of the package, e.g.
     /// crates.io or `None` for local projects.
+    #[cfg_attr(feature = "builder", builder(default))]
     pub source: Option<Source>,
     /// The [`description` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-description-field) as specified in the `Cargo.toml`
+    #[cfg_attr(feature = "builder", builder(default))]
     pub description: Option<String>,
     /// List of dependencies of this particular package
+    #[cfg_attr(feature = "builder", builder(default))]
     pub dependencies: Vec<Dependency>,
     /// The [`license` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields) as specified in the `Cargo.toml`
+    #[cfg_attr(feature = "builder", builder(default))]
     pub license: Option<String>,
     /// The [`license-file` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-license-and-license-file-fields) as specified in the `Cargo.toml`.
     /// If the package is using a nonstandard license, this key may be specified instead of
     /// `license`, and must point to a file relative to the manifest.
+    #[cfg_attr(feature = "builder", builder(default))]
     pub license_file: Option<Utf8PathBuf>,
     /// Targets provided by the crate (lib, bin, example, test, ...)
+    #[cfg_attr(feature = "builder", builder(default))]
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
+    #[cfg_attr(feature = "builder", builder(default))]
     pub features: BTreeMap<String, Vec<String>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: Utf8PathBuf,
     /// The [`categories` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-categories-field) as specified in the `Cargo.toml`
     #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub categories: Vec<String>,
     /// The [`keywords` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-keywords-field) as specified in the `Cargo.toml`
     #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub keywords: Vec<String>,
     /// The [`readme` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-readme-field) as specified in the `Cargo.toml`
+    #[cfg_attr(feature = "builder", builder(default))]
     pub readme: Option<Utf8PathBuf>,
     /// The [`repository` URL](https://doc.rust-lang.org/cargo/reference/manifest.html#the-repository-field) as specified in the `Cargo.toml`
     // can't use `url::Url` because that requires a more recent stable compiler
+    #[cfg_attr(feature = "builder", builder(default))]
     pub repository: Option<String>,
     /// The [`homepage` URL](https://doc.rust-lang.org/cargo/reference/manifest.html#the-homepage-field) as specified in the `Cargo.toml`.
     ///
     /// On versions of cargo before 1.49, this will always be [`None`].
+    #[cfg_attr(feature = "builder", builder(default))]
     pub homepage: Option<String>,
     /// The [`documentation` URL](https://doc.rust-lang.org/cargo/reference/manifest.html#the-documentation-field) as specified in the `Cargo.toml`.
     ///
     /// On versions of cargo before 1.49, this will always be [`None`].
+    #[cfg_attr(feature = "builder", builder(default))]
     pub documentation: Option<String>,
     /// The default Rust edition for the package (either what's specified in the [`edition` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-edition-field)
     /// or defaulting to [`Edition::E2015`]).
@@ -410,6 +424,7 @@ pub struct Package {
     /// Beware that individual targets may specify their own edition in
     /// [`Target::edition`].
     #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub edition: Edition,
     /// Contents of the free form [`package.metadata` section](https://doc.rust-lang.org/cargo/reference/manifest.html#the-metadata-table).
     ///
@@ -433,20 +448,24 @@ pub struct Package {
     ///
     /// ```
     #[serde(default, skip_serializing_if = "is_null")]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub metadata: serde_json::Value,
     /// The name of a native library the package is linking to.
+    #[cfg_attr(feature = "builder", builder(default))]
     pub links: Option<String>,
     /// List of registries to which this package may be published (derived from the [`publish` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-publish-field)).
     ///
     /// Publishing is unrestricted if `None`, and forbidden if the `Vec` is empty.
     ///
     /// This is always `None` if running with a version of Cargo older than 1.39.
+    #[cfg_attr(feature = "builder", builder(default))]
     pub publish: Option<Vec<String>>,
     /// The [`default-run` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-default-run-field) as given in the `Cargo.toml`
     // (We say "given in" instead of "specified in" since the `default-run` key cannot be inherited from the workspace.)
     /// The default binary to run by `cargo run`.
     ///
     /// This is always `None` if running with a version of Cargo older than 1.55.
+    #[cfg_attr(feature = "builder", builder(default))]
     pub default_run: Option<String>,
     /// The [`rust-version` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field) as specified in the `Cargo.toml`.
     /// The minimum supported Rust version of this package.
@@ -454,7 +473,25 @@ pub struct Package {
     /// This is always `None` if running with a version of Cargo older than 1.58.
     #[serde(default)]
     #[serde(deserialize_with = "deserialize_rust_version")]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub rust_version: Option<Version>,
+}
+
+#[cfg(feature = "builder")]
+impl PackageBuilder {
+    /// Construct a new `PackageBuilder` with all required fields.
+    pub fn new(
+        name: impl Into<String>,
+        version: impl Into<Version>,
+        id: impl Into<PackageId>,
+        path: impl Into<Utf8PathBuf>,
+    ) -> Self {
+        Self::default()
+            .name(name)
+            .version(version)
+            .id(id)
+            .manifest_path(path)
+    }
 }
 
 impl Package {
