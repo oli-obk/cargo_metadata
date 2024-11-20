@@ -817,7 +817,7 @@ pub enum CargoOpt {
     SomeFeatures(Vec<String>),
 }
 
-/// A builder for configurating `cargo metadata` invocation.
+/// A builder for configuring `cargo metadata` invocation.
 #[derive(Debug, Clone, Default)]
 pub struct MetadataCommand {
     /// Path to `cargo` executable.  If not set, this will use the
