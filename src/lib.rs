@@ -127,7 +127,7 @@ mod messages;
 /// precise format is an implementation detail and is subject to change.
 ///
 /// `Metadata` can be indexed by `PackageId`.
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[serde(transparent)]
 pub struct PackageId {
     /// The underlying string representation of id.
@@ -145,7 +145,7 @@ fn is_null(value: &serde_json::Value) -> bool {
     matches!(value, serde_json::Value::Null)
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
@@ -224,7 +224,7 @@ impl<'a> std::ops::Index<&'a PackageId> for Metadata {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 #[serde(transparent)]
 /// A list of default workspace members.
 ///
@@ -259,7 +259,7 @@ pub fn workspace_default_members_is_missing(
     workspace_default_members.0.is_none()
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
@@ -283,7 +283,7 @@ impl<'a> std::ops::Index<&'a PackageId> for Resolve {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
@@ -306,7 +306,7 @@ pub struct Node {
     pub features: Vec<String>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
@@ -324,7 +324,7 @@ pub struct NodeDep {
     pub dep_kinds: Vec<DepKindInfo>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
@@ -347,7 +347,7 @@ pub struct DepKindInfo {
     pub target: Option<dependency::Platform>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
 #[cfg_attr(feature = "builder", builder(pattern = "owned", setter(into)))]
@@ -520,7 +520,7 @@ impl Package {
 ///
 /// It is possible to inspect the `repr` field, if the need arises, but its
 /// precise format is an implementation detail and is subject to change.
-#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[serde(transparent)]
 pub struct Source {
     /// The underlying string representation of a source.
@@ -752,7 +752,7 @@ impl From<&str> for CrateType {
 /// The Rust edition
 ///
 /// As of writing this comment rust editions 2024, 2027 and 2030 are not actually a thing yet but are parsed nonetheless for future proofing.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[non_exhaustive]
 pub enum Edition {
     /// Edition 2015
