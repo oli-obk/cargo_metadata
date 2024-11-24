@@ -10,7 +10,9 @@
 
 ### Changed
 
-- n/a
+- Updated dependencies:
+  - `thiserror` from `1.0.31` to `2.0.3`
+  - `derive_builder` from `0.12` to `0.20`
 
 ### Removed
 
