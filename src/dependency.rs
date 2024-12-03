@@ -8,6 +8,8 @@ use derive_builder::Builder;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
 
+use crate::Source;
+
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize, Default)]
 /// Dependencies can come in three kinds
 pub enum DependencyKind {
@@ -83,5 +85,3 @@ pub struct Dependency {
 }
 
 pub use cargo_platform::Platform;
-
-use crate::Source;
