@@ -1,13 +1,13 @@
 [package]
 name = "cargo_metadata"
-version = "0.19.0"
+version = "0.19.1"
 authors = ["Oliver Schneider <git-spam-no-reply9815368754983@oli-obk.de>"]
 repository = "https://github.com/oli-obk/cargo_metadata"
 description = "structured access to the output of `cargo metadata`"
 license = "MIT"
 readme = "README.md"
 edition = "2021"
-rust-version = "1.73.0"
+rust-version = "1.78.0"
 
 [dependencies]
 camino = { version = "1.0.7", features = ["serde1"] }
