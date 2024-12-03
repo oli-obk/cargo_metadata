@@ -88,7 +88,7 @@ use std::fmt;
 use std::hash::Hash;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::str::from_utf8;
+use std::str::{from_utf8, FromStr};
 
 pub use camino;
 pub use semver;
@@ -699,6 +699,33 @@ impl From<&str> for TargetKind {
     }
 }
 
+impl FromStr for TargetKind {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(TargetKind::from(s))
+    }
+}
+
+impl fmt::Display for TargetKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Bench => "bench".fmt(f),
+            Self::Bin => "bin".fmt(f),
+            Self::CustomBuild => "custom-build".fmt(f),
+            Self::CDyLib => "cdylib".fmt(f),
+            Self::DyLib => "dylib".fmt(f),
+            Self::Example => "example".fmt(f),
+            Self::Lib => "lib".fmt(f),
+            Self::ProcMacro => "proc-macro".fmt(f),
+            Self::RLib => "rlib".fmt(f),
+            Self::StaticLib => "staticlib".fmt(f),
+            Self::Test => "test".fmt(f),
+            Self::Unknown(x) => x.fmt(f),
+        }
+    }
+}
+
 /// Similar to `kind`, but only reports the
 /// [Cargo crate types](https://doc.rust-lang.org/cargo/reference/cargo-targets.html#the-crate-type-field):
 /// `bin`, `lib`, `rlib`, `dylib`, `cdylib`, `staticlib`, `proc-macro`.
@@ -745,6 +772,29 @@ impl From<&str> for CrateType {
             "staticlib" => CrateType::StaticLib,
             "proc-macro" => CrateType::ProcMacro,
             x => CrateType::Unknown(x.to_string()),
+        }
+    }
+}
+
+impl FromStr for CrateType {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        Ok(CrateType::from(s))
+    }
+}
+
+impl fmt::Display for CrateType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Bin => "bin".fmt(f),
+            Self::CDyLib => "cdylib".fmt(f),
+            Self::DyLib => "dylib".fmt(f),
+            Self::Lib => "lib".fmt(f),
+            Self::ProcMacro => "proc-macro".fmt(f),
+            Self::RLib => "rlib".fmt(f),
+            Self::StaticLib => "staticlib".fmt(f),
+            Self::Unknown(x) => x.fmt(f),
         }
     }
 }
