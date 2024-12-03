@@ -158,7 +158,7 @@ pub struct Metadata {
     /// The list of default workspace members
     ///
     /// This not available if running with a version of Cargo older than 1.71.
-    #[serde(skip_serializing_if = "workspace_default_members_is_missing")]
+    #[serde(default, skip_serializing_if = "workspace_default_members_is_missing")]
     pub workspace_default_members: WorkspaceDefaultMembers,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
@@ -224,7 +224,7 @@ impl<'a> std::ops::Index<&'a PackageId> for Metadata {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Hash, Default)]
 #[serde(transparent)]
 /// A list of default workspace members.
 ///
