@@ -51,7 +51,7 @@ pub struct Dependency {
     /// Name as given in the `Cargo.toml`
     pub name: String,
     /// The source of dependency
-    pub source: Option<String>,
+    pub source: Option<Source>,
     /// The required version
     pub req: VersionReq,
     /// The kind of dependency this is
@@ -83,3 +83,5 @@ pub struct Dependency {
 }
 
 pub use cargo_platform::Platform;
+
+use crate::Source;
