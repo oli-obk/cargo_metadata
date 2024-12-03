@@ -80,7 +80,7 @@ impl<'de> de::Deserialize<'de> for ArtifactDebuginfo {
     {
         struct Visitor;
 
-        impl<'de> de::Visitor<'de> for Visitor {
+        impl de::Visitor<'_> for Visitor {
             type Value = ArtifactDebuginfo;
 
             fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
