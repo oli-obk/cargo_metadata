@@ -82,4 +82,11 @@ pub struct Dependency {
     pub path: Option<Utf8PathBuf>,
 }
 
+impl Dependency {
+    /// The dependency's possibly renamed name.
+    pub fn renamed(&self) -> &str {
+        self.rename.as_deref().unwrap_or(&self.name)
+    }
+}
+
 pub use cargo_platform::Platform;

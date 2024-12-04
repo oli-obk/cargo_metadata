@@ -49,4 +49,16 @@ pub enum Error {
     /// The output did not contain any json
     #[error("could not find any json in the output of `cargo metadata`")]
     NoJson,
+
+    /// WIP.
+    #[error("could not collect features")]
+    Features(FeaturesError),
+}
+
+/// WIP.
+#[derive(Debug, thiserror::Error)]
+pub enum FeaturesError {
+    /// WIP.
+    #[error("Package not found {0}")]
+    PackageNotFound(String),
 }

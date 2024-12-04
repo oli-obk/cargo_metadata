@@ -93,12 +93,13 @@ use std::str::{from_utf8, FromStr};
 pub use camino;
 pub use semver;
 use semver::Version;
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[cfg(feature = "builder")]
 pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
 use diagnostic::Diagnostic;
-pub use errors::{Error, Result};
+pub use errors::{Error, FeaturesError, Result};
 #[cfg(feature = "unstable")]
 pub use libtest::TestMessage;
 #[allow(deprecated)]
@@ -112,7 +113,7 @@ pub use messages::{
     ArtifactBuilder, ArtifactProfileBuilder, BuildFinishedBuilder, BuildScriptBuilder,
     CompilerMessageBuilder,
 };
-use serde::{Deserialize, Deserializer, Serialize};
+pub use visit::{FeatureVisitor, FeatureWalker};
 
 mod dependency;
 pub mod diagnostic;
@@ -120,6 +121,7 @@ mod errors;
 #[cfg(feature = "unstable")]
 pub mod libtest;
 mod messages;
+mod visit;
 
 /// An "opaque" identifier for a package.
 ///
@@ -210,6 +212,11 @@ impl Metadata {
             .iter()
             .filter(|&p| self.workspace_default_members.contains(&p.id))
             .collect()
+    }
+
+    /// Returns the package for a given name.
+    pub fn get_package(&self, name: &str) -> Option<&Package> {
+        self.packages.iter().find(|&package| package.name == name)
     }
 }
 
@@ -347,6 +354,95 @@ pub struct DepKindInfo {
     pub target: Option<dependency::Platform>,
 }
 
+// Implementation copied from `cargo` itself:
+// https://docs.rs/cargo/latest/cargo/core/summary/enum.FeatureValue.html
+/// The types of a feature and the dependencies it can have.
+#[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub enum FeatureValue {
+    /// A feature enabling another feature.
+    Feature(String),
+    /// A feature enabling a dependency with `dep:dep_name` syntax.
+    Dep {
+        /// The dependency's name.
+        dep_name: String,
+    },
+    /// A feature enabling a feature on a dependency with `crate_name/feat_name` syntax.
+    DepFeature {
+        /// The dependency's name.
+        dep_name: String,
+        /// The dependency's feature's name.
+        dep_feature: String,
+        /// If `true`, indicates the `?` syntax is used, which means this will
+        /// not automatically enable the dependency unless the dependency is
+        /// activated through some other means.
+        weak: bool,
+    },
+}
+
+impl FeatureValue {
+    // Implementation copied from `cargo` itself:
+    // https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html#tymethod.fmt
+    /// Creates a feature from its corresponding string representation.
+    pub fn new(repr: &str) -> Self {
+        match repr.split_once('/') {
+            Some((dep, dep_feat)) => {
+                let dep_name = dep.strip_suffix('?');
+                FeatureValue::DepFeature {
+                    dep_name: dep_name.unwrap_or(dep).to_owned(),
+                    dep_feature: dep_feat.to_owned(),
+                    weak: dep_name.is_some(),
+                }
+            }
+            None => {
+                if let Some(dep_name) = repr.strip_prefix("dep:") {
+                    FeatureValue::Dep {
+                        dep_name: dep_name.to_owned(),
+                    }
+                } else {
+                    FeatureValue::Feature(repr.to_owned())
+                }
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for FeatureValue {
+    // Implementation copied from `cargo` itself:
+    // https://docs.rs/cargo/latest/cargo/core/summary/enum.FeatureValue.html#method.new
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Feature(feat) => write!(f, "{feat}"),
+            Self::Dep { dep_name } => write!(f, "dep:{dep_name}"),
+            Self::DepFeature {
+                dep_name,
+                dep_feature,
+                weak,
+            } => {
+                let weak = if *weak { "?" } else { "" };
+                write!(f, "{dep_name}{weak}/{dep_feature}")
+            }
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for FeatureValue {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(Self::new(&String::deserialize(deserializer)?))
+    }
+}
+
+impl Serialize for FeatureValue {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "builder", derive(Builder))]
 #[non_exhaustive]
@@ -390,7 +486,7 @@ pub struct Package {
     pub targets: Vec<Target>,
     /// Features provided by the crate, mapped to the features required by that feature.
     #[cfg_attr(feature = "builder", builder(default))]
-    pub features: BTreeMap<String, Vec<String>>,
+    pub features: BTreeMap<String, Vec<FeatureValue>>,
     /// Path containing the `Cargo.toml`
     pub manifest_path: Utf8PathBuf,
     /// The [`categories` field](https://doc.rust-lang.org/cargo/reference/manifest.html#the-categories-field) as specified in the `Cargo.toml`
@@ -513,6 +609,13 @@ impl Package {
                 .unwrap_or(&self.manifest_path)
                 .join(file)
         })
+    }
+
+    /// Returns the dependency for a given name, taking renames into consideration.
+    pub fn get_dependency(&self, name: &str) -> Option<&Dependency> {
+        self.dependencies
+            .iter()
+            .find(|&dependency| dependency.renamed() == name)
     }
 }
 

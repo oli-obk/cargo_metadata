@@ -18,7 +18,7 @@ fn metadata() {
 
     let this = &metadata.packages[0];
     assert_eq!(this.name, "cargo_metadata");
-    assert_eq!(this.targets.len(), 3);
+    assert_eq!(this.targets.len(), 4);
 
     let lib = this
         .targets

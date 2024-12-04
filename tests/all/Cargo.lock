@@ -12,6 +12,7 @@ dependencies = [
  "featdep",
  "namedep",
  "oldname",
+ "optdep",
  "path-dep",
  "windep",
 ]
@@ -40,6 +41,10 @@ version = "0.1.0"
 
 [[package]]
 name = "oldname"
+version = "0.1.0"
+
+[[package]]
+name = "optdep"
 version = "0.1.0"
 
 [[package]]
