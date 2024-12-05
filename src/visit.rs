@@ -9,18 +9,27 @@ pub trait FeatureVisitor {
 
     /// Visits a missing dependency.
     ///
+    /// This error should not happen for valid manifests,
+    /// but can happen when reading `Metadata` from unchecked JSON.
+    ///
     /// Return `Ok(())` to continue the walk, or `Err(…)` to abort it.
     fn visit_missing_dependency(&mut self, dep_name: &str) -> Result<(), Self::Error>;
 
     /// Visits a missing package.
     ///
+    /// This is usually caused by the package being an optional dependency and
+    /// not having been enabled by the features that were passed to `MetadataCommand`,
+    /// but it can also happen when reading `Metadata` from unchecked JSON.
+    ///
     /// Return `Ok(())` to continue the walk, or `Err(…)` to abort it.
     fn visit_missing_package(&mut self, pkg_name: &str) -> Result<(), Self::Error>;
 
-    /// Visits a feature that's enabling another feature.
+    /// Visits a feature on `package` that's enabling another feature `feature_name`.
     ///
-    /// Return `Ok(<walk>)` where `<walk>` indicates whether or not to walk the feature's downstream dependencies,
-    /// or `Err(…)` to abort the walk.
+    /// Corresponds to features with `feature_name` syntax.
+    ///
+    /// Return `Ok(<walk>)` where `<walk>` indicates whether or not to walk
+    /// the feature's downstream dependencies, or `Err(…)` to abort the walk.
     fn visit_feature(
         &mut self,
         package: &Package,
@@ -30,19 +39,24 @@ pub trait FeatureVisitor {
         Ok(true)
     }
 
-    /// Visits a feature that's enabling a dependency with `dep:dep_name` syntax.
+    /// Visits a feature on `package` that's enabling its dependency `dep_name`.
     ///
-    /// Return `Ok(<walk>)` where `<walk>` indicates whether or not to walk the feature's downstream dependencies,
-    /// or `Err(…)` to abort the walk.
+    /// Corresponds to features with `dep:dep_name` syntax.
+    ///
+    /// Return `Ok(<walk>)` where `<walk>` indicates whether or not to walk
+    /// the feature's downstream dependencies, or `Err(…)` to abort the walk.
     fn visit_dep(&mut self, package: &Package, dep_name: &str) -> Result<bool, Self::Error> {
         let (..) = (package, dep_name);
         Ok(true)
     }
 
-    /// Visits a feature that's enabling a feature on a dependency with `crate_name/feat_name` syntax.
+    /// Visits a feature on `package` that's enabling feature `dep_feature`
+    /// on its dependency `dep_name`.
     ///
-    /// Return `Ok(<walk>)` where `<walk>` indicates whether or not to walk the feature's downstream dependencies,
-    /// or `Err(…)` to abort the walk.
+    /// Corresponds to features with `dep_name/dep_feature`/`dep_name?/dep_feature` syntax.
+    ///
+    /// Return `Ok(<walk>)` where `<walk>` indicates whether or not to walk
+    /// the feature's downstream dependencies, or `Err(…)` to abort the walk.
     fn visit_dep_feature(
         &mut self,
         package: &Package,
