@@ -6,7 +6,7 @@ extern crate serde_json;
 use camino::Utf8PathBuf;
 use cargo_metadata::{
     workspace_default_members_is_missing, ArtifactDebuginfo, CargoOpt, DependencyKind, Edition,
-    Message, Metadata, MetadataCommand,
+    FeatureValue, Message, Metadata, MetadataCommand,
 };
 
 /// Output from oldest version ever supported (1.24).
@@ -232,7 +232,7 @@ fn all_the_fields() {
         );
     }
 
-    assert_eq!(all.dependencies.len(), 8);
+    assert_eq!(all.dependencies.len(), 9);
     let bitflags = all
         .dependencies
         .iter()
@@ -352,14 +352,41 @@ fn all_the_fields() {
 
     if ver >= semver::Version::parse("1.60.0").unwrap() {
         // 1.60 now reports optional dependencies within the features table
-        assert_eq!(all.features.len(), 4);
-        assert_eq!(all.features["bitflags"], vec!["dep:bitflags"]);
+        assert_eq!(all.features.len(), 7);
+        assert_eq!(
+            all.features["bitflags"],
+            vec![FeatureValue::Dep {
+                dep_name: "bitflags".to_owned()
+            }]
+        );
     } else {
-        assert_eq!(all.features.len(), 3);
+        assert_eq!(all.features.len(), 6);
     }
     assert_eq!(all.features["feat1"].len(), 0);
     assert_eq!(all.features["feat2"].len(), 0);
-    assert_eq!(sorted!(all.features["default"]), vec!["bitflags", "feat1"]);
+    assert_eq!(
+        sorted!(all.features["default"]),
+        vec![
+            FeatureValue::Feature("bitflags".to_owned()),
+            FeatureValue::Feature("feat1".to_owned()),
+        ]
+    );
+    assert_eq!(
+        sorted!(all.features["opt-feat-strong"]),
+        vec![FeatureValue::DepFeature {
+            dep_name: "optdep".to_owned(),
+            dep_feature: "feat".to_owned(),
+            weak: false
+        },]
+    );
+    assert_eq!(
+        sorted!(all.features["opt-feat-weak"]),
+        vec![FeatureValue::DepFeature {
+            dep_name: "optdep".to_owned(),
+            dep_feature: "feat".to_owned(),
+            weak: true
+        },]
+    );
 
     assert!(all.manifest_path.ends_with("all/Cargo.toml"));
     assert_eq!(all.categories, vec!["command-line-utilities"]);
@@ -632,7 +659,15 @@ fn advanced_feature_configuration() {
     });
     assert_eq!(
         sorted!(all_features),
-        vec!["bitflags", "default", "feat1", "feat2"]
+        vec![
+            "bitflags",
+            "default",
+            "feat1",
+            "feat2",
+            "opt-feat-strong",
+            "opt-feat-weak",
+            "optdep"
+        ]
     );
 
     // The '--all-features' flag supersedes other feature flags
@@ -642,6 +677,35 @@ fn advanced_feature_configuration() {
             .features(CargoOpt::AllFeatures)
     });
     assert_eq!(sorted!(all_flag_variants), sorted!(all_features));
+}
+
+#[test]
+fn features() {
+    let mut cmd = MetadataCommand::new();
+    let cmd = cmd.manifest_path("tests/all/Cargo.toml");
+    let meta = cmd.exec().unwrap();
+
+    let package = meta.root_package().unwrap();
+    let features: Vec<&String> = package.features.keys().collect();
+    assert_eq!(
+        features,
+        vec![
+            "bitflags",
+            "default",
+            "feat1",
+            "feat2",
+            "opt-feat-strong",
+            "opt-feat-weak",
+            "optdep",
+        ]
+    );
+
+    assert_eq!(
+        package.features["bitflags"],
+        vec![FeatureValue::Dep {
+            dep_name: "bitflags".to_owned()
+        }]
+    );
 }
 
 #[test]
