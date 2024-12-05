@@ -615,7 +615,7 @@ impl Package {
     pub fn get_dependency(&self, name: &str) -> Option<&Dependency> {
         self.dependencies
             .iter()
-            .find(|&dependency| dependency.renamed() == name)
+            .find(|&dependency| &dependency.name == name)
     }
 }
 
