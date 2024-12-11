@@ -157,8 +157,11 @@ pub struct Metadata {
     pub workspace_members: Vec<PackageId>,
     /// The list of default workspace members
     ///
-    /// This not available if running with a version of Cargo older than 1.71.
-    #[serde(default, skip_serializing_if = "workspace_default_members_is_missing")]
+    /// This is not available if running with a version of Cargo older than 1.71.
+    ///
+    /// You can check whether it is available or missing using respectively
+    /// [`WorkspaceDefaultMembers::is_available`] and [`WorkspaceDefaultMembers::is_missing`].
+    #[serde(default, skip_serializing_if = "WorkspaceDefaultMembers::is_missing")]
     pub workspace_default_members: WorkspaceDefaultMembers,
     /// Dependencies graph
     pub resolve: Option<Resolve>,
@@ -237,6 +240,32 @@ impl<'a> std::ops::Index<&'a PackageId> for Metadata {
 /// Dereferencing when running an older version of Cargo will panic.
 pub struct WorkspaceDefaultMembers(Option<Vec<PackageId>>);
 
+impl WorkspaceDefaultMembers {
+    /// Return `true` if the list of workspace default members is supported by
+    /// the called cargo-metadata version and `false` otherwise.
+    ///
+    /// In particular useful when parsing the output of `cargo-metadata` for
+    /// versions of Cargo < 1.71, as dereferencing [`WorkspaceDefaultMembers`]
+    /// for these versions will panic.
+    ///
+    /// Opposite of [`WorkspaceDefaultMembers::is_missing`].
+    pub fn is_available(&self) -> bool {
+        self.0.is_some()
+    }
+
+    /// Return `false` if the list of workspace default members is supported by
+    /// the called cargo-metadata version and `true` otherwise.
+    ///
+    /// In particular useful when parsing the output of `cargo-metadata` for
+    /// versions of Cargo < 1.71, as dereferencing [`WorkspaceDefaultMembers`]
+    /// for these versions will panic.
+    ///
+    /// Opposite of [`WorkspaceDefaultMembers::is_available`].
+    pub fn is_missing(&self) -> bool {
+        self.0.is_none()
+    }
+}
+
 impl core::ops::Deref for WorkspaceDefaultMembers {
     type Target = [PackageId];
 
@@ -245,18 +274,6 @@ impl core::ops::Deref for WorkspaceDefaultMembers {
             .as_ref()
             .expect("WorkspaceDefaultMembers should only be dereferenced on Cargo versions >= 1.71")
     }
-}
-
-/// Return true if a valid value for [`WorkspaceDefaultMembers`] is missing, and
-/// dereferencing it would panic.
-///
-/// Internal helper for `skip_serializing_if` and test code. Might be removed in
-/// the future.
-#[doc(hidden)]
-pub fn workspace_default_members_is_missing(
-    workspace_default_members: &WorkspaceDefaultMembers,
-) -> bool {
-    workspace_default_members.0.is_none()
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, PartialEq, Eq, Hash)]

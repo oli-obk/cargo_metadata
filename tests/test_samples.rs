@@ -5,8 +5,7 @@ extern crate serde_json;
 
 use camino::Utf8PathBuf;
 use cargo_metadata::{
-    workspace_default_members_is_missing, ArtifactDebuginfo, CargoOpt, DependencyKind, Edition,
-    Message, Metadata, MetadataCommand,
+    ArtifactDebuginfo, CargoOpt, DependencyKind, Edition, Message, Metadata, MetadataCommand,
 };
 
 /// Output from oldest version ever supported (1.24).
@@ -125,9 +124,9 @@ fn old_minimal() {
     assert_eq!(meta.workspace_metadata, serde_json::Value::Null);
     assert_eq!(meta.target_directory, "/foo/target");
 
-    assert!(workspace_default_members_is_missing(
-        &meta.workspace_default_members
-    ));
+    assert!(!meta.workspace_default_members.is_available());
+    assert!(meta.workspace_default_members.is_missing());
+
     let serialized = serde_json::to_value(meta).unwrap();
     assert!(!serialized
         .as_object()
@@ -722,6 +721,159 @@ fn debuginfo_variants() {
 fn missing_workspace_default_members() {
     let meta: Metadata = serde_json::from_str(JSON_OLD_MINIMAL).unwrap();
     let _ = &*meta.workspace_default_members;
+}
+
+#[test]
+fn workspace_default_members_is_available() {
+    // generated with cargo +1.71.0 metadata --format-version 1
+    let json = r#"
+{
+  "packages": [
+    {
+      "name": "basic",
+      "version": "0.1.0",
+      "id": "basic 0.1.0 (path+file:///example)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "basic",
+          "src_path": "/example/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/example/Cargo.toml",
+      "metadata": null,
+      "publish": null,
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    }
+  ],
+  "workspace_members": [
+    "basic 0.1.0 (path+file:///example)"
+  ],
+  "workspace_default_members": [
+    "basic 0.1.0 (path+file:///example)"
+  ],
+  "resolve": {
+    "nodes": [
+      {
+        "id": "basic 0.1.0 (path+file:///example)",
+        "dependencies": [],
+        "deps": [],
+        "features": []
+      }
+    ],
+    "root": "basic 0.1.0 (path+file:///example)"
+  },
+  "target_directory": "/example/target",
+  "version": 1,
+  "workspace_root": "/example",
+  "metadata": null
+}
+"#;
+
+    let meta: Metadata = serde_json::from_str(json).unwrap();
+
+    assert!(meta.workspace_default_members.is_available());
+    assert!(!meta.workspace_default_members.is_missing());
+}
+
+#[test]
+fn workspace_default_members_is_missing() {
+    // generated with cargo +1.70.0 metadata --format-version 1
+    let json = r#"
+{
+  "packages": [
+    {
+      "name": "basic",
+      "version": "0.1.0",
+      "id": "basic 0.1.0 (path+file:///example)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "basic",
+          "src_path": "/example/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/example/Cargo.toml",
+      "metadata": null,
+      "publish": null,
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    }
+  ],
+  "workspace_members": [
+    "basic 0.1.0 (path+file:///example)"
+  ],
+  "resolve": {
+    "nodes": [
+      {
+        "id": "basic 0.1.0 (path+file:///example)",
+        "dependencies": [],
+        "deps": [],
+        "features": []
+      }
+    ],
+    "root": "basic 0.1.0 (path+file:///example)"
+  },
+  "target_directory": "/example/target",
+  "version": 1,
+  "workspace_root": "/example",
+  "metadata": null
+}
+"#;
+
+    let meta: Metadata = serde_json::from_str(json).unwrap();
+
+    assert!(!meta.workspace_default_members.is_available());
+    assert!(meta.workspace_default_members.is_missing());
 }
 
 #[test]

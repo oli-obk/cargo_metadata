@@ -164,8 +164,6 @@ fn metadata_deps() {
 
 #[test]
 fn workspace_default_packages() {
-    use cargo_metadata::workspace_default_members_is_missing;
-
     let metadata = MetadataCommand::new()
         .manifest_path("Cargo.toml")
         .exec()
@@ -173,7 +171,7 @@ fn workspace_default_packages() {
     let workspace_packages = metadata.workspace_packages();
     // this will only trigger on cargo versions that expose
     // workspace_default_members (that is, cargo >= 1.71)
-    if !workspace_default_members_is_missing(&metadata.workspace_default_members) {
+    if metadata.workspace_default_members.is_available() {
         let default_packages = metadata.workspace_default_packages();
         assert_eq!(default_packages, workspace_packages);
     }
