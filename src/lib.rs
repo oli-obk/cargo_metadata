@@ -832,9 +832,9 @@ pub enum Edition {
     /// Edition 2021
     #[serde(rename = "2021")]
     E2021,
-    #[doc(hidden)]
+    /// Edition 2024
     #[serde(rename = "2024")]
-    _E2024,
+    E2024,
     #[doc(hidden)]
     #[serde(rename = "2027")]
     _E2027,
@@ -851,7 +851,7 @@ impl Edition {
             E2015 => "2015",
             E2018 => "2018",
             E2021 => "2021",
-            _E2024 => "2024",
+            E2024 => "2024",
             _E2027 => "2027",
             _E2030 => "2030",
         }
