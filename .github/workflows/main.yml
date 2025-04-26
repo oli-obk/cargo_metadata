@@ -31,7 +31,7 @@ jobs:
           - rust: stable
           - rust: beta
           - rust: nightly
-          - rust: 1.78.0
+          - rust: 1.81.0
     steps:
     - uses: actions/checkout@v2
     - name: Install rust
@@ -43,4 +43,3 @@ jobs:
         cargo test --verbose
         cargo test --verbose --no-default-features
         cargo test --verbose --all-features
-
