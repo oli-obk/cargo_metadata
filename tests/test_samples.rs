@@ -6,6 +6,7 @@ extern crate serde_json;
 use camino::Utf8PathBuf;
 use cargo_metadata::{
     ArtifactDebuginfo, CargoOpt, DependencyKind, Edition, Message, Metadata, MetadataCommand,
+    Source,
 };
 
 /// Output from oldest version ever supported (1.24).
@@ -239,7 +240,9 @@ fn all_the_fields() {
         .unwrap();
     assert_eq!(
         bitflags.source,
-        Some("registry+https://github.com/rust-lang/crates.io-index".to_string())
+        Some(Source {
+            repr: "registry+https://github.com/rust-lang/crates.io-index".to_string()
+        })
     );
     assert!(bitflags.optional);
     assert_eq!(bitflags.req, semver::VersionReq::parse("^1.0").unwrap());
