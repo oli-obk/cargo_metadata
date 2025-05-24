@@ -1075,6 +1075,10 @@ impl MetadataCommand {
 
         cmd.envs(&self.env);
 
+        // Can be useful for avoiding cross-compilation problems.
+        cmd.env_remove("CARGO_ENCODED_RUSTFLAGS");
+        cmd.env_remove("RUSTFLAGS");
+
         cmd
     }
 
