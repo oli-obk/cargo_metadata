@@ -1087,7 +1087,17 @@ impl MetadataCommand {
 
     /// Runs configured `cargo metadata` and returns parsed `Metadata`.
     pub fn exec(&self) -> Result<Metadata> {
+        self.exec_with_hook(|_| {})
+    }
+
+    /// Runs configured `cargo metadata` and returns parsed `Metadata`.
+    ///
+    /// Also executes `hook(&mut command)`, which can be useful for modifying
+    /// [`Command`] (e.g., in order to remove inherited environment variables in
+    /// custom build scripts).
+    pub fn exec_with_hook(&self, hook: impl FnOnce(&mut Command)) -> Result<Metadata> {
         let mut command = self.cargo_command();
+        hook(&mut command);
         if self.verbose {
             command.stderr(Stdio::inherit());
         }
