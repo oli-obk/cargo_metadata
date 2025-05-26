@@ -904,11 +904,12 @@ pub struct MetadataCommand {
     all_features: bool,
     /// Latched `CargoOpt::NoDefaultFeatures`
     no_default_features: bool,
-    /// Arbitrary command line flags to pass to `cargo`.  These will be added
+    /// Arbitrary command line flags to pass to `cargo`. These will be added
     /// to the end of the command line invocation.
     other_options: Vec<String>,
-    /// Arbitrary environment variables to set or remove when running `cargo`.  These will be merged into
-    /// the calling environment, overriding any which clash.
+    /// Arbitrary environment variables to set or remove (depending on
+    /// [`Option`] value) when running `cargo`. These will be merged into the
+    /// calling environment, overriding any which clash.
     env: BTreeMap<OsString, Option<OsString>>,
     /// Show stderr
     verbose: bool,
