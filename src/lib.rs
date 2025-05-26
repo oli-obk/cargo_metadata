@@ -907,9 +907,9 @@ pub struct MetadataCommand {
     /// Arbitrary command line flags to pass to `cargo`.  These will be added
     /// to the end of the command line invocation.
     other_options: Vec<String>,
-    /// Arbitrary environment variables to set when running `cargo`.  These will be merged into
+    /// Arbitrary environment variables to set or remove when running `cargo`.  These will be merged into
     /// the calling environment, overriding any which clash.
-    env: BTreeMap<OsString, OsString>,
+    env: BTreeMap<OsString, Option<OsString>>,
     /// Show stderr
     verbose: bool,
 }
@@ -1029,7 +1029,26 @@ impl MetadataCommand {
         key: K,
         val: V,
     ) -> &mut MetadataCommand {
-        self.env.insert(key.into(), val.into());
+        self.env.insert(key.into(), Some(val.into()));
+        self
+    }
+
+    /// Arbitrary environment variables to remove when running `cargo`.  These will be merged into
+    /// the calling environment, overriding any which clash.
+    ///
+    /// Some examples of when you may want to use this:
+    /// - Removing inherited environment variables in build scripts that can cause an error
+    ///   when calling `cargo metadata` (for example, when cross-compiling).
+    ///
+    /// ```no_run
+    /// # use cargo_metadata::{CargoOpt, MetadataCommand};
+    /// MetadataCommand::new()
+    ///     .env_remove("CARGO_ENCODED_RUSTFLAGS")
+    ///     // ...
+    ///     # ;
+    /// ```
+    pub fn env_remove<K: Into<OsString>>(&mut self, key: K) -> &mut MetadataCommand {
+        self.env.insert(key.into(), None);
         self
     }
 
@@ -1073,7 +1092,12 @@ impl MetadataCommand {
         }
         cmd.args(&self.other_options);
 
-        cmd.envs(&self.env);
+        for (key, val) in &self.env {
+            match val {
+                Some(val) => cmd.env(key, val),
+                None => cmd.env_remove(key),
+            };
+        }
 
         cmd
     }
