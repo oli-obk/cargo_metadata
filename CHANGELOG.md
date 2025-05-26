@@ -6,7 +6,7 @@
 
 ### Added
 
-- n/a
+- Added `pub fn env_remove<K: Into<OsString>>(&mut self, key: K) -> &mut MetadataCommand` to `MetadataCommand`.
 
 ### Changed
 
