@@ -506,7 +506,7 @@ pub struct Package {
 impl PackageBuilder {
     /// Construct a new `PackageBuilder` with all required fields.
     pub fn new(
-        name: impl Into<String>,
+        name: impl Into<PackageName>,
         version: impl Into<Version>,
         id: impl Into<PackageId>,
         path: impl Into<Utf8PathBuf>,
