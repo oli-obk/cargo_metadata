@@ -596,7 +596,7 @@ pub struct Target {
     #[serde(rename = "required-features")]
     /// This target is built only if these features are enabled.
     /// It doesn't apply to `lib` targets.
-    pub required_features: Vec<FeatureName>,
+    pub required_features: Vec<String>,
     /// Path to the main source file of the target
     pub src_path: Utf8PathBuf,
     /// Rust edition for this target

@@ -321,7 +321,7 @@ fn all_the_fields() {
                 .unwrap()
         };
     }
-    assert_eq!(all.targets.len(), 8);
+    assert_eq!(all.targets.len(), 9);
     let lib = get_file_name!("lib.rs");
     assert_eq!(lib.name, "all");
     assert_eq!(
@@ -350,7 +350,10 @@ fn all_the_fields() {
     assert!(!otherbin.doc);
 
     let reqfeat = get_file_name!("reqfeat.rs");
-    assert_eq!(reqfeat.required_features, features!["feat2"]);
+    assert_eq!(reqfeat.required_features, vec!["feat2"]);
+
+    let reqfeat_slash = get_file_name!("reqfeat_slash.rs");
+    assert_eq!(reqfeat_slash.required_features, vec!["featdep/i128"]);
 
     let ex1 = get_file_name!("ex1.rs");
     assert_eq!(ex1.kind, vec!["example".into()]);
