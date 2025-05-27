@@ -24,6 +24,9 @@ default = []
 builder = ["derive_builder"]
 unstable = []
 
+[package.metadata.docs.rs]
+all-features = true
+
 [package.metadata.cargo_metadata_test]
 some_field = true
 other_field = "foo"

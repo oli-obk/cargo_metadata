@@ -37,7 +37,8 @@ fn metadata() {
         .metadata
         .as_object()
         .expect("package.metadata must be a table.");
-    assert_eq!(package_metadata.len(), 1);
+    // The second field is docs.rs metadata, ignore it
+    assert_eq!(package_metadata.len(), 2);
 
     let value = package_metadata.get("cargo_metadata_test").unwrap();
     let test_package_metadata: TestPackageMetadata = serde_json::from_value(value.clone()).unwrap();
