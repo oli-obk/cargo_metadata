@@ -8,12 +8,23 @@
 //!
 //! ## Examples
 //!
+//! Get the current crate's metadata without default features but with all dependency information.
+//!
 //! ```rust
-//! # extern crate cargo_metadata;
+//! # use std::path::Path;
+//! # use cargo_metadata::{MetadataCommand, CargoOpt};
+//! let _metadata = MetadataCommand::new().exec().unwrap();
+//! ```
+//!
+//!
+//! If you have a program that takes `--manifest-path` as an argument, you can forward that
+//! to [MetadataCommand]:
+//!
+//! ```rust
+//! # use cargo_metadata::MetadataCommand;
 //! # use std::path::Path;
 //! let mut args = std::env::args().skip_while(|val| !val.starts_with("--manifest-path"));
-//!
-//! let mut cmd = cargo_metadata::MetadataCommand::new();
+//! let mut cmd = MetadataCommand::new();
 //! let manifest_path = match args.next() {
 //!     Some(ref p) if p == "--manifest-path" => {
 //!         cmd.manifest_path(args.next().unwrap());
@@ -27,30 +38,24 @@
 //! let _metadata = cmd.exec().unwrap();
 //! ```
 //!
-//! Pass features flags
+//! Pass features flags, e.g. `--all-features`.
 //!
 //! ```rust
-//! # // This should be kept in sync with the equivalent example in the readme.
-//! # extern crate cargo_metadata;
 //! # use std::path::Path;
-//! # fn main() {
-//! use cargo_metadata::{MetadataCommand, CargoOpt};
-//!
+//! # use cargo_metadata::{MetadataCommand, CargoOpt};
 //! let _metadata = MetadataCommand::new()
 //!     .manifest_path("./Cargo.toml")
 //!     .features(CargoOpt::AllFeatures)
 //!     .exec()
 //!     .unwrap();
-//! # }
 //! ```
 //!
-//! Parse message-format output:
+//! Parse message-format output produced by other cargo commands.
+//! It is recommended to use crates like `escargot` to produce the [Command].
 //!
 //! ```
-//! # extern crate cargo_metadata;
-//! use std::process::{Stdio, Command};
-//! use cargo_metadata::Message;
-//!
+//! # use std::process::{Stdio, Command};
+//! # use cargo_metadata::Message;
 //! let mut command = Command::new("cargo")
 //!     .args(&["build", "--message-format=json-render-diagnostics"])
 //!     .stdout(Stdio::piped())
