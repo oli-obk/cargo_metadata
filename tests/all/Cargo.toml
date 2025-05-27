@@ -56,6 +56,10 @@ doc = false
 name = "reqfeat"
 required-features = ["feat2"]
 
+[[bin]]
+name = "reqfeat_slash"
+required-features = ["featdep/i128"]
+
 [workspace]
 exclude = ["bare-rust-version", "bdep", "benches", "devdep", "examples", "featdep", "namedep", "oldname", "path-dep", "windep"]
 
