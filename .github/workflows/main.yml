@@ -42,4 +42,11 @@ jobs:
         cargo build --verbose --no-default-features
         cargo test --verbose
         cargo test --verbose --no-default-features
-        cargo test --verbose --all-features
+
+        # Test with all features. But do not use the `unstable` feature on non-nightly toolchains
+        if [ "${{ matrix.rust }}" = "nightly" ]; then
+          cargo test --verbose --all-features
+        else
+          ALL_FEATURES_EXCEPT_UNSTABLE=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].features | keys | .[]' | grep -v 'unstable' | tr '\n' ' ')
+          cargo test --features "$ALL_FEATURES_EXCEPT_UNSTABLE"
+        fi
