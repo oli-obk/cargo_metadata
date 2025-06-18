@@ -100,7 +100,8 @@ pub use camino;
 pub use semver;
 use semver::Version;
 
-use cargo_util_schemas::manifest::{FeatureName, PackageName};
+pub use cargo_util_schemas::manifest::{FeatureName, PackageName};
+
 #[cfg(feature = "builder")]
 pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
