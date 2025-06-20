@@ -1,7 +1,7 @@
 use std::{io, str::Utf8Error, string::FromUtf8Error};
 
 /// Custom result type for `cargo_metadata::Error`
-pub type Result<T> = ::std::result::Result<T, Error>;
+pub type Result<T, E = Error> = ::std::result::Result<T, E>;
 
 /// Error returned when executing/parsing `cargo metadata` fails.
 ///
