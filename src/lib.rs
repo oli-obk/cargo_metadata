@@ -344,7 +344,13 @@ pub struct Node {
 pub struct NodeDep {
     /// The name of the dependency's library target.
     /// If the crate was renamed, it is the new name.
-    pub name: PackageName,
+    ///
+    /// If -Zbindeps is enabled local references may result in an empty
+    /// string.
+    ///
+    /// After -Zbindeps gets stabilized, cargo has indicated this field
+    /// will become deprecated.
+    pub name: String,
     /// Package ID (opaque unique identifier)
     pub pkg: PackageId,
     /// The kinds of dependencies.
