@@ -344,7 +344,7 @@ pub struct Node {
 pub struct NodeDep {
     /// The name of the dependency's library target.
     /// If the crate was renamed, it is the new name.
-    pub name: PackageName,
+    pub name: String,
     /// Package ID (opaque unique identifier)
     pub pkg: PackageId,
     /// The kinds of dependencies.
