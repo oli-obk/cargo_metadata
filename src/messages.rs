@@ -142,7 +142,7 @@ impl fmt::Display for ArtifactDebuginfo {
             ArtifactDebuginfo::Full => f.write_char('2'),
             ArtifactDebuginfo::LineDirectivesOnly => f.write_str("line-directives-only"),
             ArtifactDebuginfo::LineTablesOnly => f.write_str("line-tables-only"),
-            ArtifactDebuginfo::UnknownInt(n) => write!(f, "{}", n),
+            ArtifactDebuginfo::UnknownInt(n) => write!(f, "{n}"),
             ArtifactDebuginfo::UnknownString(s) => f.write_str(s),
         }
     }
