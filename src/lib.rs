@@ -236,7 +236,7 @@ impl<'a> std::ops::Index<&'a PackageId> for Metadata {
         self.packages
             .iter()
             .find(|p| p.id == *idx)
-            .unwrap_or_else(|| panic!("no package with this id: {:?}", idx))
+            .unwrap_or_else(|| panic!("no package with this id: {idx:?}"))
     }
 }
 
@@ -309,7 +309,7 @@ impl<'a> std::ops::Index<&'a PackageId> for Resolve {
         self.nodes
             .iter()
             .find(|p| p.id == *idx)
-            .unwrap_or_else(|| panic!("no Node with this id: {:?}", idx))
+            .unwrap_or_else(|| panic!("no Node with this id: {idx:?}"))
     }
 }
 
