@@ -31,7 +31,7 @@ jobs:
           - rust: stable
           - rust: beta
           - rust: nightly
-          - rust: 1.82.0
+          - rust: 1.86.0
     steps:
     - uses: actions/checkout@v2
     - name: Install rust
