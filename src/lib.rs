@@ -97,6 +97,7 @@ use std::process::{Command, Stdio};
 use std::str::{from_utf8, FromStr};
 
 pub use camino;
+pub use cargo_platform;
 pub use semver;
 use semver::Version;
 

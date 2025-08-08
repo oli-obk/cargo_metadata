@@ -7,6 +7,7 @@
 ### Added
 
 - Added `pub fn env_remove<K: Into<OsString>>(&mut self, key: K) -> &mut MetadataCommand` to `MetadataCommand`.
+- Added export of `cargo_platform` at crate's root module.
 
 ### Changed
 
