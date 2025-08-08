@@ -12,8 +12,13 @@
 ### Changed
 
 - Updated dependencies:
-  - `thiserror` from `1.0.31` to `2.0.3`
+  - `camino` from `1.0.7` to `1.1.10`
+  - `cargo_platform` from `0.2.0` to `0.3.0`
   - `derive_builder` from `0.12` to `0.20`
+  - `semver` from `1.0.7` to `1.0.26`
+  - `serde_json` from `1.0.118` to `1.0.142`
+  - `serde` from `1.0.136` to `1.0.219`
+  - `thiserror` from `2.0.3` to `2.0.12`
 - Made `Dependency`'s `source` member the same type as `Package`'s `source` member: `Option<Source>`.
 
 ### Removed
