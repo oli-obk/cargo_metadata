@@ -101,7 +101,6 @@ pub use cargo_platform;
 pub use semver;
 use semver::Version;
 
-use cargo_util_schemas::manifest::{FeatureName, PackageName};
 #[cfg(feature = "builder")]
 pub use dependency::DependencyBuilder;
 pub use dependency::{Dependency, DependencyKind};
@@ -128,6 +127,92 @@ mod errors;
 #[cfg(feature = "unstable")]
 pub mod libtest;
 mod messages;
+
+macro_rules! str_newtype {
+    ($name:ident) => {
+        /// String newtype
+        ///
+        /// Based on [cargo-util-schema's string newtype] but with two crucial differences:
+        ///
+        /// - This newtype does not verify the wrapped string.
+        /// - This newtype allows comparison with arbitrary types that implement `AsRef<str>`.
+        ///
+        /// [cargo-util-schema's string newtype]: https://github.com/epage/cargo/blob/d8975d2901e132c02b3f6b1d107f2f50b275a058/crates/cargo-util-schemas/src/manifest/mod.rs#L1355-L1413
+        #[derive(Serialize, Debug, Clone, Eq, PartialOrd, Ord, Hash)]
+        #[serde(transparent)]
+        pub struct $name<T: AsRef<str> = String>(T);
+
+        impl<T: AsRef<str>> $name<T> {
+            /// Convert the wrapped string into its inner type `T`
+            pub fn into_inner(self) -> T {
+                self.0
+            }
+        }
+
+        impl<T: AsRef<str>> AsRef<str> for $name<T> {
+            fn as_ref(&self) -> &str {
+                self.0.as_ref()
+            }
+        }
+
+        impl<T: AsRef<str>> std::ops::Deref for $name<T> {
+            type Target = T;
+
+            fn deref(&self) -> &Self::Target {
+                &self.0
+            }
+        }
+
+        impl<T: AsRef<str>> std::borrow::Borrow<str> for $name<T> {
+            fn borrow(&self) -> &str {
+                self.0.as_ref()
+            }
+        }
+
+        impl<'a> std::str::FromStr for $name<String> {
+            type Err = std::convert::Infallible;
+
+            fn from_str(value: &str) -> Result<Self, Self::Err> {
+                Ok(Self::new(value.to_owned()))
+            }
+        }
+
+        impl<'de, T: AsRef<str> + serde::Deserialize<'de>> serde::Deserialize<'de> for $name<T> {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                let inner = T::deserialize(deserializer)?;
+                Ok(Self::new(inner))
+            }
+        }
+
+        impl<T: AsRef<str>> fmt::Display for $name<T> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                self.0.as_ref().fmt(f)
+            }
+        }
+
+        // Note: The next two implementations are not based on Cargo string newtype implementations.
+
+        impl<T: AsRef<str>> $name<T> {
+            /// Create a new wrapped string
+            pub fn new(name: T) -> Self {
+                Self(name)
+            }
+        }
+
+        impl<T: AsRef<str>, Rhs: AsRef<str>> PartialEq<Rhs> for $name<T> {
+            fn eq(&self, other: &Rhs) -> bool {
+                self.as_ref() == other.as_ref()
+            }
+        }
+    };
+}
+
+str_newtype!(FeatureName);
+
+str_newtype!(PackageName);
 
 /// An "opaque" identifier for a package.
 ///
@@ -1226,5 +1311,11 @@ mod test {
             bare_version_err("1.2.0+123"),
             "build metadata is not supported in rust-version"
         );
+    }
+
+    #[test]
+    fn package_name_eq() {
+        let my_package_name = super::PackageName::new("my_package");
+        assert_eq!(my_package_name, "my_package");
     }
 }

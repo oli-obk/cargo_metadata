@@ -5,10 +5,9 @@ extern crate serde_json;
 
 use camino::Utf8PathBuf;
 use cargo_metadata::{
-    ArtifactDebuginfo, CargoOpt, DependencyKind, Edition, Message, Metadata, MetadataCommand,
-    Source,
+    ArtifactDebuginfo, CargoOpt, DependencyKind, Edition, FeatureName, Message, Metadata,
+    MetadataCommand, Source,
 };
-use cargo_util_schemas::manifest::FeatureName;
 
 /// Output from oldest version ever supported (1.24).
 ///
@@ -147,7 +146,7 @@ macro_rules! sorted {
 macro_rules! features {
     ($($feat:expr),* $(,)?) => {
         ::std::vec![
-            $(::cargo_util_schemas::manifest::FeatureName::new(String::from($feat)).unwrap()),*
+            $(FeatureName::new(String::from($feat))),*
         ]
     };
 }
