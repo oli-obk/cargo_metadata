@@ -6,6 +6,24 @@
 
 ### Added
 
+- n/a
+
+### Changed
+
+- n/a
+
+### Removed
+
+- n/a
+
+### Fixed
+
+- n/a
+
+## [0.22.0] - TBD
+
+### Added
+
 - Added `pub fn env_remove<K: Into<OsString>>(&mut self, key: K) -> &mut MetadataCommand` to `MetadataCommand`.
 - Added export of `cargo_platform` at crate's root module.
 
@@ -20,14 +38,6 @@
   - `serde` from `1.0.136` to `1.0.219`
   - `thiserror` from `2.0.3` to `2.0.12`
 - Made `Dependency`'s `source` member the same type as `Package`'s `source` member: `Option<Source>`.
-
-### Removed
-
-- n/a
-
-### Fixed
-
-- n/a
 
 ## [0.19.0] - 2024-11-20
 
