@@ -129,15 +129,11 @@ pub mod libtest;
 mod messages;
 
 macro_rules! str_newtype {
-    ($name:ident) => {
-        /// String newtype
-        ///
-        /// Based on [cargo-util-schema's string newtype] but with two crucial differences:
-        ///
-        /// - This newtype does not verify the wrapped string.
-        /// - This newtype allows comparison with arbitrary types that implement `AsRef<str>`.
-        ///
-        /// [cargo-util-schema's string newtype]: https://github.com/epage/cargo/blob/d8975d2901e132c02b3f6b1d107f2f50b275a058/crates/cargo-util-schemas/src/manifest/mod.rs#L1355-L1413
+    (
+        $(#[doc = $docs:literal])*
+        $name:ident
+    ) => {
+        $(#[doc = $docs])*
         #[derive(Serialize, Debug, Clone, Eq, PartialOrd, Ord, Hash)]
         #[serde(transparent)]
         pub struct $name<T: AsRef<str> = String>(T);
@@ -210,9 +206,29 @@ macro_rules! str_newtype {
     };
 }
 
-str_newtype!(FeatureName);
+str_newtype!(
+    /// Feature name newtype
+    ///
+    /// Based on [cargo-util-schema's string newtype] but with two crucial differences:
+    ///
+    /// - This newtype does not verify the wrapped string.
+    /// - This newtype allows comparison with arbitrary types that implement `AsRef<str>`.
+    ///
+    /// [cargo-util-schema's string newtype]: https://github.com/epage/cargo/blob/d8975d2901e132c02b3f6b1d107f2f50b275a058/crates/cargo-util-schemas/src/manifest/mod.rs#L1355-L1413
+    FeatureName
+);
 
-str_newtype!(PackageName);
+str_newtype!(
+    /// Package name newtype
+    ///
+    /// Based on [cargo-util-schema's string newtype] but with two crucial differences:
+    ///
+    /// - This newtype does not verify the wrapped string.
+    /// - This newtype allows comparison with arbitrary types that implement `AsRef<str>`.
+    ///
+    /// [cargo-util-schema's string newtype]: https://github.com/epage/cargo/blob/d8975d2901e132c02b3f6b1d107f2f50b275a058/crates/cargo-util-schemas/src/manifest/mod.rs#L1355-L1413
+    PackageName
+);
 
 /// An "opaque" identifier for a package.
 ///
