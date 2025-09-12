@@ -84,11 +84,13 @@ fn builder_interface() {
 
 #[test]
 fn error1() {
+    let manifest_path = current_dir().unwrap().join("foo");
+    let error = "error: the manifest-path must be a path to a Cargo.toml file";
+    let error_with_path = format!("{error}: `{}`", manifest_path.display());
     match MetadataCommand::new().manifest_path("foo").exec() {
-        Err(Error::CargoMetadata { stderr }) => assert_eq!(
-            stderr.trim(),
-            "error: the manifest-path must be a path to a Cargo.toml file"
-        ),
+        Err(Error::CargoMetadata { stderr }) => {
+            assert!([error, &error_with_path].contains(&stderr.trim()))
+        }
         _ => unreachable!(),
     }
 }
