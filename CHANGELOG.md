@@ -20,6 +20,12 @@
 
 - n/a
 
+## [0.23.0] - 2025-09-27
+
+### Added
+
+- Added `FeatureName` and `PackageName` newtype wrappers.
+
 ## [0.22.0] - 2025-08-18
 
 ### Added
