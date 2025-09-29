@@ -8,7 +8,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install rust
-      run: rustup update --no-self-update stable && rustup default stable
+      run: rustup update --no-self-update stable && rustup default stable && rustup component add rustfmt --toolchain stable
     - name: Check formatting
       run: cargo fmt -- --check
 
@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install rust
-        run: rustup update --no-self-update stable && rustup default stable
+        run: rustup update --no-self-update stable && rustup default stable && rustup component add clippy --toolchain stable
       - name: Clippy check
         run: cargo clippy --all-features -- -Dwarnings
 
