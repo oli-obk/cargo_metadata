@@ -942,11 +942,14 @@ impl fmt::Display for CrateType {
 /// The Rust edition
 ///
 /// As of writing this comment rust editions 2027 and 2030 are not actually a thing yet but are parsed nonetheless for future proofing.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(
+    Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord, Default,
+)]
 #[non_exhaustive]
 pub enum Edition {
     /// Edition 2015
     #[serde(rename = "2015")]
+    #[default]
     E2015,
     /// Edition 2018
     #[serde(rename = "2018")]
@@ -983,12 +986,6 @@ impl Edition {
 impl fmt::Display for Edition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
-    }
-}
-
-impl Default for Edition {
-    fn default() -> Self {
-        Self::E2015
     }
 }
 
