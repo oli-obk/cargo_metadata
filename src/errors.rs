@@ -18,7 +18,7 @@ pub type Result<T, E = Error> = ::std::result::Result<T, E>;
 ///    a `failure::Context<Error>` or add a `failure::Backtrace` field (which
 ///    is empty if `RUST_BACKTRACE` is not set, so it's simple to use).
 /// 3. You still can place a failure based error into a `error_chain` if you
-///    really want to. (Either through foreign_links or by making it a field
+///    really want to. (Either through `foreign_links` or by making it a field
 ///    value of a `ErrorKind` variant).
 ///
 #[derive(Debug, thiserror::Error)]
