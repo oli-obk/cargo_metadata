@@ -294,19 +294,16 @@ pub struct Metadata {
 impl Metadata {
     /// Get the workspace's root package of this metadata instance.
     pub fn root_package(&self) -> Option<&Package> {
-        match &self.resolve {
-            Some(resolve) => {
-                // if dependencies are resolved, use Cargo's answer
-                let root = resolve.root.as_ref()?;
-                self.packages.iter().find(|pkg| &pkg.id == root)
-            }
-            None => {
-                // if dependencies aren't resolved, check for a root package manually
-                let root_manifest_path = self.workspace_root.join("Cargo.toml");
-                self.packages
-                    .iter()
-                    .find(|pkg| pkg.manifest_path == root_manifest_path)
-            }
+        if let Some(resolve) = &self.resolve {
+            // if dependencies are resolved, use Cargo's answer
+            let root = resolve.root.as_ref()?;
+            self.packages.iter().find(|pkg| &pkg.id == root)
+        } else {
+            // if dependencies aren't resolved, check for a root package manually
+            let root_manifest_path = self.workspace_root.join("Cargo.toml");
+            self.packages
+                .iter()
+                .find(|pkg| pkg.manifest_path == root_manifest_path)
         }
     }
 
