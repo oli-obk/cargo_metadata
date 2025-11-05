@@ -18,7 +18,7 @@
 //!
 //!
 //! If you have a program that takes `--manifest-path` as an argument, you can forward that
-//! to [MetadataCommand]:
+//! to [`MetadataCommand`]:
 //!
 //! ```rust
 //! # use cargo_metadata::MetadataCommand;
