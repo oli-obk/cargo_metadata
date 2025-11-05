@@ -1263,9 +1263,8 @@ fn deserialize_rust_version<'de, D>(
 where
     D: Deserializer<'de>,
 {
-    let mut buf = match Option::<String>::deserialize(deserializer)? {
-        None => return Ok(None),
-        Some(buf) => buf,
+    let Some(mut buf) = Option::<String>::deserialize(deserializer)? else {
+        return Ok(None);
     };
 
     for char in buf.chars() {
