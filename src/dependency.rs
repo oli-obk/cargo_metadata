@@ -8,7 +8,7 @@ use derive_builder::Builder;
 use semver::VersionReq;
 use serde::{Deserialize, Deserializer, Serialize};
 
-use crate::Source;
+use crate::{default_true, Source};
 
 #[derive(Eq, PartialEq, Clone, Debug, Copy, Hash, Serialize, Deserialize, Default)]
 /// Dependencies can come in three kinds
@@ -53,35 +53,61 @@ pub struct Dependency {
     /// Name as given in the `Cargo.toml`
     pub name: String,
     /// The source of dependency
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub source: Option<Source>,
     /// The required version
     pub req: VersionReq,
     /// The kind of dependency this is
     #[serde(deserialize_with = "parse_dependency_kind")]
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub kind: DependencyKind,
     /// Whether this dependency is required or optional
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub optional: bool,
     /// Whether the default features in this dependency are used.
+    #[serde(default = "default_true")]
+    #[cfg_attr(feature = "builder", builder(default = "true"))]
     pub uses_default_features: bool,
     /// The list of features enabled for this dependency.
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub features: Vec<String>,
     /// The target this dependency is specific to.
     ///
     /// Use the [`Display`] trait to access the contents.
     ///
     /// [`Display`]: std::fmt::Display
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub target: Option<Platform>,
     /// If the dependency is renamed, this is the new name for the dependency
     /// as a string.  None if it is not renamed.
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub rename: Option<String>,
     /// The URL of the index of the registry where this dependency is from.
     ///
     /// If None, the dependency is from crates.io.
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub registry: Option<String>,
     /// The file system path for a local path dependency.
     ///
     /// Only produced on cargo 1.51+
+    #[serde(default)]
+    #[cfg_attr(feature = "builder", builder(default))]
     pub path: Option<Utf8PathBuf>,
+}
+
+#[cfg(feature = "builder")]
+impl DependencyBuilder {
+    /// Construct a new `DependencyBuilder` with all required fields.
+    pub fn new(name: impl Into<String>, req: impl Into<VersionReq>) -> Self {
+        Self::default().name(name).req(req)
+    }
 }
 
 pub use cargo_platform::Platform;
