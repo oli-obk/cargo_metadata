@@ -180,14 +180,35 @@ fn workspace_default_packages() {
     }
 }
 
+fn cargo_version() -> semver::Version {
+    let output = std::process::Command::new("cargo")
+        .arg("-V")
+        .output()
+        .expect("Failed to exec cargo.");
+    let out = std::str::from_utf8(&output.stdout)
+        .expect("invalid utf8")
+        .trim();
+    let split: Vec<&str> = out.split_whitespace().collect();
+    assert!(split.len() >= 2, "cargo -V output is unexpected: {}", out);
+    let mut ver = semver::Version::parse(split[1]).expect("cargo -V semver could not be parsed");
+    // Don't care about metadata, it is awkward to compare.
+    ver.pre = semver::Prerelease::EMPTY;
+    ver.build = semver::BuildMetadata::EMPTY;
+    ver
+}
+
 #[test]
-#[cfg(feature = "unstable")]
 fn build_dir() {
     let metadata = MetadataCommand::new().no_deps().exec().unwrap();
-
-    assert!(&metadata.build_directory.is_some());
-    assert!(&metadata
-        .build_directory
-        .unwrap()
-        .ends_with("cargo_metadata/target"));
+    let ver = cargo_version();
+    let minimum = semver::Version::parse("1.91.0").unwrap();
+    if ver >= minimum {
+        assert!(&metadata.build_directory.is_some());
+        assert!(&metadata
+            .build_directory
+            .unwrap()
+            .ends_with("cargo_metadata/target"));
+    } else {
+        assert!(&metadata.build_directory.is_none());
+    }
 }

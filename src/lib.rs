@@ -279,10 +279,7 @@ pub struct Metadata {
     /// Target directory
     pub target_directory: Utf8PathBuf,
     /// Build directory
-    ///
-    /// Only populated if `-Zbuild-dir` is passed via .other_options()
-    // TODO: This should become non optional once cargo build-dir is stablized: https://github.com/rust-lang/cargo/issues/14125
-    #[cfg(feature = "unstable")]
+    // TODO: This should become non optional once the MSRV is at or above `1.91.0`
     pub build_directory: Option<Utf8PathBuf>,
     /// The workspace-level metadata object. Null if non-existent.
     #[serde(rename = "metadata", default, skip_serializing_if = "is_null")]
