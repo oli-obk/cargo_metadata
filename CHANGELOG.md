@@ -20,6 +20,12 @@
 
 - n/a
 
+## [0.23.1] - 2025-11-11
+
+### Changed
+
+- Stabilized `build_directory`
+
 ## [0.23.0] - 2025-09-27
 
 ### Added
