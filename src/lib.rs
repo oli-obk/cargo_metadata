@@ -939,7 +939,9 @@ impl fmt::Display for CrateType {
 /// The Rust edition
 ///
 /// As of writing this comment rust editions 2027 and 2030 are not actually a thing yet but are parsed nonetheless for future proofing.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(
+    Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, PartialOrd, Ord, Default,
+)]
 #[non_exhaustive]
 #[derive(Default)]
 pub enum Edition {
