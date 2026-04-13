@@ -985,7 +985,8 @@ impl fmt::Display for Edition {
     }
 }
 
-fn default_true() -> bool {
+/// just for serde defaults
+pub(crate) fn default_true() -> bool {
     true
 }
 
