@@ -78,7 +78,7 @@ pub struct DiagnosticSpan {
     /// always have at least one primary span, unless it has 0 spans. Child
     /// messages may have 0 or more primary spans.
     pub is_primary: bool,
-    /// Source text from the start of line_start to the end of line_end.
+    /// Source text from the start of `line_start` to the end of `line_end`.
     pub text: Vec<DiagnosticSpanLine>,
     /// Label that should be placed at this location (if any)
     pub label: Option<String>,
