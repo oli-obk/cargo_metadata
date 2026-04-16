@@ -10,7 +10,8 @@
 
 ### Changed
 
-- n/a
+- Added `From<String>` and `From<&str>` for `FeatureName`, `PackageName`, and `PackageId`.
+- Added `From<Vec<PackageId>>` for `WorkspaceDefaultMembers`.
 
 ### Removed
 

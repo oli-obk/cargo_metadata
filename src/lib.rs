@@ -173,6 +173,18 @@ macro_rules! str_newtype {
             }
         }
 
+        impl From<String> for $name<String> {
+            fn from(value: String) -> Self {
+                Self::new(value)
+            }
+        }
+
+        impl<'a> From<&'a str> for $name<String> {
+            fn from(value: &'a str) -> Self {
+                Self::new(value.to_owned())
+            }
+        }
+
         impl<'de, T: AsRef<str> + serde::Deserialize<'de>> serde::Deserialize<'de> for $name<T> {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where
@@ -246,6 +258,20 @@ pub struct PackageId {
 impl fmt::Display for PackageId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Display::fmt(&self.repr, f)
+    }
+}
+
+impl From<String> for PackageId {
+    fn from(repr: String) -> Self {
+        Self { repr }
+    }
+}
+
+impl<'a> From<&'a str> for PackageId {
+    fn from(repr: &'a str) -> Self {
+        Self {
+            repr: repr.to_owned(),
+        }
     }
 }
 
@@ -385,6 +411,12 @@ impl core::ops::Deref for WorkspaceDefaultMembers {
         self.0
             .as_ref()
             .expect("WorkspaceDefaultMembers should only be dereferenced on Cargo versions >= 1.71")
+    }
+}
+
+impl From<Vec<PackageId>> for WorkspaceDefaultMembers {
+    fn from(members: Vec<PackageId>) -> Self {
+        Self(Some(members))
     }
 }
 
@@ -1329,5 +1361,49 @@ mod test {
     fn package_name_eq() {
         let my_package_name = super::PackageName::new("my_package");
         assert_eq!(my_package_name, "my_package");
+    }
+
+    #[test]
+    fn workspace_default_members_from_vec() {
+        let id = super::PackageId::from("my-package 1.0.0 (path+file:///foo)");
+        let members = super::WorkspaceDefaultMembers::from(vec![id.clone()]);
+        assert!(members.is_available());
+        assert_eq!(&*members, &[id]);
+    }
+
+    #[test]
+    fn package_id_from_str() {
+        let id = super::PackageId::from("my-package 1.0.0 (path+file:///foo)");
+        assert_eq!(id.repr, "my-package 1.0.0 (path+file:///foo)");
+    }
+
+    #[test]
+    fn package_id_from_string() {
+        let id = super::PackageId::from(String::from("my-package 1.0.0 (path+file:///foo)"));
+        assert_eq!(id.repr, "my-package 1.0.0 (path+file:///foo)");
+    }
+
+    #[test]
+    fn package_name_from_str() {
+        let name = super::PackageName::from("my-package");
+        assert_eq!(name, "my-package");
+    }
+
+    #[test]
+    fn package_name_from_string() {
+        let name = super::PackageName::from(String::from("my-package"));
+        assert_eq!(name, "my-package");
+    }
+
+    #[test]
+    fn feature_name_from_str() {
+        let name = super::FeatureName::from("default");
+        assert_eq!(name, "default");
+    }
+
+    #[test]
+    fn feature_name_from_string() {
+        let name = super::FeatureName::from(String::from("default"));
+        assert_eq!(name, "default");
     }
 }
